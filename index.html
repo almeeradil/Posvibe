@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -1008,6 +1009,18 @@
             <input type="number" id="invDiscount" value="0" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500">
           </div>
         </div>
+        <div class="border border-orange-200 rounded-lg p-3 bg-orange-50/40 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="font-bold uppercase text-slate-600">More Medicines (Multi Item Invoice)</span>
+            <button type="button" onclick="addInvItemRow()" class="px-2.5 py-1 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-bold text-[11px] shadow"><i class="fa-solid fa-plus"></i> Add Medicine</button>
+          </div>
+          <div class="hidden md:grid grid-cols-12 gap-2 text-[10px] font-bold uppercase text-slate-500">
+            <div class="col-span-4">Medicine</div><div class="col-span-2">Qty</div><div class="col-span-2">Rate</div><div class="col-span-1">Tax%</div><div class="col-span-2">Disc</div><div class="col-span-1"></div>
+          </div>
+          <div id="invExtraItems" class="space-y-2"></div>
+          <datalist id="dl-pvMedicines"></datalist>
+          <p class="text-[10px] text-slate-500">Jitni marzi medicines add karein &mdash; sab invoice print mein aa jayengi.</p>
+        </div>
         <div class="p-3 bg-slate-50 rounded-lg flex items-center justify-between border">
           <span class="font-bold text-slate-700">Calculated Invoice Total:</span>
           <span id="invTotalDisplay" class="font-black text-base text-orange-600">Rs 0.00</span>
@@ -1784,7 +1797,7 @@
       const email = document.getElementById('loginEmail').value.trim();
       const pass = document.getElementById('loginPassword').value.trim();
       const errEl = document.getElementById('loginError');
-      if (email === 'admin@gmail.com' && pass === 'adiladil') {
+      if (email === 'admin@gmail.com' && pass === 'aefdef') {
         currentUserRole = 'Admin';
       } else if (email === 'employ@gmail.com' && pass === 'adiladil') {
         currentUserRole = 'Staff Manager';
@@ -2018,16 +2031,109 @@
       if (m) m.classList.add('hidden');
     }
 
+    function pvLineAmount(it) {
+      const sub = (parseFloat(it.qty) || 0) * (parseFloat(it.rate) || 0);
+      return (sub + (sub * (parseFloat(it.taxPct) || 0)) / 100) - (parseFloat(it.discount) || 0);
+    }
+
+    function pvFillMedicineDatalist() {
+      const dl = document.getElementById('dl-pvMedicines');
+      if (!dl) return;
+      dl.innerHTML = ((typeof userData !== 'undefined' && userData.inventory) || [])
+        .map(i => `<option value="${(i.name || '').replace(/"/g, '&quot;')}"></option>`).join('');
+    }
+
+    function addInvItemRow(v) {
+      v = v || {};
+      const box = document.getElementById('invExtraItems');
+      if (!box) return;
+      pvFillMedicineDatalist();
+      const row = document.createElement('div');
+      row.className = 'pv-inv-item grid grid-cols-12 gap-2 items-center';
+      row.innerHTML = `
+        <input data-k="name" list="dl-pvMedicines" autocomplete="off" placeholder="Medicine name" value="${String(v.name || '').replace(/"/g, '&quot;')}" class="col-span-4 px-2 py-1.5 border rounded-lg focus:ring-2 focus:ring-orange-500">
+        <input data-k="qty" type="number" min="1" step="any" value="${v.qty == null ? 1 : v.qty}" class="col-span-2 px-2 py-1.5 border rounded-lg focus:ring-2 focus:ring-orange-500">
+        <input data-k="rate" type="number" step="any" value="${v.rate == null ? '' : v.rate}" placeholder="0.00" class="col-span-2 px-2 py-1.5 border rounded-lg focus:ring-2 focus:ring-orange-500">
+        <input data-k="taxPct" type="number" step="any" value="${v.taxPct == null ? 0 : v.taxPct}" class="col-span-1 px-2 py-1.5 border rounded-lg focus:ring-2 focus:ring-orange-500">
+        <input data-k="discount" type="number" step="any" value="${v.discount == null ? 0 : v.discount}" class="col-span-2 px-2 py-1.5 border rounded-lg focus:ring-2 focus:ring-orange-500">
+        <button type="button" title="Remove" class="col-span-1 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-500 hover:text-white rounded-lg font-bold"><i class="fa-solid fa-trash"></i></button>`;
+      row.querySelector('button').onclick = function () { row.remove(); calculateInvoiceTotal(); };
+      row.querySelectorAll('input').forEach(el => el.addEventListener('input', calculateInvoiceTotal));
+      box.appendChild(row);
+      calculateInvoiceTotal();
+    }
+
+    function clearInvItemRows() {
+      const box = document.getElementById('invExtraItems');
+      if (box) box.innerHTML = '';
+    }
+
+    // Collects the main line + every extra medicine line into one items array
+    function collectInvoiceItems() {
+      const items = [];
+      const mainName = (document.getElementById('invProdName').value || '').trim();
+      if (mainName) {
+        items.push({
+          name: mainName,
+          hsCode: (document.getElementById('invHsCode').value || '').trim() || '3004.90',
+          uom: document.getElementById('invUom').value,
+          qty: parseFloat(document.getElementById('invQty').value) || 1,
+          rate: parseFloat(document.getElementById('invRate').value) || 0,
+          taxPct: parseFloat(document.getElementById('invTaxPct').value) || 0,
+          discount: parseFloat(document.getElementById('invDiscount').value) || 0
+        });
+      }
+      document.querySelectorAll('#invExtraItems .pv-inv-item').forEach(row => {
+        const get = k => row.querySelector('[data-k="' + k + '"]');
+        const name = (get('name').value || '').trim();
+        if (!name) return;
+        items.push({
+          name: name,
+          hsCode: '3004.90',
+          uom: document.getElementById('invUom').value,
+          qty: parseFloat(get('qty').value) || 1,
+          rate: parseFloat(get('rate').value) || 0,
+          taxPct: parseFloat(get('taxPct').value) || 0,
+          discount: parseFloat(get('discount').value) || 0
+        });
+      });
+      items.forEach(it => { it.amount = pvLineAmount(it); });
+      return items;
+    }
+
     function calculateInvoiceTotal() {
-      const qty = parseFloat(document.getElementById('invQty').value) || 0;
-      const rate = parseFloat(document.getElementById('invRate').value) || 0;
-      const taxPct = parseFloat(document.getElementById('invTaxPct').value) || 0;
-      const disc = parseFloat(document.getElementById('invDiscount').value) || 0;
-      const subtotal = qty * rate;
-      const taxAmt = (subtotal * taxPct) / 100;
-      const total = (subtotal + taxAmt) - disc;
+      const total = collectInvoiceItems().reduce((s, it) => s + it.amount, 0);
       const display = document.getElementById('invTotalDisplay');
       if (display) display.innerText = "Rs " + total.toFixed(2);
+    }
+
+    // Print helper for a saved sale invoice (supports multiple medicines)
+    function printSaleInvoice(index) {
+      const o = (userData.orders || [])[index];
+      if (!o) return;
+      const items = (o.items && o.items.length) ? o.items : [{
+        name: o.prodName, hsCode: o.hsCode, uom: o.uom, qty: o.qty,
+        rate: o.rate, taxPct: o.taxPct, discount: o.discount, amount: o.amount
+      }];
+      const data = {
+        "Invoice #": o.inv || '',
+        "Date": o.date || '',
+        "Customer": o.custName || '',
+        "NTN/CNIC": o.custNtnCnic || 'N/A',
+        "Province": o.custProvince || 'N/A',
+        "Total Amount": "Rs " + (parseFloat(o.amount) || 0).toFixed(2)
+      };
+      data.__items = items.map(it => ({
+        desc: it.name || 'Item',
+        sub: 'HS Code: ' + (it.hsCode || '3004.90')
+          + (parseFloat(it.taxPct) ? ' | GST: ' + it.taxPct + '%' : '')
+          + (parseFloat(it.discount) ? ' | Discount: Rs ' + it.discount : ''),
+        uom: it.uom || '',
+        qty: it.qty == null ? 1 : it.qty,
+        rate: it.rate || 0,
+        amount: it.amount != null ? it.amount : pvLineAmount(it)
+      }));
+      printUniversalSlip("TAX INVOICE", data, false);
     }
 
     function calculateDebitTotal() {
@@ -2041,18 +2147,13 @@
 
     function saveOrder() {
       const custName = document.getElementById('invCustName').value.trim();
-      const prodName = document.getElementById('invProdName').value.trim();
-      if (!custName || !prodName) {
-        alert('Please fill in required fields (Customer Name & Product Name)');
+      const items = collectInvoiceItems();
+      if (!custName || !items.length) {
+        alert('Please fill in required fields (Customer Name & at least one Medicine)');
         return;
       }
-      const qty = parseFloat(document.getElementById('invQty').value) || 1;
-      const rate = parseFloat(document.getElementById('invRate').value) || 0;
-      const taxPct = parseFloat(document.getElementById('invTaxPct').value) || 0;
-      const discount = parseFloat(document.getElementById('invDiscount').value) || 0;
-      const subtotal = qty * rate;
-      const taxAmt = (subtotal * taxPct) / 100;
-      const amount = (subtotal + taxAmt) - discount;
+      const amount = items.reduce((s, it) => s + it.amount, 0);
+      const first = items[0];
       const newOrder = {
         inv: document.getElementById('invNum').value.trim() || ('INV-' + Math.floor(10000 + Math.random() * 90000)),
         date: document.getElementById('invDate').value || new Date().toISOString().split('T')[0],
@@ -2060,24 +2161,30 @@
         custNtnCnic: document.getElementById('invCustNtnCnic').value.trim(),
         custAddress: document.getElementById('invCustAddress').value.trim(),
         custProvince: document.getElementById('invCustProvince').value,
-        prodName: prodName,
-        hsCode: document.getElementById('invHsCode').value.trim() || '3004.90',
-        uom: document.getElementById('invUom').value,
-        qty: qty,
-        rate: rate,
-        taxPct: taxPct,
-        discount: discount,
+        prodName: first.name,
+        hsCode: first.hsCode,
+        uom: first.uom,
+        qty: first.qty,
+        rate: first.rate,
+        taxPct: first.taxPct,
+        discount: first.discount,
+        items: items,
         amount: amount
       };
       if (!userData.orders) userData.orders = [];
       userData.orders.unshift(newOrder);
-      logActivity(`Created Invoice ${newOrder.inv} for ${custName}`);
+      logActivity(`Created Invoice ${newOrder.inv} for ${custName} (${items.length} item/s)`);
       saveData();
       renderAllData();
       closeModal('orderModal');
       document.getElementById('invNum').value = '';
       document.getElementById('invCustName').value = '';
       document.getElementById('invProdName').value = '';
+      document.getElementById('invQty').value = 1;
+      document.getElementById('invRate').value = '';
+      document.getElementById('invDiscount').value = 0;
+      clearInvItemRows();
+      calculateInvoiceTotal();
     }
 
     function savePurchaseInvoice() {
@@ -2707,8 +2814,9 @@
               <div class="text-[9px] text-slate-500">NTN/CNIC: ${o.custNtnCnic || 'N/A'} (${o.custProvince || 'N/A'})</div>
             </td>
             <td class="p-2">
-              <div class="font-bold text-slate-700">${o.prodName || 'Item'}</div>
-              <div class="text-[9px] font-mono text-slate-500">HS Code: ${o.hsCode || '3004.90'}</div>
+              ${((o.items && o.items.length) ? o.items : [{ name: o.prodName, qty: o.qty, rate: o.rate }])
+                .map(it => `<div class="font-bold text-slate-700">${it.name || 'Item'} <span class="font-normal text-slate-500">x${it.qty || 1}</span></div>`).join('')}
+              <div class="text-[9px] font-mono text-slate-500">HS Code: ${o.hsCode || '3004.90'}${(o.items && o.items.length > 1) ? ' &middot; ' + o.items.length + ' items' : ''}</div>
             </td>
             <td class="p-2">
               <div class="font-bold text-slate-800">${o.qty || 1} ${o.uom || 'Units'}</div>
@@ -2720,13 +2828,7 @@
             </td>
             <td class="p-2 font-black text-slate-900">Rs ${parseFloat(o.amount || 0).toFixed(2)}</td>
             <td class="p-2 text-right space-x-1 whitespace-nowrap">
-              <button type="button" onclick='printUniversalSlip("TAX INVOICE", {
-                "Invoice #": "${o.inv}", "Date": "${o.date}", "Customer": "${o.custName}",
-                "NTN/CNIC": "${o.custNtnCnic || 'N/A'}", "Province": "${o.custProvince || 'N/A'}",
-                "Product": "${o.prodName}", "HS Code": "${o.hsCode || '3004.90'}",
-                "Quantity": "${o.qty} ${o.uom}", "Rate": "Rs ${o.rate}", "GST Tax": "${o.taxPct}%",
-                "Discount": "Rs ${o.discount}", "Total Amount": "Rs ${parseFloat(o.amount).toFixed(2)}"
-              }, false)' class="px-2 py-0.5 bg-orange-50 text-orange-600 hover:bg-orange-500 hover:text-white rounded font-bold transition text-[10px]"><i class="fa-solid fa-print"></i> Print</button>
+              <button type="button" onclick='printSaleInvoice(${i})' class="px-2 py-0.5 bg-orange-50 text-orange-600 hover:bg-orange-500 hover:text-white rounded font-bold transition text-[10px]"><i class="fa-solid fa-print"></i> Print</button>
               ${getDeleteBtnHtml('orders', i)}
             </td>
           </tr>
@@ -5060,6 +5162,7 @@
             <span class="text-[10px] font-bold uppercase text-orange-500" id="pvInvEditNo"></span>
           </div>
           <div id="pvInvEditFields" class="grid grid-cols-1 md:grid-cols-3 gap-3"></div>
+          <div id="pvInvItems" class="border-t border-slate-100 pt-3"></div>
           <div class="flex items-center justify-between">
             <div class="text-[11px] font-bold text-slate-600" id="pvInvEditTotal"></div>
             <button type="button" onclick="pvUpdateInvoice()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs">Update Invoice</button>
@@ -5171,6 +5274,7 @@
       if (!rec) { box.classList.add('hidden'); return; }
       box.classList.remove('hidden');
       document.getElementById('pvInvEditNo').textContent = recType === 'sale' ? 'Sale Invoice' : 'Purchase Invoice';
+      pvRenderInvItems(rec);
       document.getElementById('pvInvEditFields').innerHTML = editFields[recType].map(function (f) {
         var v = rec[f.k] == null ? '' : String(rec[f.k]);
         return '<div><label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">' + f.l + '</label>' +
@@ -5179,6 +5283,59 @@
       }).join('');
       pvCalcInvTotal();
     };
+    function pvItems(rec) {
+      if (rec.items && rec.items.length) return rec.items.slice();
+      return [{ name: rec.prodName || rec.item || '', uom: rec.uom || '', qty: rec.qty || 1, rate: rec.rate || 0, taxPct: rec.taxPct || 0, discount: rec.discount || 0 }];
+    }
+    function pvLineAmt(it) {
+      var sub = (Number(it.qty) || 0) * (Number(it.rate) || 0);
+      return (sub + (sub * (Number(it.taxPct) || 0)) / 100) - (Number(it.discount) || 0);
+    }
+    window.pvRenderInvItems = function (rec) {
+      var box = document.getElementById('pvInvItems');
+      if (!box) return;
+      if (recType !== 'sale') { box.innerHTML = ''; box.classList.add('hidden'); return; }
+      box.classList.remove('hidden');
+      var items = pvItems(rec);
+      box.innerHTML = '<div class="flex items-center justify-between mb-2"><div class="text-[11px] font-bold uppercase text-slate-500">Medicines on this Invoice</div>' +
+        '<button type="button" onclick="pvAddInvItem()" class="px-2.5 py-1 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-bold text-[11px]">+ Add Medicine</button></div>' +
+        '<div id="pvInvItemRows" class="space-y-2"></div>';
+      items.forEach(function (it) { pvAddInvItem(it); });
+    };
+    window.pvAddInvItem = function (v) {
+      v = v || {};
+      var rows = document.getElementById('pvInvItemRows');
+      if (!rows) return;
+      var row = document.createElement('div');
+      row.className = 'pv-rec-item grid grid-cols-12 gap-2 items-center';
+      function esc(s) { return String(s == null ? '' : s).replace(/"/g, '&quot;'); }
+      row.innerHTML = '<input data-k="name" placeholder="Medicine" value="' + esc(v.name) + '" class="col-span-4 px-2 py-1.5 border border-slate-300 rounded-lg text-xs" />' +
+        '<input data-k="qty" type="number" step="any" value="' + (v.qty == null ? 1 : v.qty) + '" class="col-span-2 px-2 py-1.5 border border-slate-300 rounded-lg text-xs" />' +
+        '<input data-k="rate" type="number" step="any" value="' + (v.rate == null ? 0 : v.rate) + '" class="col-span-2 px-2 py-1.5 border border-slate-300 rounded-lg text-xs" />' +
+        '<input data-k="taxPct" type="number" step="any" value="' + (v.taxPct == null ? 0 : v.taxPct) + '" class="col-span-1 px-2 py-1.5 border border-slate-300 rounded-lg text-xs" />' +
+        '<input data-k="discount" type="number" step="any" value="' + (v.discount == null ? 0 : v.discount) + '" class="col-span-2 px-2 py-1.5 border border-slate-300 rounded-lg text-xs" />' +
+        '<button type="button" class="col-span-1 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-500 hover:text-white rounded-lg font-bold text-xs">&times;</button>';
+      row.querySelector('button').onclick = function () { row.remove(); pvCalcInvTotal(); };
+      Array.prototype.forEach.call(row.querySelectorAll('input'), function (el) { el.addEventListener('input', pvCalcInvTotal); });
+      rows.appendChild(row);
+      pvCalcInvTotal();
+    };
+    function readEditItems() {
+      var out = [];
+      Array.prototype.forEach.call(document.querySelectorAll('#pvInvItemRows .pv-rec-item'), function (row) {
+        function g(k) { return row.querySelector('[data-k="' + k + '"]'); }
+        var name = (g('name').value || '').trim();
+        if (!name) return;
+        var it = {
+          name: name, hsCode: '3004.90', uom: '',
+          qty: parseFloat(g('qty').value) || 0, rate: parseFloat(g('rate').value) || 0,
+          taxPct: parseFloat(g('taxPct').value) || 0, discount: parseFloat(g('discount').value) || 0
+        };
+        it.amount = pvLineAmt(it);
+        out.push(it);
+      });
+      return out;
+    }
     function readEdit() {
       var out = {};
       Array.prototype.forEach.call(document.querySelectorAll('#pvInvEditFields [data-pv-field]'), function (el) {
@@ -5188,15 +5345,19 @@
       return out;
     }
     function computeTotal(v) {
-      var sub = (Number(v.qty) || 0) * (Number(v.rate) || 0);
-      if (recType === 'sale') return (sub + (sub * (Number(v.taxPct) || 0)) / 100) - (Number(v.discount) || 0);
-      return sub;
+      if (recType === 'sale') {
+        var items = readEditItems();
+        if (items.length) return items.reduce(function (s, it) { return s + it.amount; }, 0);
+        var sub0 = (Number(v.qty) || 0) * (Number(v.rate) || 0);
+        return (sub0 + (sub0 * (Number(v.taxPct) || 0)) / 100) - (Number(v.discount) || 0);
+      }
+      return (Number(v.qty) || 0) * (Number(v.rate) || 0);
     }
     window.pvCalcInvTotal = function () {
       var v = readEdit();
       document.getElementById('pvInvEditTotal').textContent = 'New Total: ' + fmt(computeTotal(v));
     };
-    window.pvUpdateInvoice = function () {
+    window.pvUpdateInvoice = function (silent) {
       if (!selected) return;
       var rec = rawRecord(selected.inv);
       if (!rec) { alert('Invoice nahi mili.'); return; }
@@ -5204,7 +5365,16 @@
       if (!v[k]) { alert('Invoice number khali nahi ho sakta.'); return; }
       var oldInv = rec[k], total = computeTotal(v);
       Object.keys(v).forEach(function (key) { rec[key] = v[key]; });
-      if (recType === 'sale') rec.amount = total; else rec.amt = total;
+      if (recType === 'sale') {
+        var items = readEditItems();
+        if (items.length) {
+          rec.items = items;
+          rec.prodName = items[0].name;
+          rec.qty = items[0].qty; rec.rate = items[0].rate;
+          rec.taxPct = items[0].taxPct; rec.discount = items[0].discount;
+        }
+        rec.amount = total;
+      } else rec.amt = total;
       recs().forEach(function (r) {
         if (r.type === recType && String(r.inv) === String(oldInv)) { r.inv = v[k]; r.invTotal = total; r.party = recType === 'sale' ? v.custName : v.supplier; }
       });
@@ -5212,8 +5382,8 @@
       if (typeof logActivity === 'function') logActivity('Updated ' + (recType === 'sale' ? 'Invoice ' : 'Purchase Invoice ') + v[k]);
       if (typeof renderAllData === 'function') { try { renderAllData(); } catch (e) {} }
       selected = invoices().filter(function (i) { return String(i.inv) === String(v[k]); })[0] || selected;
-      pvResetRecForm(); pvRenderRecSearch(); pvRenderRecHistory(); pvRenderInvEdit();
-      alert('Invoice updated successfully.');
+      pvRenderRecSearch(); pvRenderRecHistory(); pvRenderInvEdit();
+      if (!silent) { pvResetRecForm(); alert('Invoice updated successfully.'); }
     };
     window.pvSelectInvoice = function (inv) {
       selected = invoices().filter(function (i) { return String(i.inv) === String(inv); })[0] || null;
@@ -5247,6 +5417,7 @@
       document.getElementById('pvRecMode').value = r.mode || 'Cash';
       document.getElementById('pvRecNote').value = r.note || '';
       document.getElementById('pvRecSaveBtn').textContent = 'Update Recovery';
+      pvRenderInvEdit();
       document.getElementById('pvRecForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
     };
     window.pvDeleteRecovery = function (id) {
@@ -5259,6 +5430,11 @@
     };
     window.pvSaveRecovery = function () {
       if (!selected) { alert('Pehle invoice select karein.'); return; }
+      // Recovery update ke sath invoice ki edited details bhi save ho jayen
+      var editBox = document.getElementById('pvInvEdit');
+      if (editBox && !editBox.classList.contains('hidden') && document.querySelector('#pvInvEditFields [data-pv-field]')) {
+        pvUpdateInvoice(true);
+      }
       var amt = parseFloat(document.getElementById('pvRecAmount').value) || 0;
       if (amt <= 0) { alert('Valid amount daalein.'); return; }
       var payload = {
