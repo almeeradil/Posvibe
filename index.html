@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -189,6 +190,23 @@
             <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
               <h4 class="text-sm font-bold text-slate-800 mb-4">Payment Out Vouchers Breakdown</h4>
               <div class="h-64"><canvas id="payoutChart"></canvas></div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+              <div class="flex items-center justify-between mb-4">
+                <h4 class="text-sm font-bold text-slate-800">Expense Breakdown (Live)</h4>
+                <span id="expenseChartTotal" class="text-sm font-black text-rose-600">Rs 0</span>
+              </div>
+              <div class="h-64 relative">
+                <canvas id="expenseChart"></canvas>
+                <div id="expenseChartEmpty" class="hidden absolute inset-0 flex items-center justify-center text-xs text-slate-400">No expenses recorded yet.</div>
+              </div>
+            </div>
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+              <h4 class="text-sm font-bold text-slate-800 mb-4">Last 7 Days Purchases</h4>
+              <div class="h-64"><canvas id="dashPurchasesChart"></canvas></div>
             </div>
           </div>
 
@@ -1831,68 +1849,137 @@
       });
     }
 
+    const productFieldConfigs = {
+      invProdName: { dropdownId: 'dropdown-invProdName', source: 'inventory', price: 'sale', rate: 'invRate', qty: 'invQty', uom: 'invUom' },
+      pinvItem: { dropdownId: 'dropdown-pinvItem', source: 'inventory', price: 'purchase', rate: 'pinvRate', qty: 'pinvQty' },
+      quoProduct: { dropdownId: 'dropdown-quoProduct', source: 'inventory', price: 'sale', rate: 'quoRate' },
+      debItem: { dropdownId: 'dropdown-debItem', source: 'inventory', price: 'sale', rate: 'debRate', qty: 'debQty' },
+      purItem: { dropdownId: 'dropdown-purItem', source: 'inventory', price: 'purchase', amount: 'purAmt' },
+      itemName: { dropdownId: 'dropdown-itemName', source: 'master' }
+    };
+
+    function getInventoryMedicines() {
+      return (userData.inventory || []).filter(i => i && i.name);
+    }
+
+    function findInventoryItem(name) {
+      const n = (name || '').trim().toLowerCase();
+      return getInventoryMedicines().find(i => (i.name || '').trim().toLowerCase() === n) || null;
+    }
+
     function setupProductSearchDropdowns() {
-      const fields = [{
-          inputId: 'invProdName',
-          dropdownId: 'dropdown-invProdName'
-        },
-        {
-          inputId: 'pinvItem',
-          dropdownId: 'dropdown-pinvItem'
-        },
-        {
-          inputId: 'quoProduct',
-          dropdownId: 'dropdown-quoProduct'
-        },
-        {
-          inputId: 'debItem',
-          dropdownId: 'dropdown-debItem'
-        },
-        {
-          inputId: 'itemName',
-          dropdownId: 'dropdown-itemName'
-        },
-        {
-          inputId: 'purItem',
-          dropdownId: 'dropdown-purItem'
-        }
-      ];
-      fields.forEach(field => {
-        const input = document.getElementById(field.inputId);
-        const dropdown = document.getElementById(field.dropdownId);
+      Object.keys(productFieldConfigs).forEach(inputId => {
+        const cfg = productFieldConfigs[inputId];
+        const input = document.getElementById(inputId);
+        const dropdown = document.getElementById(cfg.dropdownId);
         if (!input || !dropdown) return;
+
         const renderDropdownList = (filterText = '') => {
-          const filtered = masterMedicinesList.filter(m => m.toLowerCase().includes(filterText.toLowerCase()));
-          if (filtered.length === 0) {
-            dropdown.innerHTML = `<div class="p-2 text-slate-400 text-center">No medicine found</div>`;
+          const q = (filterText || '').trim().toLowerCase();
+          // Dropdown NEVER opens by itself - it only opens while the user types.
+          if (!q) { dropdown.classList.add('hidden'); dropdown.innerHTML = ''; return; }
+
+          if (cfg.source === 'master') {
+            const filtered = masterMedicinesList.filter(m => m.toLowerCase().includes(q)).slice(0, 50);
+            dropdown.innerHTML = filtered.length
+              ? filtered.map(med => `
+                <div class="p-2 hover:bg-orange-50 hover:text-orange-600 cursor-pointer border-b border-slate-100 last:border-none font-medium" onclick="selectMedicine('${inputId}', '${cfg.dropdownId}', '${med.replace(/'/g, "\\'")}')">
+                  <i class="fa-solid fa-pills mr-1.5 text-orange-500"></i> ${med}
+                </div>`).join('')
+              : `<div class="p-2 text-slate-400 text-center">No medicine found</div>`;
+            dropdown.classList.remove('hidden');
+            return;
+          }
+
+          // Inventory (stock) driven list
+          const items = getInventoryMedicines().filter(i => (i.name || '').toLowerCase().includes(q)).slice(0, 50);
+          if (!items.length) {
+            dropdown.innerHTML = `<div class="p-2 text-slate-400 text-center">No medicine found in stock. Add it in Inventory first.</div>`;
           } else {
-            dropdown.innerHTML = filtered.map(med => `
-              <div class="p-2 hover:bg-orange-50 hover:text-orange-600 cursor-pointer border-b border-slate-100 last:border-none font-medium" onclick="selectMedicine('${field.inputId}', '${field.dropdownId}', '${med.replace(/'/g, "\\'")}')">
-                <i class="fa-solid fa-pills mr-1.5 text-orange-500"></i> ${med}
-              </div>
-            `).join('');
+            dropdown.innerHTML = items.map(it => {
+              const stock = Number(it.stock) || 0;
+              const stockCls = stock <= 5 ? 'text-rose-600' : 'text-emerald-600';
+              const price = cfg.price === 'purchase' ? (Number(it.purchasePrice) || 0) : (Number(it.salePrice) || 0);
+              return `
+              <div class="p-2 hover:bg-orange-50 cursor-pointer border-b border-slate-100 last:border-none" onclick="selectMedicine('${inputId}', '${cfg.dropdownId}', '${(it.name || '').replace(/'/g, "\\'")}')">
+                <div class="flex items-center justify-between">
+                  <span class="font-semibold text-slate-800"><i class="fa-solid fa-pills mr-1.5 text-orange-500"></i>${it.name}</span>
+                  <span class="font-bold ${stockCls}">${stock} ${it.unit || ''}</span>
+                </div>
+                <div class="text-[10px] text-slate-500 mt-0.5">
+                  Batch: ${it.batch || '-'} &middot; Expiry: ${it.expiry || '-'} &middot; Rate: Rs ${price.toLocaleString()}
+                </div>
+              </div>`;
+            }).join('');
           }
           dropdown.classList.remove('hidden');
         };
-        input.addEventListener('focus', () => {
-          renderDropdownList(input.value);
-        });
-        input.addEventListener('input', () => {
-          renderDropdownList(input.value);
-        });
+
+        input.addEventListener('input', () => renderDropdownList(input.value));
+        input.addEventListener('blur', () => setTimeout(() => dropdown.classList.add('hidden'), 200));
         document.addEventListener('click', (e) => {
-          if (!input.contains(e.target) && !dropdown.contains(e.target)) {
-            dropdown.classList.add('hidden');
-          }
+          if (!input.contains(e.target) && !dropdown.contains(e.target)) dropdown.classList.add('hidden');
         });
       });
+    }
+
+    function fireChange(el) {
+      if (!el) return;
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
     function selectMedicine(inputId, dropdownId, medName) {
       const input = document.getElementById(inputId);
       const dropdown = document.getElementById(dropdownId);
       if (input) input.value = medName;
-      if (dropdown) dropdown.classList.add('hidden');
+      if (dropdown) { dropdown.classList.add('hidden'); dropdown.innerHTML = ''; }
+      applyMedicineDetails(inputId, medName);
+      fireChange(input);
+    }
+
+    // Pushes the selected stock medicine's full details (rate, unit, batch, expiry, amount)
+    // into every related field of the open form (invoice, purchase invoice, quotation, etc.)
+    function applyMedicineDetails(inputId, medName) {
+      const cfg = productFieldConfigs[inputId];
+      if (!cfg || cfg.source !== 'inventory') return;
+      const item = findInventoryItem(medName);
+      if (!item) return;
+      const price = cfg.price === 'purchase' ? (Number(item.purchasePrice) || 0) : (Number(item.salePrice) || 0);
+
+      const rateEl = cfg.rate ? document.getElementById(cfg.rate) : null;
+      if (rateEl) { rateEl.value = price; fireChange(rateEl); }
+
+      const qtyEl = cfg.qty ? document.getElementById(cfg.qty) : null;
+      if (qtyEl && (!qtyEl.value || Number(qtyEl.value) < 1)) { qtyEl.value = 1; fireChange(qtyEl); }
+
+      const uomEl = cfg.uom ? document.getElementById(cfg.uom) : null;
+      if (uomEl && item.unit) {
+        const opt = Array.from(uomEl.options).find(o => o.value.toLowerCase() === String(item.unit).toLowerCase());
+        if (opt) { uomEl.value = opt.value; fireChange(uomEl); }
+      }
+
+      const amtEl = cfg.amount ? document.getElementById(cfg.amount) : null;
+      if (amtEl) { amtEl.value = price; fireChange(amtEl); }
+
+      showStockHint(inputId, item, price);
+    }
+
+    function showStockHint(inputId, item, price) {
+      const input = document.getElementById(inputId);
+      if (!input || !input.parentElement) return;
+      let hint = input.parentElement.querySelector('.stock-hint');
+      if (!hint) {
+        hint = document.createElement('div');
+        hint.className = 'stock-hint mt-1 text-[10px] font-semibold text-slate-500';
+        input.parentElement.appendChild(hint);
+      }
+      const stock = Number(item.stock) || 0;
+      hint.innerHTML = `In stock: <span class="${stock <= 5 ? 'text-rose-600' : 'text-emerald-600'}">${stock} ${item.unit || ''}</span>
+        &middot; Batch: ${item.batch || '-'} &middot; Expiry: ${item.expiry || '-'}
+        &middot; Purchase: Rs ${(Number(item.purchasePrice) || 0).toLocaleString()}
+        &middot; Sale: Rs ${(Number(item.salePrice) || 0).toLocaleString()}
+        &middot; Applied rate: Rs ${(Number(price) || 0).toLocaleString()}`;
     }
 
     function showTab(tabId) {
@@ -2371,114 +2458,191 @@
       alert(`Auto Reorder Purchase Order generated successfully for low stock item: ${itemName}`);
     }
 
-    function updateSalesChart(totalRev) {
-      const ctx = document.getElementById('salesChart');
-      if (!ctx) return;
-      if (salesChartInstance) salesChartInstance.destroy();
-      salesChartInstance = new Chart(ctx, {
+    let expenseChartInstance = null;
+
+    function toNum(v) { const n = parseFloat(v); return isNaN(n) ? 0 : n; }
+
+    function dayKey(d) {
+      const dt = (d instanceof Date) ? d : new Date(d);
+      if (isNaN(dt)) return null;
+      return dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
+    }
+
+    function lastNDays(n) {
+      const out = [];
+      const today = new Date();
+      for (let i = n - 1; i >= 0; i--) {
+        const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() - i);
+        out.push({ key: dayKey(d), label: d.toLocaleDateString(undefined, { day: '2-digit', month: 'short' }) });
+      }
+      return out;
+    }
+
+    // Sums record amounts per calendar day - no fake multipliers, only real saved data.
+    function seriesByDay(records, amountField, days) {
+      const map = {};
+      (records || []).forEach(r => {
+        const k = dayKey(r.date);
+        if (!k) return;
+        map[k] = (map[k] || 0) + toNum(r[amountField]);
+      });
+      return days.map(d => map[d.key] || 0);
+    }
+
+    const baseChartOptions = (money = true) => ({
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 300 },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { callback: v => money ? 'Rs ' + Number(v).toLocaleString() : v }
+        }
+      },
+      plugins: {
+        legend: { display: true },
+        tooltip: { callbacks: { label: c => c.dataset.label + ': Rs ' + Number(c.parsed.y).toLocaleString() } }
+      }
+    });
+
+    function renderChart(instance, canvasId, config) {
+      const ctx = document.getElementById(canvasId);
+      if (!ctx) return null;
+      if (instance) instance.destroy();
+      return new Chart(ctx, config);
+    }
+
+    function updateAllCharts() {
+      const days = lastNDays(7);
+      const labels = days.map(d => d.label);
+      const orders = userData.orders || [];
+      const payouts = userData.payouts || [];
+      const purchases = userData.purchases || [];
+      const pinvs = userData.purchaseinvoices || [];
+      const expenses = userData.expenses || [];
+
+      const salesSeries = seriesByDay(orders, 'amount', days);
+      const payoutSeries = seriesByDay(payouts, 'amount', days);
+      const purchaseSeries = days.map((d, i) =>
+        seriesByDay(purchases, 'amt', days)[i] + seriesByDay(pinvs, 'amt', days)[i]);
+
+      salesChartInstance = renderChart(salesChartInstance, 'salesChart', {
         type: 'line',
         data: {
-          labels: ['Week 1', 'Week 2', 'Week 3', 'Current'],
+          labels,
           datasets: [{
-            label: 'Sales Revenue (Rs)',
-            data: [totalRev * 0.2, totalRev * 0.4, totalRev * 0.7, totalRev],
-            borderColor: '#f97316',
-            backgroundColor: 'rgba(249, 115, 22, 0.1)',
-            fill: true,
-            tension: 0.3
+            label: 'Sales Revenue (Rs)', data: salesSeries,
+            borderColor: '#f97316', backgroundColor: 'rgba(249, 115, 22, 0.12)',
+            fill: true, tension: 0.3, pointRadius: 3
           }]
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false
-        }
+        options: baseChartOptions()
       });
-    }
 
-    function updatePayoutChart(totalPayout) {
-      const ctx = document.getElementById('payoutChart');
-      if (!ctx) return;
-      if (payoutChartInstance) payoutChartInstance.destroy();
-      payoutChartInstance = new Chart(ctx, {
+      payoutChartInstance = renderChart(payoutChartInstance, 'payoutChart', {
+        type: 'bar',
+        data: { labels, datasets: [{ label: 'Payouts (Rs)', data: payoutSeries, backgroundColor: '#e11d48' }] },
+        options: baseChartOptions()
+      });
+
+      const totalRev = orders.reduce((s, o) => s + toNum(o.amount), 0);
+      const totalPurchases = purchases.reduce((s, p) => s + toNum(p.amt), 0) + pinvs.reduce((s, p) => s + toNum(p.amt), 0);
+      const totalExpenses = expenses.reduce((s, e) => s + toNum(e.amount), 0);
+      const totalPayouts = payouts.reduce((s, p) => s + toNum(p.amount), 0);
+
+      reportsChartInstance = renderChart(reportsChartInstance, 'reportsChart', {
         type: 'bar',
         data: {
-          labels: ['Week 1', 'Week 2', 'Week 3', 'Current'],
-          datasets: [{
-            label: 'Payouts (Rs)',
-            data: [totalPayout * 0.2, totalPayout * 0.5, totalPayout * 0.8, totalPayout],
-            backgroundColor: '#e11d48'
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false
-        }
-      });
-    }
-
-    function updateReportsChart(totalRev, totalPurchases) {
-      const ctx = document.getElementById('reportsChart');
-      if (!ctx) return;
-      if (reportsChartInstance) reportsChartInstance.destroy();
-      reportsChartInstance = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: ['Sales Revenue', 'Total Purchases'],
+          labels: ['Sales Revenue', 'Purchases', 'Expenses', 'Payouts'],
           datasets: [{
             label: 'Amount (Rs)',
-            data: [totalRev, totalPurchases],
-            backgroundColor: ['#10b981', '#3b82f6']
+            data: [totalRev, totalPurchases, totalExpenses, totalPayouts],
+            backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#e11d48']
+          }]
+        },
+        options: baseChartOptions()
+      });
+
+      dailySalesChartInstance = renderChart(dailySalesChartInstance, 'dailySalesChart', {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Sales Revenue (Rs)', data: salesSeries,
+            borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.12)',
+            fill: true, tension: 0.3, pointRadius: 3
+          }]
+        },
+        options: baseChartOptions()
+      });
+
+      dailyPurchasesChartInstance = renderChart(dailyPurchasesChartInstance, 'dailyPurchasesChart', {
+        type: 'bar',
+        data: { labels, datasets: [{ label: 'Purchase Expenses (Rs)', data: purchaseSeries, backgroundColor: '#3b82f6' }] },
+        options: baseChartOptions()
+      });
+
+      window.__dashPurchases = renderChart(window.__dashPurchases, 'dashPurchasesChart', {
+        type: 'bar',
+        data: { labels, datasets: [{ label: 'Purchases (Rs)', data: purchaseSeries, backgroundColor: '#6366f1' }] },
+        options: baseChartOptions()
+      });
+
+      updateExpensePieChart();
+    }
+
+    // Circle (doughnut) chart of real expense breakdown by category + purchases + payouts.
+    function updateExpensePieChart() {
+      const map = {};
+      (userData.expenses || []).forEach(e => {
+        const cat = (e.category || 'Other Expense').trim() || 'Other Expense';
+        map[cat] = (map[cat] || 0) + toNum(e.amount);
+      });
+      const purchaseTotal = (userData.purchases || []).reduce((s, p) => s + toNum(p.amt), 0)
+        + (userData.purchaseinvoices || []).reduce((s, p) => s + toNum(p.amt), 0);
+      if (purchaseTotal > 0) map['Purchases / Stock'] = (map['Purchases / Stock'] || 0) + purchaseTotal;
+      const payoutTotal = (userData.payouts || []).reduce((s, p) => s + toNum(p.amount), 0);
+      if (payoutTotal > 0) map['Payouts'] = (map['Payouts'] || 0) + payoutTotal;
+
+      const entries = Object.entries(map).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
+      const grand = entries.reduce((s, [, v]) => s + v, 0);
+      const totalEl = document.getElementById('expenseChartTotal');
+      if (totalEl) totalEl.innerText = 'Rs ' + grand.toLocaleString();
+
+      const palette = ['#f97316', '#e11d48', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#84cc16', '#64748b'];
+      const emptyEl = document.getElementById('expenseChartEmpty');
+      if (emptyEl) emptyEl.classList.toggle('hidden', entries.length > 0);
+
+      expenseChartInstance = renderChart(expenseChartInstance, 'expenseChart', {
+        type: 'doughnut',
+        data: {
+          labels: entries.map(e => e[0]),
+          datasets: [{
+            data: entries.map(e => e[1]),
+            backgroundColor: entries.map((_, i) => palette[i % palette.length]),
+            borderWidth: 2,
+            borderColor: '#fff'
           }]
         },
         options: {
           responsive: true,
-          maintainAspectRatio: false
+          maintainAspectRatio: false,
+          cutout: '58%',
+          animation: { duration: 300 },
+          plugins: {
+            legend: { position: 'right', labels: { boxWidth: 12, font: { size: 10 } } },
+            tooltip: {
+              callbacks: {
+                label: c => {
+                  const v = Number(c.parsed) || 0;
+                  const pct = grand ? ((v / grand) * 100).toFixed(1) : '0.0';
+                  return `${c.label}: Rs ${v.toLocaleString()} (${pct}%)`;
+                }
+              }
+            }
+          }
         }
       });
-    }
-
-    function updateDailyCharts(dailySales, dailyPurchases) {
-      const ctx1 = document.getElementById('dailySalesChart');
-      if (ctx1) {
-        if (dailySalesChartInstance) dailySalesChartInstance.destroy();
-        dailySalesChartInstance = new Chart(ctx1, {
-          type: 'line',
-          data: {
-            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Today'],
-            datasets: [{
-              label: 'Sales Revenue (Rs)',
-              data: [dailySales * 0.1, dailySales * 0.3, dailySales * 0.5, dailySales * 0.6, dailySales * 0.8, dailySales * 0.9, dailySales],
-              borderColor: '#10b981',
-              backgroundColor: 'rgba(16, 185, 129, 0.1)',
-              fill: true,
-              tension: 0.3
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false
-          }
-        });
-      }
-      const ctx2 = document.getElementById('dailyPurchasesChart');
-      if (ctx2) {
-        if (dailyPurchasesChartInstance) dailyPurchasesChartInstance.destroy();
-        dailyPurchasesChartInstance = new Chart(ctx2, {
-          type: 'bar',
-          data: {
-            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Today'],
-            datasets: [{
-              label: 'Purchase Expenses (Rs)',
-              data: [dailyPurchases * 0.2, dailyPurchases * 0.4, dailyPurchases * 0.5, dailyPurchases * 0.7, dailyPurchases * 0.8, dailyPurchases * 0.85, dailyPurchases],
-              backgroundColor: '#3b82f6'
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false
-          }
-        });
-      }
     }
 
     function renderAllData() {
@@ -2530,10 +2694,7 @@
           expiryBanner.classList.add('hidden');
         }
       }
-      updateSalesChart(totalRev);
-      updatePayoutChart(totalPayout);
-      updateReportsChart(totalRev, totalPurchases);
-      updateDailyCharts(dailySales, dailyPurchases);
+      updateAllCharts();
       // Render Orders Table
       const ordersTBody = document.getElementById('ordersTableBody');
       if (ordersTBody) {
@@ -3072,6 +3233,8 @@
     function printUniversalSlip(title, dataObj, autoClose = false) {
       const s = getSettings();
       const data = Object.assign({}, dataObj);
+      const multiItems = (data.__items && data.__items.length) ? data.__items.slice() : null;
+      delete data.__items;
       const numKey = matchKey(data, [/#$/, /^Ref/i, /Voucher/i, /Receipt/i, /Number/i]);
       const dateKey = matchKey(data, [/date/i]);
       const docNumber = numKey ? data[numKey] : '';
@@ -3099,7 +3262,27 @@
       const rowsFrom = obj => Object.keys(obj).map(k =>
         `<tr><td class="k">${escapeHtml(k)}</td><td class="v">${escapeHtml(obj[k])}</td></tr>`).join('');
       let itemsTable = '';
-      if (descKey) {
+      let multiSubtotal = 0;
+      if (multiItems) {
+        const body = multiItems.map((it, idx) => {
+          const q = toAmount(it.qty || 1), r = toAmount(it.rate || 0);
+          const amt = it.amount != null ? toAmount(it.amount) : q * r;
+          multiSubtotal += amt;
+          const sub = (it.sub || '').trim();
+          return `<tr><td>${idx + 1}</td>
+            <td><strong>${escapeHtml(it.desc || 'Item')}</strong>${sub ? `<div class="sub">${escapeHtml(sub)}</div>` : ''}</td>
+            <td class="r">${escapeHtml(String(it.qty == null ? 1 : it.qty))}${it.uom ? ' ' + escapeHtml(it.uom) : ''}</td>
+            <td class="r">${money(r)}</td>
+            <td class="r"><strong>${money(amt)}</strong></td></tr>`;
+        }).join('');
+        itemsTable = `
+          <table class="items">
+            <thead>
+              <tr><th style="width:38px">#</th><th>Description</th><th style="width:90px" class="r">Qty</th><th style="width:110px" class="r">Rate</th><th style="width:130px" class="r">Amount</th></tr>
+            </thead>
+            <tbody>${body}</tbody>
+          </table>`;
+      } else if (descKey) {
         const sub = Object.keys(itemInfo)
           .filter(k => k !== descKey)
           .map(k => escapeHtml(k) + ': ' + escapeHtml(itemInfo[k])).join(' &nbsp;|&nbsp; ');
@@ -3120,7 +3303,9 @@
           </table>`;
       }
       let subtotalRow = '';
-      if (descKey && qtyKey && rateKey) {
+      if (multiItems) {
+        subtotalRow = `<tr><td>Subtotal (${multiItems.length} item${multiItems.length > 1 ? 's' : ''})</td><td class="r">${money(multiSubtotal)}</td></tr>`;
+      } else if (descKey && qtyKey && rateKey) {
         subtotalRow = `<tr><td>Subtotal</td><td class="r">${money(toAmount(amounts[qtyKey]) * toAmount(amounts[rateKey]))}</td></tr>`;
       }
       const summaryRows = Object.keys(amounts)
