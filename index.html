@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -7,7 +8,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Posvibe</title>
-
+<link rel="icon" type="image/png" href="logo.png">
   <!-- Yeh wali line yahan daal dein -->
   <link rel="manifest" href="manifest.json">
 
@@ -21,7 +22,7 @@
   <div id="loginScreen" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-8 border border-slate-200">
       <div class="text-center mb-6">
-        <img src="/logo.png" alt="Posvibe logo" class="inline-block w-16 h-16 rounded-full object-cover mb-3 shadow-lg">
+        <img src="logo.png" alt="Posvibe logo" class="inline-block w-16 h-16 rounded-full object-cover mb-3 shadow-lg">
         <h1 class="text-2xl font-extrabold text-slate-900">Posvibe</h1>
         <p class="text-xs text-slate-500 mt-1">Sign in with your authorized system credentials</p>
       </div>
@@ -792,6 +793,22 @@
               <div class="md:col-span-2">
                 <label class="block font-bold uppercase text-slate-600 mb-1">Bank Account Details (printed on invoice)</label>
                 <input type="text" id="setBank" placeholder="Bank name, Title, Account / IBAN" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500">
+              </div>
+              <div class="md:col-span-2 border-t border-slate-100 pt-4">
+                <label class="block font-bold uppercase text-slate-600 mb-1">Company Logo (printed top-center on invoices)</label>
+                <div class="flex items-center gap-4">
+                  <div class="w-24 h-24 border border-dashed border-slate-300 rounded-lg flex items-center justify-center bg-slate-50 overflow-hidden">
+                    <img id="setLogoPreview" src="" alt="Logo preview" class="hidden max-w-full max-h-full object-contain">
+                    <span id="setLogoEmpty" class="text-[10px] text-slate-400">No logo</span>
+                  </div>
+                  <div class="space-y-2">
+                    <input type="file" id="setLogoFile" accept="image/*" onchange="handleLogoUpload(event)" class="text-xs">
+                    <div>
+                      <button type="button" onclick="removeLogo()" class="px-3 py-1.5 border rounded-lg font-bold text-[11px] text-rose-600 hover:bg-rose-50">Remove Logo</button>
+                    </div>
+                    <p class="text-[10px] text-slate-400">PNG / JPG recommended, max 1 MB. Saved automatically with settings.</p>
+                  </div>
+                </div>
               </div>
               <div class="md:col-span-2">
                 <label class="block font-bold uppercase text-slate-600 mb-1">Invoice Footer / Terms</label>
@@ -2931,6 +2948,36 @@
       const quoNext = document.getElementById('setQuoNext');
       if (invNext) invNext.value = userData.counters.inv;
       if (quoNext) quoNext.value = userData.counters.quo;
+      showLogoPreview(s.logo || '');
+    }
+
+    function showLogoPreview(src) {
+      const img = document.getElementById('setLogoPreview');
+      const empty = document.getElementById('setLogoEmpty');
+      if (!img || !empty) return;
+      if (src) { img.src = src; img.classList.remove('hidden'); empty.classList.add('hidden'); }
+      else { img.src = ''; img.classList.add('hidden'); empty.classList.remove('hidden'); }
+    }
+
+    function handleLogoUpload(e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      if (file.size > 1024 * 1024) { alert('Logo file 1 MB se chhoti honi chahiye.'); e.target.value = ''; return; }
+      const reader = new FileReader();
+      reader.onload = function () {
+        window.pvPendingLogo = reader.result;
+        showLogoPreview(reader.result);
+        saveSettings();
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeLogo() {
+      window.pvPendingLogo = '';
+      showLogoPreview('');
+      const f = document.getElementById('setLogoFile');
+      if (f) f.value = '';
+      saveSettings();
     }
 
     function saveSettings() {
@@ -2952,8 +2999,10 @@
         bank: val('setBank'),
         footer: val('setFooter'),
         invPrefix: val('setInvPrefix') || 'INV-',
-        quoPrefix: val('setQuoPrefix') || 'QT-'
+        quoPrefix: val('setQuoPrefix') || 'QT-',
+        logo: window.pvPendingLogo !== undefined ? window.pvPendingLogo : (userData.settings && userData.settings.logo) || ''
       };
+      window.pvPendingLogo = undefined;
       const invNext = parseInt(val('setInvNext'), 10);
       const quoNext = parseInt(val('setQuoNext'), 10);
       if (invNext > 0) userData.counters.inv = invNext;
@@ -3119,14 +3168,18 @@
         .powered{display:flex;justify-content:flex-end;align-items:center;gap:6px;margin-top:10px;font-size:9.5px;color:#6b7280;}
         .powered img{height:22px;}
         @media print{body{padding:0}.sheet{border:none}@page{margin:12mm}}
+        .logo-center{text-align:center;margin-bottom:14px;}
+        .logo-center img{max-height:80px;max-width:260px;display:inline-block;}
+        .logo-center .cname{font-weight:900;font-size:16px;letter-spacing:1px;margin-top:4px;}
       </style></head><body><div class="sheet">
+        ${s.logo ? `<div class="logo-center"><img src="${s.logo}"><div class="cname">${escapeHtml(s.company || '')}</div></div>` : ''}
         <div class="top">
           <div>
             <div class="doc-title">${escapeHtml(title)}</div>
             <div class="doc-rule"></div>
           </div>
           <div class="brand">
-            <img src="/logo.png">
+            <img src="${s.logo || '/logo.png'}">
             <span>POSVIBE</span>
           </div>
         </div>
@@ -4819,6 +4872,17 @@
             class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-orange-500 outline-none" />
           <div id="pvRecResults" class="mt-2 border border-slate-200 rounded-lg divide-y divide-slate-100 max-h-52 overflow-y-auto"></div>
         </div>
+        <div id="pvInvEdit" class="hidden bg-white border border-orange-200 rounded-lg p-4 space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="text-xs font-extrabold text-slate-900">Edit Invoice</div>
+            <span class="text-[10px] font-bold uppercase text-orange-500" id="pvInvEditNo"></span>
+          </div>
+          <div id="pvInvEditFields" class="grid grid-cols-1 md:grid-cols-3 gap-3"></div>
+          <div class="flex items-center justify-between">
+            <div class="text-[11px] font-bold text-slate-600" id="pvInvEditTotal"></div>
+            <button type="button" onclick="pvUpdateInvoice()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs">Update Invoice</button>
+          </div>
+        </div>
         <div id="pvRecForm" class="hidden bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-3">
           <div class="text-xs font-bold text-slate-800" id="pvRecSelectedInfo"></div>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -4879,6 +4943,7 @@
       document.getElementById('pvRecTitle').textContent = recType === 'sale' ? 'New Recovery (Sale Invoice)' : 'New Recovery (Purchase Invoice)';
       document.getElementById('pvRecSearch').value = '';
       document.getElementById('pvRecForm').classList.add('hidden');
+      document.getElementById('pvInvEdit').classList.add('hidden');
       document.getElementById('pvRecoveryModal').classList.remove('hidden');
       pvRenderRecSearch(); pvRenderRecHistory();
     };
@@ -4898,6 +4963,76 @@
           '<span class="font-bold ' + (bal > 0 ? 'text-rose-600' : 'text-emerald-600') + '">Bal: ' + fmt(bal) + '</span></button>';
       }).join('');
     };
+    function rawList() { var d = ud(); return recType === 'sale' ? (d.orders || []) : (d.purchaseinvoices || []); }
+    function keyField() { return recType === 'sale' ? 'inv' : 'ref'; }
+    function rawRecord(inv) {
+      var k = keyField();
+      return rawList().filter(function (r) { return String(r[k]) === String(inv); })[0] || null;
+    }
+    var editFields = {
+      sale: [
+        { k: 'inv', l: 'Invoice #', t: 'text' }, { k: 'date', l: 'Date', t: 'date' },
+        { k: 'custName', l: 'Customer', t: 'text' }, { k: 'custNtnCnic', l: 'NTN / CNIC', t: 'text' },
+        { k: 'custAddress', l: 'Address', t: 'text' }, { k: 'prodName', l: 'Product', t: 'text' },
+        { k: 'qty', l: 'Qty', t: 'number' }, { k: 'rate', l: 'Rate', t: 'number' },
+        { k: 'taxPct', l: 'Tax %', t: 'number' }, { k: 'discount', l: 'Discount', t: 'number' }
+      ],
+      purchase: [
+        { k: 'ref', l: 'P.Invoice #', t: 'text' }, { k: 'date', l: 'Date', t: 'date' },
+        { k: 'supplier', l: 'Supplier', t: 'text' }, { k: 'item', l: 'Item', t: 'text' },
+        { k: 'qty', l: 'Qty', t: 'number' }, { k: 'rate', l: 'Rate', t: 'number' }
+      ]
+    };
+    window.pvRenderInvEdit = function () {
+      var box = document.getElementById('pvInvEdit');
+      var rec = selected ? rawRecord(selected.inv) : null;
+      if (!rec) { box.classList.add('hidden'); return; }
+      box.classList.remove('hidden');
+      document.getElementById('pvInvEditNo').textContent = recType === 'sale' ? 'Sale Invoice' : 'Purchase Invoice';
+      document.getElementById('pvInvEditFields').innerHTML = editFields[recType].map(function (f) {
+        var v = rec[f.k] == null ? '' : String(rec[f.k]);
+        return '<div><label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">' + f.l + '</label>' +
+          '<input data-pv-field="' + f.k + '" type="' + f.t + '"' + (f.t === 'number' ? ' step="0.01"' : '') +
+          ' oninput="pvCalcInvTotal()" value="' + String(v).replace(/"/g, '&quot;') + '" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs" /></div>';
+      }).join('');
+      pvCalcInvTotal();
+    };
+    function readEdit() {
+      var out = {};
+      Array.prototype.forEach.call(document.querySelectorAll('#pvInvEditFields [data-pv-field]'), function (el) {
+        var f = editFields[recType].filter(function (x) { return x.k === el.getAttribute('data-pv-field'); })[0];
+        out[f.k] = f.t === 'number' ? (parseFloat(el.value) || 0) : el.value.trim();
+      });
+      return out;
+    }
+    function computeTotal(v) {
+      var sub = (Number(v.qty) || 0) * (Number(v.rate) || 0);
+      if (recType === 'sale') return (sub + (sub * (Number(v.taxPct) || 0)) / 100) - (Number(v.discount) || 0);
+      return sub;
+    }
+    window.pvCalcInvTotal = function () {
+      var v = readEdit();
+      document.getElementById('pvInvEditTotal').textContent = 'New Total: ' + fmt(computeTotal(v));
+    };
+    window.pvUpdateInvoice = function () {
+      if (!selected) return;
+      var rec = rawRecord(selected.inv);
+      if (!rec) { alert('Invoice nahi mili.'); return; }
+      var v = readEdit(), k = keyField();
+      if (!v[k]) { alert('Invoice number khali nahi ho sakta.'); return; }
+      var oldInv = rec[k], total = computeTotal(v);
+      Object.keys(v).forEach(function (key) { rec[key] = v[key]; });
+      if (recType === 'sale') rec.amount = total; else rec.amt = total;
+      recs().forEach(function (r) {
+        if (r.type === recType && String(r.inv) === String(oldInv)) { r.inv = v[k]; r.invTotal = total; r.party = recType === 'sale' ? v.custName : v.supplier; }
+      });
+      if (typeof saveData === 'function') saveData();
+      if (typeof logActivity === 'function') logActivity('Updated ' + (recType === 'sale' ? 'Invoice ' : 'Purchase Invoice ') + v[k]);
+      if (typeof renderAllData === 'function') { try { renderAllData(); } catch (e) {} }
+      selected = invoices().filter(function (i) { return String(i.inv) === String(v[k]); })[0] || selected;
+      pvResetRecForm(); pvRenderRecSearch(); pvRenderRecHistory(); pvRenderInvEdit();
+      alert('Invoice updated successfully.');
+    };
     window.pvSelectInvoice = function (inv) {
       selected = invoices().filter(function (i) { return String(i.inv) === String(inv); })[0] || null;
       if (!selected) return;
@@ -4905,6 +5040,7 @@
       document.getElementById('pvRecForm').classList.remove('hidden');
       pvResetRecForm();
       pvRenderRecHistory();
+      pvRenderInvEdit();
     };
     window.pvResetRecForm = function () {
       if (!selected) return;
@@ -4989,7 +5125,7 @@
         var btn = document.createElement('button');
         btn.setAttribute('data-pv-rec', pair[1]);
         btn.className = 'px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-bold text-xs shadow transition';
-        btn.innerHTML = '<i class="fa-solid fa-hand-holding-dollar mr-1"></i>New Recovery';
+        btn.innerHTML = '<i class="fa-solid fa-hand-holding-dollar mr-1"></i>New Recovery / Edit Invoice';
         btn.onclick = function () { pvOpenRecovery(pair[1]); };
         if (createBtn) { bar.replaceChild(wrap, createBtn); wrap.appendChild(createBtn); } else { bar.appendChild(wrap); }
         wrap.appendChild(btn);
