@@ -91,6 +91,15 @@
           <button onclick="showTab('debitnotes')" class="w-full text-left px-2 py-1.5 rounded-md text-[11px] font-medium text-slate-400 hover:bg-slate-800 flex items-center hover:text-white transition"><i class="fa-solid fa-rotate-left text-rose-400 w-4 mr-2"></i>Purchase Returns</button>
         </div>
 
+        <button onclick="toggleSideMenu('emp')" class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition">
+          <span class="flex items-center space-x-3"><i class="fa-solid fa-users w-5 text-indigo-400"></i><span>Employees</span></span>
+          <i id="caret-emp" class="fa-solid fa-chevron-right text-[9px] text-slate-500"></i>
+        </button>
+        <div id="menu-emp" class="hidden pl-7 space-y-0.5 py-1">
+          <button onclick="showTab('empsalary')" class="w-full text-left px-2 py-1.5 rounded-md text-[11px] font-medium text-slate-400 hover:bg-slate-800 flex items-center hover:text-white transition"><i class="fa-solid fa-money-check-dollar text-indigo-400 w-4 mr-2"></i>Employee Salary</button>
+          <button onclick="showTab('attendance')" class="w-full text-left px-2 py-1.5 rounded-md text-[11px] font-medium text-slate-400 hover:bg-slate-800 flex items-center hover:text-white transition"><i class="fa-solid fa-calendar-check text-indigo-400 w-4 mr-2"></i>Attendance</button>
+        </div>
+
         <button onclick="showTab('dailyreports')" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition group">
           <i class="fa-solid fa-chart-line w-5 text-cyan-400"></i><span>Daily Reports</span>
         </button>
@@ -654,6 +663,89 @@
               <tbody id="expensesTableBody">
                 <tr>
                   <td colspan="8" class="p-4 text-center text-slate-400">No expenses recorded yet.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="tab-empsalary" class="tab-content hidden space-y-4">
+          <div class="flex justify-between items-center bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+            <div>
+              <h4 class="text-sm font-bold text-slate-800">Employee Salary</h4>
+              <p class="text-[11px] text-slate-500">Employee ka naam, month aur di gayi salary ka record.</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="text-right">
+                <div class="text-[10px] uppercase font-bold text-slate-500">Total Paid Salary</div>
+                <div id="stat-salaryTotal" class="text-lg font-black text-indigo-600">Rs 0</div>
+              </div>
+              <button onclick="openSalaryModal()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold text-xs shadow transition">Add Salary</button>
+            </div>
+          </div>
+          <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <table class="w-full text-xs text-left border-collapse">
+              <thead class="bg-slate-50 text-slate-600 uppercase border-b border-slate-200 font-bold">
+                <tr>
+                  <th class="p-3">Slip #</th>
+                  <th class="p-3">Date</th>
+                  <th class="p-3">Employee</th>
+                  <th class="p-3">Designation</th>
+                  <th class="p-3">Month</th>
+                  <th class="p-3">Mode</th>
+                  <th class="p-3">Salary Paid</th>
+                  <th class="p-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="salaryTableBody">
+                <tr>
+                  <td colspan="8" class="p-4 text-center text-slate-400">No salary records yet.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="tab-attendance" class="tab-content hidden space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+              <div class="text-[10px] uppercase font-bold text-slate-500">Present Entries</div>
+              <div id="stat-attPresent" class="text-2xl font-black text-emerald-600 mt-1">0</div>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+              <div class="text-[10px] uppercase font-bold text-slate-500">Absent Entries</div>
+              <div id="stat-attAbsent" class="text-2xl font-black text-rose-600 mt-1">0</div>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+              <div class="text-[10px] uppercase font-bold text-slate-500">Off Day / Leave</div>
+              <div id="stat-attOff" class="text-2xl font-black text-amber-600 mt-1">0</div>
+            </div>
+          </div>
+          <div class="flex justify-between items-center bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+            <div>
+              <h4 class="text-sm font-bold text-slate-800">Employee Attendance</h4>
+              <p class="text-[11px] text-slate-500">Present / Absent, working time aur off day ka record.</p>
+            </div>
+            <button onclick="openAttendanceModal()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold text-xs shadow transition">Add Attendance</button>
+          </div>
+          <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <table class="w-full text-xs text-left border-collapse">
+              <thead class="bg-slate-50 text-slate-600 uppercase border-b border-slate-200 font-bold">
+                <tr>
+                  <th class="p-3">Ref #</th>
+                  <th class="p-3">Date</th>
+                  <th class="p-3">Employee</th>
+                  <th class="p-3">Status</th>
+                  <th class="p-3">In - Out</th>
+                  <th class="p-3">Working Hours</th>
+                  <th class="p-3">Off Day</th>
+                  <th class="p-3">Remarks</th>
+                  <th class="p-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="attendanceTableBody">
+                <tr>
+                  <td colspan="9" class="p-4 text-center text-slate-400">No attendance records yet.</td>
                 </tr>
               </tbody>
             </table>
@@ -1467,6 +1559,134 @@
     </div>
   </div>
 
+  <div id="salaryModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6 border border-slate-200">
+      <div class="flex justify-between items-center pb-3 border-b border-slate-100 mb-4">
+        <h3 class="font-extrabold text-slate-900 text-base">Add Employee Salary</h3>
+        <button onclick="closeModal('salaryModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <div class="space-y-4 text-xs">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold uppercase text-slate-600 mb-1">Slip #</label>
+            <input type="text" id="salNum" class="w-full px-3 py-2 border rounded-lg bg-slate-50 font-mono" readonly>
+          </div>
+          <div>
+            <label class="block font-bold uppercase text-slate-600 mb-1">Date</label>
+            <input type="date" id="salDate" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+          </div>
+        </div>
+        <div>
+          <label class="block font-bold uppercase text-slate-600 mb-1">Employee Name *</label>
+          <input type="text" id="salEmployee" list="dl-employees" placeholder="e.g. Ali Raza" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+          <datalist id="dl-employees"></datalist>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold uppercase text-slate-600 mb-1">Designation</label>
+            <input type="text" id="salDesignation" placeholder="e.g. Salesman" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+          </div>
+          <div>
+            <label class="block font-bold uppercase text-slate-600 mb-1">Salary Month</label>
+            <input type="month" id="salMonth" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold uppercase text-slate-600 mb-1">Salary Paid (Rs) *</label>
+            <input type="number" id="salAmount" placeholder="0.00" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+          </div>
+          <div>
+            <label class="block font-bold uppercase text-slate-600 mb-1">Payment Mode</label>
+            <select id="salMode" class="w-full px-3 py-2 border rounded-lg bg-white">
+              <option>Cash</option>
+              <option>Bank</option>
+              <option>Cheque</option>
+              <option>Easypaisa / JazzCash</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block font-bold uppercase text-slate-600 mb-1">Remarks</label>
+          <input type="text" id="salRemarks" placeholder="Advance, bonus ya koi note" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div class="flex justify-end space-x-2 pt-2">
+          <button type="button" onclick="closeModal('salaryModal')" class="px-4 py-2 border rounded-lg font-bold text-slate-600 hover:bg-slate-100">Cancel</button>
+          <button type="button" onclick="saveSalary()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold shadow">Save Salary</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="attendanceModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6 border border-slate-200">
+      <div class="flex justify-between items-center pb-3 border-b border-slate-100 mb-4">
+        <h3 class="font-extrabold text-slate-900 text-base">Add Attendance</h3>
+        <button onclick="closeModal('attendanceModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <div class="space-y-4 text-xs">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold uppercase text-slate-600 mb-1">Ref #</label>
+            <input type="text" id="attNum" class="w-full px-3 py-2 border rounded-lg bg-slate-50 font-mono" readonly>
+          </div>
+          <div>
+            <label class="block font-bold uppercase text-slate-600 mb-1">Date</label>
+            <input type="date" id="attDate" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+          </div>
+        </div>
+        <div>
+          <label class="block font-bold uppercase text-slate-600 mb-1">Employee Name *</label>
+          <input type="text" id="attEmployee" list="dl-employees" placeholder="e.g. Ali Raza" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold uppercase text-slate-600 mb-1">Status *</label>
+            <select id="attStatus" class="w-full px-3 py-2 border rounded-lg bg-white">
+              <option>Present</option>
+              <option>Absent</option>
+              <option>Half Day</option>
+              <option>Late</option>
+              <option>Leave</option>
+              <option>Off Day</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold uppercase text-slate-600 mb-1">Off Day</label>
+            <select id="attOffDay" class="w-full px-3 py-2 border rounded-lg bg-white">
+              <option value="">None</option>
+              <option>Sunday</option>
+              <option>Monday</option>
+              <option>Tuesday</option>
+              <option>Wednesday</option>
+              <option>Thursday</option>
+              <option>Friday</option>
+              <option>Saturday</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold uppercase text-slate-600 mb-1">Working Time In</label>
+            <input type="time" id="attIn" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+          </div>
+          <div>
+            <label class="block font-bold uppercase text-slate-600 mb-1">Working Time Out</label>
+            <input type="time" id="attOut" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+          </div>
+        </div>
+        <div>
+          <label class="block font-bold uppercase text-slate-600 mb-1">Remarks</label>
+          <input type="text" id="attRemarks" placeholder="Koi note (optional)" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div class="flex justify-end space-x-2 pt-2">
+          <button type="button" onclick="closeModal('attendanceModal')" class="px-4 py-2 border rounded-lg font-bold text-slate-600 hover:bg-slate-100">Cancel</button>
+          <button type="button" onclick="saveAttendance()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold shadow">Save Attendance</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="expenseModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
     <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6 border border-slate-200">
       <div class="flex justify-between items-center pb-3 border-b border-slate-100 mb-4">
@@ -2069,7 +2289,9 @@
         'payouts': 'Payment Out Vouchers',
         'googleprofile': 'Google Profile Manager',
         'marketingtools': 'Marketing Tools',
-        'onlinestore': 'Online Store'
+        'onlinestore': 'Online Store',
+        'empsalary': 'Employee Salary',
+        'attendance': 'Employee Attendance'
       };
       const titleEl = document.getElementById('currentTabTitle');
       if (titleEl) titleEl.innerText = titles[tabId] || 'Dashboard';
@@ -3163,7 +3385,9 @@
       pv: 1,
       exp: 1,
       cb: 1,
-      inc: 1
+      inc: 1,
+      sal: 1,
+      att: 1
     };
     const COUNTER_PREFIX = {
       inv: () => getSettings().invPrefix || 'INV-',
@@ -3182,7 +3406,7 @@
       else userData.settings = Object.assign({}, DEFAULT_SETTINGS, userData.settings);
       if (!userData.counters) userData.counters = Object.assign({}, COUNTER_DEFAULTS);
       else userData.counters = Object.assign({}, COUNTER_DEFAULTS, userData.counters);
-      ['expenses', 'cashbank', 'otherincome', 'scans'].forEach(k => {
+      ['expenses', 'cashbank', 'otherincome', 'scans', 'salaries', 'attendance'].forEach(k => {
         if (!Array.isArray(userData[k])) userData[k] = [];
       });
     }
@@ -3594,6 +3818,115 @@
       w.document.write(html);
       w.document.close();
     }
+    /* ---------------- Employee Salary & Attendance ---------------- */
+    function fillEmployeeDatalist() {
+      ensureExtraData();
+      const dl = document.getElementById('dl-employees');
+      if (!dl) return;
+      const names = [];
+      userData.salaries.concat(userData.attendance).forEach(r => {
+        const n = (r.employee || '').trim();
+        if (n && names.indexOf(n) === -1) names.push(n);
+      });
+      dl.innerHTML = names.map(n => `<option value="${n.replace(/"/g, '&quot;')}"></option>`).join('');
+    }
+
+    function openSalaryModal() {
+      ensureExtraData();
+      fillEmployeeDatalist();
+      const num = document.getElementById('salNum');
+      if (num) num.value = 'SAL-' + peekNumber('sal');
+      const d = document.getElementById('salDate');
+      if (d && !d.value) d.value = todayISO();
+      const m = document.getElementById('salMonth');
+      if (m && !m.value) m.value = todayISO().slice(0, 7);
+      openModal('salaryModal');
+    }
+
+    function saveSalary() {
+      const employee = document.getElementById('salEmployee').value.trim();
+      const amount = parseFloat(document.getElementById('salAmount').value) || 0;
+      if (!employee) {
+        alert('Please enter the employee name.');
+        return;
+      }
+      if (!amount) {
+        alert('Please enter the salary amount.');
+        return;
+      }
+      ensureExtraData();
+      userData.salaries.unshift({
+        ref: 'SAL-' + takeNumber('sal'),
+        date: document.getElementById('salDate').value || todayISO(),
+        employee: employee,
+        designation: document.getElementById('salDesignation').value.trim(),
+        month: document.getElementById('salMonth').value || todayISO().slice(0, 7),
+        mode: document.getElementById('salMode').value,
+        remarks: document.getElementById('salRemarks').value.trim(),
+        amount: amount
+      });
+      logActivity(`Paid salary Rs ${amount} to ${employee}`);
+      saveData();
+      renderAllData();
+      closeModal('salaryModal');
+      document.getElementById('salEmployee').value = '';
+      document.getElementById('salDesignation').value = '';
+      document.getElementById('salAmount').value = '';
+      document.getElementById('salRemarks').value = '';
+    }
+
+    function openAttendanceModal() {
+      ensureExtraData();
+      fillEmployeeDatalist();
+      const num = document.getElementById('attNum');
+      if (num) num.value = 'ATT-' + peekNumber('att');
+      const d = document.getElementById('attDate');
+      if (d && !d.value) d.value = todayISO();
+      openModal('attendanceModal');
+    }
+
+    function attWorkingHours(inT, outT) {
+      if (!inT || !outT) return '-';
+      const [ih, im] = inT.split(':').map(Number);
+      const [oh, om] = outT.split(':').map(Number);
+      let mins = (oh * 60 + om) - (ih * 60 + im);
+      if (mins < 0) mins += 24 * 60;
+      const h = Math.floor(mins / 60);
+      const m = mins % 60;
+      return h + 'h ' + (m < 10 ? '0' + m : m) + 'm';
+    }
+
+    function saveAttendance() {
+      const employee = document.getElementById('attEmployee').value.trim();
+      if (!employee) {
+        alert('Please enter the employee name.');
+        return;
+      }
+      ensureExtraData();
+      const inT = document.getElementById('attIn').value;
+      const outT = document.getElementById('attOut').value;
+      const status = document.getElementById('attStatus').value;
+      userData.attendance.unshift({
+        ref: 'ATT-' + takeNumber('att'),
+        date: document.getElementById('attDate').value || todayISO(),
+        employee: employee,
+        status: status,
+        timeIn: inT,
+        timeOut: outT,
+        hours: attWorkingHours(inT, outT),
+        offDay: document.getElementById('attOffDay').value,
+        remarks: document.getElementById('attRemarks').value.trim()
+      });
+      logActivity(`Marked ${employee} as ${status}`);
+      saveData();
+      renderAllData();
+      closeModal('attendanceModal');
+      document.getElementById('attEmployee').value = '';
+      document.getElementById('attIn').value = '';
+      document.getElementById('attOut').value = '';
+      document.getElementById('attRemarks').value = '';
+    }
+
     /* ---------------- Expense / Cash & Bank / Other Income ---------------- */
     function saveExpense() {
       const amount = parseFloat(document.getElementById('expAmount').value) || 0;
@@ -3737,6 +4070,66 @@
       };
       setTxt('stat-expenseTotal', money(expTotal));
       setTxt('stat-incomeTotal', money(incTotal));
+      const salTotal = userData.salaries.reduce((a, s2) => a + (s2.amount || 0), 0);
+      setTxt('stat-salaryTotal', money(salTotal));
+      setTxt('stat-attPresent', String(userData.attendance.filter(a => a.status === 'Present' || a.status === 'Late').length));
+      setTxt('stat-attAbsent', String(userData.attendance.filter(a => a.status === 'Absent').length));
+      setTxt('stat-attOff', String(userData.attendance.filter(a => a.status === 'Off Day' || a.status === 'Leave').length));
+      const salBody = document.getElementById('salaryTableBody');
+      if (salBody) {
+        salBody.innerHTML = userData.salaries.map((r, i) => `
+          <tr class="border-b hover:bg-slate-50">
+            <td class="p-2 font-bold text-indigo-600 font-mono">${r.ref}</td>
+            <td class="p-2 font-semibold text-slate-600">${r.date}</td>
+            <td class="p-2 font-bold text-slate-800">${r.employee}</td>
+            <td class="p-2 text-slate-700">${r.designation || '-'}</td>
+            <td class="p-2 text-slate-600">${r.month || '-'}</td>
+            <td class="p-2 text-slate-600">${r.mode || '-'}</td>
+            <td class="p-2 font-black text-slate-900">${money(r.amount)}</td>
+            <td class="p-2 text-right space-x-1 whitespace-nowrap">
+              <button type="button" onclick='printUniversalSlip("SALARY SLIP", {
+                "Slip #": "${r.ref}", "Date": "${r.date}", "Employee": "${(r.employee || '-').replace(/"/g, "")}",
+                "Designation": "${(r.designation || '-').replace(/"/g, "")}", "Salary Month": "${r.month || '-'}",
+                "Payment Mode": "${r.mode || '-'}", "Remarks": "${(r.remarks || '-').replace(/"/g, "")}", "Total Amount": "${r.amount}"
+              }, false)' class="px-2 py-0.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white rounded font-bold transition text-[10px]"><i class="fa-solid fa-print"></i> Print</button>
+              ${getDeleteBtnHtml('salaries', i)}
+            </td>
+          </tr>`).join('') || `<tr><td colspan="8" class="p-4 text-center text-slate-400">No salary records yet.</td></tr>`;
+      }
+      const attBody = document.getElementById('attendanceTableBody');
+      if (attBody) {
+        const badge = (st) => {
+          const map = {
+            'Present': 'bg-emerald-100 text-emerald-700',
+            'Absent': 'bg-rose-100 text-rose-700',
+            'Half Day': 'bg-amber-100 text-amber-700',
+            'Late': 'bg-orange-100 text-orange-700',
+            'Leave': 'bg-slate-200 text-slate-700',
+            'Off Day': 'bg-blue-100 text-blue-700'
+          };
+          return `<span class="${map[st] || 'bg-slate-100 text-slate-700'} px-1.5 py-0.5 rounded font-bold text-[9px]">${st}</span>`;
+        };
+        attBody.innerHTML = userData.attendance.map((r, i) => `
+          <tr class="border-b hover:bg-slate-50">
+            <td class="p-2 font-bold text-indigo-600 font-mono">${r.ref}</td>
+            <td class="p-2 font-semibold text-slate-600">${r.date}</td>
+            <td class="p-2 font-bold text-slate-800">${r.employee}</td>
+            <td class="p-2">${badge(r.status)}</td>
+            <td class="p-2 text-slate-600">${(r.timeIn || '-') + ' - ' + (r.timeOut || '-')}</td>
+            <td class="p-2 font-semibold text-slate-700">${r.hours || '-'}</td>
+            <td class="p-2 text-slate-600">${r.offDay || '-'}</td>
+            <td class="p-2 text-slate-600">${r.remarks || '-'}</td>
+            <td class="p-2 text-right space-x-1 whitespace-nowrap">
+              <button type="button" onclick='printUniversalSlip("ATTENDANCE RECORD", {
+                "Ref #": "${r.ref}", "Date": "${r.date}", "Employee": "${(r.employee || '-').replace(/"/g, "")}",
+                "Status": "${r.status}", "Time In": "${r.timeIn || '-'}", "Time Out": "${r.timeOut || '-'}",
+                "Working Hours": "${r.hours || '-'}", "Off Day": "${r.offDay || '-'}", "Remarks": "${(r.remarks || '-').replace(/"/g, "")}"
+              }, false)' class="px-2 py-0.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white rounded font-bold transition text-[10px]"><i class="fa-solid fa-print"></i> Print</button>
+              ${getDeleteBtnHtml('attendance', i)}
+            </td>
+          </tr>`).join('') || `<tr><td colspan="9" class="p-4 text-center text-slate-400">No attendance records yet.</td></tr>`;
+      }
+      fillEmployeeDatalist();
       let cash = 0,
         bank = 0;
       userData.cashbank.forEach(t => {
