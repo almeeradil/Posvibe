@@ -2403,12 +2403,12 @@
       };
       data.__items = items.map(it => ({
         desc: it.name || 'Item',
-        sub: 'HS Code: ' + (it.hsCode || '3004.90')
-          + (parseFloat(it.taxPct) ? ' | GST: ' + it.taxPct + '%' : '')
-          + (parseFloat(it.discount) ? ' | Discount: Rs ' + it.discount : ''),
+        sub: 'HS Code: ' + (it.hsCode || '3004.90'),
         uom: it.uom || '',
         qty: it.qty == null ? 1 : it.qty,
         rate: it.rate || 0,
+        disc: parseFloat(it.discount) || 0,
+        gst: parseFloat(it.taxPct) || 0,
         // Line amount = taxable value (qty x rate). Tax & discount are shown in the totals block.
         amount: (parseFloat(it.qty) || 0) * (parseFloat(it.rate) || 0)
       }));
@@ -3683,12 +3683,14 @@
             <td><strong>${escapeHtml(it.desc || 'Item')}</strong>${sub ? `<div class="sub">${escapeHtml(sub)}</div>` : ''}</td>
             <td class="r">${escapeHtml(String(it.qty == null ? 1 : it.qty))}${it.uom ? ' ' + escapeHtml(it.uom) : ''}</td>
             <td class="r">${money(r)}</td>
+            <td class="r">${money(toAmount(it.disc || 0))}</td>
+            <td class="r">${(Math.round(toAmount(it.gst || 0) * 100) / 100) + '%'}</td>
             <td class="r"><strong>${money(amt)}</strong></td></tr>`;
         }).join('');
         itemsTable = `
           <table class="items">
             <thead>
-              <tr><th style="width:38px">#</th><th>Description</th><th style="width:90px" class="r">Qty</th><th style="width:110px" class="r">Rate</th><th style="width:130px" class="r">Amount</th></tr>
+              <tr><th style="width:34px">#</th><th>Description</th><th style="width:70px" class="r">Qty</th><th style="width:90px" class="r">Rate</th><th style="width:90px" class="r">Discount</th><th style="width:60px" class="r">GST %</th><th style="width:110px" class="r">Amount</th></tr>
             </thead>
             <tbody>${body}</tbody>
           </table>`;
@@ -3696,10 +3698,12 @@
         const sub = Object.keys(itemInfo)
           .filter(k => k !== descKey)
           .map(k => escapeHtml(k) + ': ' + escapeHtml(itemInfo[k])).join(' &nbsp;|&nbsp; ');
+        const singleDiscKey = matchKey(amounts, [/discount/i]);
+        const singleGstKey = matchKey(amounts, [/(%|pct|percent)/i]) && /(tax|gst)/i.test(matchKey(amounts, [/(%|pct|percent)/i]) || '') ? matchKey(amounts, [/(%|pct|percent)/i]) : matchKey(amounts, [/tax/i, /gst/i]);
         itemsTable = `
           <table class="items">
             <thead>
-              <tr><th style="width:38px">#</th><th>Description</th><th style="width:90px" class="r">Qty</th><th style="width:110px" class="r">Rate</th><th style="width:130px" class="r">Amount</th></tr>
+              <tr><th style="width:34px">#</th><th>Description</th><th style="width:70px" class="r">Qty</th><th style="width:90px" class="r">Rate</th><th style="width:90px" class="r">Discount</th><th style="width:60px" class="r">GST %</th><th style="width:110px" class="r">Amount</th></tr>
             </thead>
             <tbody>
               <tr>
@@ -3707,6 +3711,8 @@
                 <td><strong>${escapeHtml(itemInfo[descKey])}</strong>${sub ? `<div class="sub">${sub}</div>` : ''}</td>
                 <td class="r">${qtyKey ? escapeHtml(amounts[qtyKey]) : '1'}</td>
                 <td class="r">${rateKey ? escapeHtml(amounts[rateKey]) : '-'}</td>
+                <td class="r">${singleDiscKey ? escapeHtml(amounts[singleDiscKey]) : money(0)}</td>
+                <td class="r">${singleGstKey ? escapeHtml(amounts[singleGstKey]) : '0%'}</td>
                 <td class="r"><strong>${money(totalVal)}</strong></td>
               </tr>
             </tbody>
@@ -3720,17 +3726,16 @@
       } else if (descKey && qtyKey && rateKey) {
         subtotalRow = `<tr><td>Subtotal</td><td class="r">${money(toAmount(amounts[qtyKey]) * toAmount(amounts[rateKey]))}</td></tr>`;
       }
-      // Totals block order: Subtotal -> Tax (GST) % -> Tax (GST) Amount -> Discount -> Grand Total
+      // Totals block order: Subtotal -> Tax (GST) Amount -> Discount -> Grand Total
       let summaryRows = '';
       if (totalsInfo) {
-        const pct = toAmount(totalsInfo.taxPct);
         summaryRows =
-          `<tr><td>Tax (GST) %</td><td class="r">${totalsInfo.taxMixed ? 'Mixed' : (Math.round(pct * 100) / 100) + '%'}</td></tr>` +
           `<tr><td>Tax (GST) Amount</td><td class="r">${money(toAmount(totalsInfo.taxAmount))}</td></tr>` +
           `<tr><td>Discount</td><td class="r">- ${money(toAmount(totalsInfo.discount))}</td></tr>`;
       } else {
         const rest = Object.keys(amounts)
-          .filter(k => k !== totalKey && (!descKey || (k !== qtyKey && k !== rateKey)));
+          .filter(k => k !== totalKey && (!descKey || (k !== qtyKey && k !== rateKey)))
+          .filter(k => !(/(%|pct|percent)/i.test(k) && /(tax|gst)/i.test(k)));
         const rank = k => /(%|pct|percent)/i.test(k) && /(tax|gst)/i.test(k) ? 1
           : /(tax|gst)/i.test(k) ? 2
           : /discount/i.test(k) ? 3 : 4;
