@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -288,16 +287,17 @@
                 <tr>
                   <th class="p-3">P.Invoice #</th>
                   <th class="p-3">Date</th>
-                  <th class="p-3">Supplier Name</th>
-                  <th class="p-3">Item Purchased</th>
-                  <th class="p-3">Qty / Rate</th>
-                  <th class="p-3">Total Amount (Rs)</th>
+                  <th class="p-3">Supplier Details</th>
+                  <th class="p-3">Item Info</th>
+                  <th class="p-3">Qty &amp; Rate</th>
+                  <th class="p-3">Tax / Disc</th>
+                  <th class="p-3">Total (Rs)</th>
                   <th class="p-3 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody id="purchaseInvoicesTableBody">
                 <tr>
-                  <td colspan="7" class="p-4 text-center text-slate-400">No purchase invoices found.</td>
+                  <td colspan="8" class="p-4 text-center text-slate-400">No purchase invoices found.</td>
                 </tr>
               </tbody>
             </table>
@@ -1135,9 +1135,9 @@
   </div>
 
   <div id="purchaseInvoiceModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
-    <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6 border border-slate-200">
+    <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full p-6 border border-slate-200 my-8">
       <div class="flex justify-between items-center pb-3 border-b border-slate-100 mb-4">
-        <h3 class="font-extrabold text-slate-900 text-base">Create Purchase Invoice</h3>
+        <h3 class="font-extrabold text-slate-900 text-base">Create Tax Purchase Invoice</h3>
         <button onclick="closeModal('purchaseInvoiceModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
       <div class="space-y-4 text-xs">
@@ -1151,29 +1151,93 @@
             <input type="date" id="pinvDate" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500">
           </div>
         </div>
-        <div>
-          <label class="block font-bold uppercase text-slate-600 mb-1">Supplier / Pharma Company Name *</label>
-          <input type="text" id="pinvSupplier" placeholder="e.g. Getz Pharma / Searle" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500" list="dl-pinvSupplier" autocomplete="off"><datalist id="dl-pinvSupplier" data-party="suppliers"></datalist>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold uppercase text-slate-600 mb-1">Supplier / Pharma Company Name *</label>
+            <input type="text" id="pinvSupplier" placeholder="e.g. Getz Pharma / Searle" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500" list="dl-pinvSupplier" autocomplete="off"><datalist id="dl-pinvSupplier" data-party="suppliers"></datalist>
+          </div>
+          <div>
+            <label class="block font-bold uppercase text-slate-600 mb-1">NTN / CNIC</label>
+            <input type="text" id="pinvSupNtnCnic" placeholder="35202-1234567-1" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold uppercase text-slate-600 mb-1">Supplier Address</label>
+            <input type="text" id="pinvSupAddress" placeholder="Office # 2, Industrial Area" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500">
+          </div>
+          <div>
+            <label class="block font-bold uppercase text-slate-600 mb-1">Province</label>
+            <select id="pinvSupProvince" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 bg-white">
+              <option value="Punjab">Punjab</option>
+              <option value="Sindh">Sindh</option>
+              <option value="KPK">KPK</option>
+              <option value="Balochistan">Balochistan</option>
+              <option value="Islamabad">Islamabad</option>
+            </select>
+          </div>
         </div>
         <div class="relative">
-          <label class="block font-bold uppercase text-slate-600 mb-1">Item / Medicine Name *</label>
+          <label class="block font-bold uppercase text-slate-600 mb-1">Item / Medicine Name (Search Master List) *</label>
           <input type="text" id="pinvItem" placeholder="Search medicine..." autocomplete="off" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500">
           <div id="dropdown-pinvItem" class="hidden absolute left-0 right-0 bg-white border border-slate-200 rounded-lg shadow-xl max-h-48 overflow-y-auto z-30 mt-1"></div>
         </div>
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block font-bold uppercase text-slate-600 mb-1">HS Code</label>
+            <input type="text" id="pinvHsCode" value="3004.90" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500">
+          </div>
+          <div>
+            <label class="block font-bold uppercase text-slate-600 mb-1">UOM</label>
+            <select id="pinvUom" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 bg-white">
+              <option value="Pcs">Pcs</option>
+              <option value="Boxes">Boxes</option>
+              <option value="Packets">Packets</option>
+              <option value="Bottles">Bottles</option>
+              <option value="Vials">Vials</option>
+            </select>
+          </div>
           <div>
             <label class="block font-bold uppercase text-slate-600 mb-1">Quantity</label>
             <input type="number" id="pinvQty" value="1" min="1" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500">
           </div>
+        </div>
+        <div class="grid grid-cols-3 gap-3">
           <div>
             <label class="block font-bold uppercase text-slate-600 mb-1">Purchase Rate (Rs)</label>
             <input type="number" id="pinvRate" placeholder="0.00" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500">
           </div>
+          <div>
+            <label class="block font-bold uppercase text-slate-600 mb-1">GST / Tax %</label>
+            <input type="number" id="pinvTaxPct" value="0" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500">
+          </div>
+          <div>
+            <label class="block font-bold uppercase text-slate-600 mb-1">Discount (Rs)</label>
+            <input type="number" id="pinvDiscount" value="0" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500">
+          </div>
+        </div>
+        <div class="border border-emerald-200 rounded-lg p-3 bg-emerald-50/40 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="font-bold uppercase text-slate-600">More Medicines (Multi Item Purchase Invoice)</span>
+            <button type="button" onclick="addPinvItemRow()" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-[11px] shadow"><i class="fa-solid fa-plus"></i> Add Medicine</button>
+          </div>
+          <div class="hidden md:grid grid-cols-12 gap-2 text-[10px] font-bold uppercase text-slate-500">
+            <div class="col-span-4">Medicine</div><div class="col-span-2">Qty</div><div class="col-span-2">Rate</div><div class="col-span-1">Tax%</div><div class="col-span-2">Disc</div><div class="col-span-1"></div>
+          </div>
+          <div id="pinvExtraItems" class="space-y-2"></div>
+          <p class="text-[10px] text-slate-500">Jitni marzi medicines add karein &mdash; sab purchase invoice print mein aa jayengi.</p>
+        </div>
+        <div class="p-3 bg-slate-50 rounded-lg flex items-center justify-between border">
+          <span class="font-bold text-slate-700">Calculated Purchase Invoice Total:</span>
+          <span id="pinvTotalDisplay" class="font-black text-base text-emerald-600">Rs 0.00</span>
         </div>
         <div class="flex justify-end space-x-2 pt-2">
           <button type="button" onclick="closeModal('purchaseInvoiceModal')" class="px-4 py-2 border rounded-lg font-bold text-slate-600 hover:bg-slate-100">Cancel</button>
           <button type="button" onclick="savePurchaseInvoice()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold shadow">Save Purchase Invoice</button>
         </div>
+      </div>
+    </div>
+  </div>
       </div>
     </div>
   </div>
@@ -2132,6 +2196,10 @@
         const el = document.getElementById(id);
         if (el) el.addEventListener('input', calculateInvoiceTotal);
       });
+      ['pinvQty', 'pinvRate', 'pinvTaxPct', 'pinvDiscount'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', calculatePurchaseInvoiceTotal);
+      });
       ['debQty', 'debRate', 'debTax'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.addEventListener('input', calculateDebitTotal);
@@ -2140,7 +2208,7 @@
 
     const productFieldConfigs = {
       invProdName: { dropdownId: 'dropdown-invProdName', source: 'inventory', price: 'sale', rate: 'invRate', qty: 'invQty', uom: 'invUom' },
-      pinvItem: { dropdownId: 'dropdown-pinvItem', source: 'inventory', price: 'purchase', rate: 'pinvRate', qty: 'pinvQty' },
+      pinvItem: { dropdownId: 'dropdown-pinvItem', source: 'inventory', price: 'purchase', rate: 'pinvRate', qty: 'pinvQty', uom: 'pinvUom' },
       quoProduct: { dropdownId: 'dropdown-quoProduct', source: 'inventory', price: 'sale', rate: 'quoRate' },
       debItem: { dropdownId: 'dropdown-debItem', source: 'inventory', price: 'sale', rate: 'debRate', qty: 'debQty' },
       purItem: { dropdownId: 'dropdown-purItem', source: 'inventory', price: 'purchase', amount: 'purAmt' },
@@ -2490,34 +2558,163 @@
       calculateInvoiceTotal();
     }
 
+    function addPinvItemRow(v) {
+      v = v || {};
+      const box = document.getElementById('pinvExtraItems');
+      if (!box) return;
+      pvFillMedicineDatalist();
+      const row = document.createElement('div');
+      row.className = 'pv-pinv-item grid grid-cols-12 gap-2 items-center';
+      row.innerHTML = `
+        <input data-k="name" list="dl-pvMedicines" autocomplete="off" placeholder="Medicine name" value="${String(v.name || '').replace(/"/g, '&quot;')}" class="col-span-4 px-2 py-1.5 border rounded-lg focus:ring-2 focus:ring-emerald-500">
+        <input data-k="qty" type="number" min="1" step="any" value="${v.qty == null ? 1 : v.qty}" class="col-span-2 px-2 py-1.5 border rounded-lg focus:ring-2 focus:ring-emerald-500">
+        <input data-k="rate" type="number" step="any" value="${v.rate == null ? '' : v.rate}" placeholder="0.00" class="col-span-2 px-2 py-1.5 border rounded-lg focus:ring-2 focus:ring-emerald-500">
+        <input data-k="taxPct" type="number" step="any" value="${v.taxPct == null ? 0 : v.taxPct}" class="col-span-1 px-2 py-1.5 border rounded-lg focus:ring-2 focus:ring-emerald-500">
+        <input data-k="discount" type="number" step="any" value="${v.discount == null ? 0 : v.discount}" class="col-span-2 px-2 py-1.5 border rounded-lg focus:ring-2 focus:ring-emerald-500">
+        <button type="button" title="Remove" class="col-span-1 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-500 hover:text-white rounded-lg font-bold"><i class="fa-solid fa-trash"></i></button>`;
+      row.querySelector('button').onclick = function () { row.remove(); calculatePurchaseInvoiceTotal(); };
+      row.querySelectorAll('input').forEach(el => el.addEventListener('input', calculatePurchaseInvoiceTotal));
+      box.appendChild(row);
+      calculatePurchaseInvoiceTotal();
+    }
+
+    function clearPinvItemRows() {
+      const box = document.getElementById('pinvExtraItems');
+      if (box) box.innerHTML = '';
+    }
+
+    // Collects the main line + every extra medicine line of the purchase invoice
+    function collectPurchaseInvoiceItems() {
+      const items = [];
+      const uom = (document.getElementById('pinvUom') || {}).value || 'Pcs';
+      const mainName = (document.getElementById('pinvItem').value || '').trim();
+      if (mainName) {
+        items.push({
+          name: mainName,
+          hsCode: (document.getElementById('pinvHsCode').value || '').trim() || '3004.90',
+          uom: uom,
+          qty: parseFloat(document.getElementById('pinvQty').value) || 1,
+          rate: parseFloat(document.getElementById('pinvRate').value) || 0,
+          taxPct: parseFloat(document.getElementById('pinvTaxPct').value) || 0,
+          discount: parseFloat(document.getElementById('pinvDiscount').value) || 0
+        });
+      }
+      document.querySelectorAll('#pinvExtraItems .pv-pinv-item').forEach(row => {
+        const get = k => row.querySelector('[data-k="' + k + '"]');
+        const name = (get('name').value || '').trim();
+        if (!name) return;
+        items.push({
+          name: name,
+          hsCode: '3004.90',
+          uom: uom,
+          qty: parseFloat(get('qty').value) || 1,
+          rate: parseFloat(get('rate').value) || 0,
+          taxPct: parseFloat(get('taxPct').value) || 0,
+          discount: parseFloat(get('discount').value) || 0
+        });
+      });
+      items.forEach(it => { it.amount = pvLineAmount(it); });
+      return items;
+    }
+
+    function calculatePurchaseInvoiceTotal() {
+      const total = collectPurchaseInvoiceItems().reduce((s, it) => s + it.amount, 0);
+      const display = document.getElementById('pinvTotalDisplay');
+      if (display) display.innerText = "Rs " + total.toFixed(2);
+    }
+
+    // Print helper for a saved purchase invoice (supports multiple medicines)
+    function printPurchaseInvoice(index) {
+      const p = (userData.purchaseinvoices || [])[index];
+      if (!p) return;
+      const items = (p.items && p.items.length) ? p.items : [{
+        name: p.item, hsCode: p.hsCode, uom: p.uom, qty: p.qty,
+        rate: p.rate, taxPct: p.taxPct, discount: p.discount, amount: p.amt
+      }];
+      const data = {
+        "Purchase Invoice #": p.ref || '',
+        "Date": p.date || '',
+        "Supplier": p.supplier || '',
+        "NTN/CNIC": p.supNtnCnic || 'N/A',
+        "Province": p.supProvince || 'N/A'
+      };
+      data.__items = items.map(it => ({
+        desc: it.name || 'Item',
+        sub: 'HS Code: ' + (it.hsCode || '3004.90'),
+        uom: it.uom || '',
+        qty: it.qty == null ? 1 : it.qty,
+        rate: it.rate || 0,
+        disc: parseFloat(it.discount) || 0,
+        gst: parseFloat(it.taxPct) || 0,
+        amount: (parseFloat(it.qty) || 0) * (parseFloat(it.rate) || 0)
+      }));
+      (function () {
+        let subtotal = 0, taxAmount = 0, discount = 0;
+        const pcts = [];
+        items.forEach(it => {
+          const base = (parseFloat(it.qty) || 0) * (parseFloat(it.rate) || 0);
+          const pct = parseFloat(it.taxPct) || 0;
+          subtotal += base;
+          taxAmount += base * pct / 100;
+          discount += parseFloat(it.discount) || 0;
+          if (pcts.indexOf(pct) === -1) pcts.push(pct);
+        });
+        const grand = (parseFloat(p.amt) || 0) || (subtotal + taxAmount - discount);
+        data.__totals = {
+          subtotal: subtotal,
+          taxPct: pcts.length === 1 ? pcts[0] : (subtotal ? (taxAmount / subtotal) * 100 : 0),
+          taxMixed: pcts.length > 1,
+          taxAmount: taxAmount,
+          discount: discount,
+          grand: grand,
+          itemCount: items.length
+        };
+      })();
+      printUniversalSlip("PURCHASE TAX INVOICE", data, false);
+    }
+
     function savePurchaseInvoice() {
       const supplier = document.getElementById('pinvSupplier').value.trim();
-      const item = document.getElementById('pinvItem').value.trim();
-      if (!supplier || !item) {
-        alert('Please enter supplier and item name.');
+      const items = collectPurchaseInvoiceItems();
+      if (!supplier || !items.length) {
+        alert('Please fill in required fields (Supplier Name & at least one Medicine)');
         return;
       }
-      const qty = parseFloat(document.getElementById('pinvQty').value) || 1;
-      const rate = parseFloat(document.getElementById('pinvRate').value) || 0;
-      const totalAmt = qty * rate;
+      const totalAmt = items.reduce((s, it) => s + it.amount, 0);
+      const first = items[0];
       const newPInv = {
         ref: document.getElementById('pinvNum').value.trim() || ('PINV-' + Math.floor(1000 + Math.random() * 9000)),
         date: document.getElementById('pinvDate').value || new Date().toISOString().split('T')[0],
         supplier: supplier,
-        item: item,
-        qty: qty,
-        rate: rate,
+        supNtnCnic: document.getElementById('pinvSupNtnCnic').value.trim(),
+        supAddress: document.getElementById('pinvSupAddress').value.trim(),
+        supProvince: document.getElementById('pinvSupProvince').value,
+        item: first.name,
+        hsCode: first.hsCode,
+        uom: first.uom,
+        qty: first.qty,
+        rate: first.rate,
+        taxPct: first.taxPct,
+        discount: first.discount,
+        items: items,
         amt: totalAmt
       };
       if (!userData.purchaseinvoices) userData.purchaseinvoices = [];
       userData.purchaseinvoices.unshift(newPInv);
-      logActivity(`Created Purchase Invoice ${newPInv.ref} from ${supplier}`);
+      logActivity(`Created Purchase Invoice ${newPInv.ref} from ${supplier} (${items.length} item/s)`);
       saveData();
       renderAllData();
       closeModal('purchaseInvoiceModal');
       document.getElementById('pinvNum').value = '';
       document.getElementById('pinvSupplier').value = '';
+      document.getElementById('pinvSupNtnCnic').value = '';
+      document.getElementById('pinvSupAddress').value = '';
       document.getElementById('pinvItem').value = '';
+      document.getElementById('pinvQty').value = 1;
+      document.getElementById('pinvRate').value = '';
+      document.getElementById('pinvDiscount').value = 0;
+      clearPinvItemRows();
+      calculatePurchaseInvoiceTotal();
     }
 
     function saveQuotation() {
@@ -3142,22 +3339,32 @@
       if (pinvTBody) {
         pinvTBody.innerHTML = (userData.purchaseinvoices || []).map((pi, i) => `
           <tr class="border-b hover:bg-slate-50">
-            <td class="p-2 font-bold text-emerald-600 font-mono">${pi.ref}</td>
-            <td class="p-2 font-semibold text-slate-600">${pi.date}</td>
-            <td class="p-2 font-bold text-slate-800">${pi.supplier}</td>
-            <td class="p-2 font-semibold text-slate-700">${pi.item}</td>
-            <td class="p-2 text-slate-600">${pi.qty} Pcs @ Rs ${pi.rate}</td>
+            <td class="p-2 font-bold text-emerald-600 font-mono">${pi.ref || 'N/A'}</td>
+            <td class="p-2 font-semibold text-slate-600">${pi.date || 'N/A'}</td>
+            <td class="p-2">
+              <div class="font-bold text-slate-800">${pi.supplier || 'Unknown Supplier'}</div>
+              <div class="text-[9px] text-slate-500">NTN/CNIC: ${pi.supNtnCnic || 'N/A'} (${pi.supProvince || 'N/A'})</div>
+            </td>
+            <td class="p-2">
+              ${((pi.items && pi.items.length) ? pi.items : [{ name: pi.item, qty: pi.qty, rate: pi.rate }])
+                .map(it => `<div class="font-bold text-slate-700">${it.name || 'Item'} <span class="font-normal text-slate-500">x${it.qty || 1}</span></div>`).join('')}
+              <div class="text-[9px] font-mono text-slate-500">HS Code: ${pi.hsCode || '3004.90'}${(pi.items && pi.items.length > 1) ? ' &middot; ' + pi.items.length + ' items' : ''}</div>
+            </td>
+            <td class="p-2">
+              <div class="font-bold text-slate-800">${pi.qty || 1} ${pi.uom || 'Units'}</div>
+              <div class="text-[9px] text-slate-500">@ Rs ${pi.rate || 0}/unit</div>
+            </td>
+            <td class="p-2">
+              <div class="text-[10px] font-bold text-emerald-600">GST: ${pi.taxPct || 0}%</div>
+              <div class="text-[9px] text-rose-500">Disc: Rs ${pi.discount || 0}</div>
+            </td>
             <td class="p-2 font-black text-slate-900">Rs ${parseFloat(pi.amt || 0).toFixed(2)}</td>
             <td class="p-2 text-right space-x-1 whitespace-nowrap">
-              <button type="button" onclick='printUniversalSlip("PURCHASE INVOICE SLIP", {
-                "Purchase Invoice #": "${pi.ref}", "Date": "${pi.date}", "Supplier Name": "${pi.supplier}",
-                "Item Purchased": "${pi.item}", "Quantity": "${pi.qty}", "Purchase Rate": "Rs ${pi.rate}",
-                "Total Amount": "Rs ${parseFloat(pi.amt).toFixed(2)}"
-              }, false)' class="px-2 py-0.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded font-bold transition text-[10px]"><i class="fa-solid fa-print"></i> Print</button>
+              <button type="button" onclick='printPurchaseInvoice(${i})' class="px-2 py-0.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded font-bold transition text-[10px]"><i class="fa-solid fa-print"></i> Print</button>
               ${getDeleteBtnHtml('purchaseinvoices', i)}
             </td>
           </tr>
-        `).join('') || `<tr><td colspan="7" class="p-4 text-center text-slate-400">No purchase invoices found.</td></tr>`;
+        `).join('') || `<tr><td colspan="8" class="p-4 text-center text-slate-400">No purchase invoices found.</td></tr>`;
       }
       // Render Quotations Table
       const quoTBody = document.getElementById('quotationsTableBody');
@@ -4361,10 +4568,12 @@
           const d = document.getElementById(cfg.dateField);
           if (d && !d.value) d.value = todayISO();
         }
-        const taxEl = modalId === 'orderModal' ? document.getElementById('invTaxPct') : null;
+        const taxIds = { orderModal: 'invTaxPct', purchaseInvoiceModal: 'pinvTaxPct' };
+        const taxEl = taxIds[modalId] ? document.getElementById(taxIds[modalId]) : null;
         if (taxEl && !parseFloat(taxEl.value)) {
           taxEl.value = getSettings().tax || 0;
-          if (typeof calculateInvoiceTotal === 'function') calculateInvoiceTotal();
+          if (modalId === 'orderModal' && typeof calculateInvoiceTotal === 'function') calculateInvoiceTotal();
+          if (modalId === 'purchaseInvoiceModal' && typeof calculatePurchaseInvoiceTotal === 'function') calculatePurchaseInvoiceTotal();
         }
       }
       __origOpenModal(modalId);
