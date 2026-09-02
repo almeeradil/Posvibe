@@ -1,3 +1,6 @@
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -125,7 +128,6 @@
         <button onclick="showTab('suppliers')" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition group">
           <i class="fa-solid fa-truck-field w-5 text-orange-500"></i><span>Suppliers Directory</span>
         </button>
-        <div class="pt-2 mt-2 border-t border-slate-800"></div>
         <button onclick="showTab('cashbank')" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition group">
           <i class="fa-solid fa-building-columns w-5 text-emerald-400"></i><span>Cash &amp; Bank</span>
         </button>
@@ -135,6 +137,7 @@
         <button onclick="showTab('barcode')" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition group">
           <i class="fa-solid fa-barcode w-5 text-cyan-400"></i><span>Barcode Scanner</span>
         </button>
+        <div class="pt-2 mt-2 border-t border-slate-800"></div>
         <button onclick="showTab('settings')" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition group">
           <i class="fa-solid fa-gear w-5 text-slate-300"></i><span>Settings</span>
         </button>
@@ -595,13 +598,16 @@
                   <th class="p-3">Ref #</th>
                   <th class="p-3">Supplier</th>
                   <th class="p-3">Item Name</th>
+                  <th class="p-3">Qty</th>
+                  <th class="p-3">Rate</th>
+                  <th class="p-3">Status</th>
                   <th class="p-3">Amount</th>
                   <th class="p-3 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody id="purchasesTableBody">
                 <tr>
-                  <td colspan="5" class="p-4 text-center text-slate-400">No purchase records found.</td>
+                  <td colspan="8" class="p-4 text-center text-slate-400">No purchase records found.</td>
                 </tr>
               </tbody>
             </table>
@@ -1392,7 +1398,8 @@
         </div>
         <div>
           <label class="block font-bold uppercase text-slate-600 mb-1">Total Amount (Rs)</label>
-          <input type="text" id="debAmt" readonly class="w-full px-3 py-2 border rounded-lg bg-slate-50 font-bold text-slate-800">
+          <input type="number" id="debAmt" step="any" placeholder="0.00" oninput="debAmtManual = true;" class="w-full px-3 py-2 border rounded-lg bg-white font-bold text-slate-800 focus:ring-2 focus:ring-orange-500">
+          <p class="text-[10px] text-slate-400 mt-0.5">Auto = (Qty x Rate) + Tax. Aap manually bhi edit kar sakte hain.</p>
         </div>
         <div>
           <label class="block font-bold uppercase text-slate-600 mb-1">Reason for Return</label>
@@ -1566,24 +1573,85 @@
   </div>
 
   <div id="purchaseModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 border border-slate-200">
+    <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6 border border-slate-200">
       <div class="flex justify-between items-center pb-3 border-b border-slate-100 mb-4">
         <h3 class="font-extrabold text-slate-900 text-base">Create Purchase Order</h3>
         <button onclick="closeModal('purchaseModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
-      <div class="space-y-4 text-xs">
-        <div>
-          <label class="block font-bold uppercase text-slate-600 mb-1">Supplier Name *</label>
-          <input type="text" id="purSupplier" placeholder="Supplier company" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500" list="dl-purSupplier" autocomplete="off"><datalist id="dl-purSupplier" data-party="suppliers"></datalist>
+      <div class="space-y-4 text-xs max-h-[75vh] overflow-y-auto pr-1">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold uppercase text-slate-600 mb-1">PO #</label>
+            <input type="text" id="purNum" placeholder="PO-1001" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500">
+          </div>
+          <div>
+            <label class="block font-bold uppercase text-slate-600 mb-1">Date</label>
+            <input type="date" id="purDate" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold uppercase text-slate-600 mb-1">Supplier Name *</label>
+            <input type="text" id="purSupplier" placeholder="Supplier company" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500" list="dl-purSupplier" autocomplete="off"><datalist id="dl-purSupplier" data-party="suppliers"></datalist>
+          </div>
+          <div>
+            <label class="block font-bold uppercase text-slate-600 mb-1">Expected Delivery</label>
+            <input type="date" id="purDelivery" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500">
+          </div>
         </div>
         <div class="relative">
           <label class="block font-bold uppercase text-slate-600 mb-1">Item Name *</label>
           <input type="text" id="purItem" placeholder="Search medicine..." autocomplete="off" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500">
           <div id="dropdown-purItem" class="hidden absolute left-0 right-0 bg-white border border-slate-200 rounded-lg shadow-xl max-h-48 overflow-y-auto z-30 mt-1"></div>
         </div>
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block font-bold uppercase text-slate-600 mb-1">Quantity *</label>
+            <input type="number" id="purQty" value="1" min="0" step="any" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500">
+          </div>
+          <div>
+            <label class="block font-bold uppercase text-slate-600 mb-1">Unit / Pack</label>
+            <input type="text" id="purUom" placeholder="Box / Pack / Pcs" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500">
+          </div>
+          <div>
+            <label class="block font-bold uppercase text-slate-600 mb-1">Rate (Rs)</label>
+            <input type="number" id="purRate" placeholder="0.00" step="any" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500">
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block font-bold uppercase text-slate-600 mb-1">Discount (Rs)</label>
+            <input type="number" id="purDisc" value="0" step="any" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500">
+          </div>
+          <div>
+            <label class="block font-bold uppercase text-slate-600 mb-1">Tax / GST (Rs)</label>
+            <input type="number" id="purTax" value="0" step="any" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500">
+          </div>
+          <div>
+            <label class="block font-bold uppercase text-slate-600 mb-1">Batch #</label>
+            <input type="text" id="purBatch" placeholder="Batch" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold uppercase text-slate-600 mb-1">Status</label>
+            <select id="purStatus" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 bg-white">
+              <option value="Pending">Pending</option>
+              <option value="Ordered">Ordered</option>
+              <option value="Partially Received">Partially Received</option>
+              <option value="Received">Received</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold uppercase text-slate-600 mb-1">Total Amount (Rs)</label>
+            <input type="number" id="purAmt" step="any" placeholder="0.00" class="w-full px-3 py-2 border rounded-lg font-bold focus:ring-2 focus:ring-orange-500">
+            <p class="text-[10px] text-slate-400 mt-0.5">Auto = (Qty x Rate) - Discount + Tax. Aap khud bhi likh sakte hain.</p>
+          </div>
+        </div>
         <div>
-          <label class="block font-bold uppercase text-slate-600 mb-1">Total Amount (Rs)</label>
-          <input type="number" id="purAmt" placeholder="0.00" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500">
+          <label class="block font-bold uppercase text-slate-600 mb-1">Notes / Remarks</label>
+          <textarea id="purNotes" rows="2" placeholder="Delivery instructions, terms..." class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500"></textarea>
         </div>
         <div class="flex justify-end space-x-2 pt-2">
           <button type="button" onclick="closeModal('purchaseModal')" class="px-4 py-2 border rounded-lg font-bold text-slate-600 hover:bg-slate-100">Cancel</button>
@@ -2204,6 +2272,12 @@
         const el = document.getElementById(id);
         if (el) el.addEventListener('input', calculateDebitTotal);
       });
+      ['purQty', 'purRate', 'purDisc', 'purTax'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', calculatePurchaseTotal);
+      });
+      const purAmtEl = document.getElementById('purAmt');
+      if (purAmtEl) purAmtEl.addEventListener('input', () => { purAmtManual = true; });
     }
 
     const productFieldConfigs = {
@@ -2211,7 +2285,7 @@
       pinvItem: { dropdownId: 'dropdown-pinvItem', source: 'inventory', price: 'purchase', rate: 'pinvRate', qty: 'pinvQty', uom: 'pinvUom' },
       quoProduct: { dropdownId: 'dropdown-quoProduct', source: 'inventory', price: 'sale', rate: 'quoRate' },
       debItem: { dropdownId: 'dropdown-debItem', source: 'inventory', price: 'sale', rate: 'debRate', qty: 'debQty' },
-      purItem: { dropdownId: 'dropdown-purItem', source: 'inventory', price: 'purchase', amount: 'purAmt' },
+      purItem: { dropdownId: 'dropdown-purItem', source: 'inventory', price: 'purchase', rate: 'purRate', qty: 'purQty', uom: 'purUom', amount: 'purAmt' },
       itemName: { dropdownId: 'dropdown-itemName', source: 'master' }
     };
 
@@ -2507,13 +2581,27 @@
       printUniversalSlip("TAX INVOICE", data, false);
     }
 
+    let debAmtManual = false;
+
     function calculateDebitTotal() {
       const qty = parseFloat(document.getElementById('debQty').value) || 0;
       const rate = parseFloat(document.getElementById('debRate').value) || 0;
       const tax = parseFloat(document.getElementById('debTax').value) || 0;
       const total = (qty * rate) + tax;
       const amtEl = document.getElementById('debAmt');
-      if (amtEl) amtEl.value = total.toFixed(2);
+      if (amtEl && !debAmtManual) amtEl.value = total.toFixed(2);
+    }
+
+    // Purchase Order total: auto calculate but stay editable
+    let purAmtManual = false;
+
+    function calculatePurchaseTotal() {
+      const qty = parseFloat((document.getElementById('purQty') || {}).value) || 0;
+      const rate = parseFloat((document.getElementById('purRate') || {}).value) || 0;
+      const disc = parseFloat((document.getElementById('purDisc') || {}).value) || 0;
+      const tax = parseFloat((document.getElementById('purTax') || {}).value) || 0;
+      const amtEl = document.getElementById('purAmt');
+      if (amtEl && !purAmtManual) amtEl.value = Math.max(0, (qty * rate) - disc + tax).toFixed(2);
     }
 
     function saveOrder() {
@@ -2786,7 +2874,10 @@
         qty: qty,
         rate: rate,
         tax: tax,
-        amt: (qty * rate) + tax,
+        amt: (function () {
+          const typed = parseFloat((document.getElementById('debAmt') || {}).value);
+          return isNaN(typed) ? (qty * rate) + tax : typed;
+        })(),
         reason: document.getElementById('debReason').value
       };
       if (!userData.debitnotes) userData.debitnotes = [];
@@ -2795,6 +2886,7 @@
       saveData();
       renderAllData();
       closeModal('debitModal');
+      debAmtManual = false;
       document.getElementById('debNum').value = '';
       document.getElementById('debParty').value = '';
       document.getElementById('debItem').value = '';
@@ -2880,12 +2972,28 @@
         alert('Please fill in supplier and item name.');
         return;
       }
+      const val = id => (document.getElementById(id) || {}).value || '';
+      const num = id => parseFloat(val(id)) || 0;
+      const qty = num('purQty');
+      const rate = num('purRate');
+      const disc = num('purDisc');
+      const tax = num('purTax');
+      const typedAmt = parseFloat(val('purAmt'));
       const newP = {
-        ref: 'PO-' + Math.floor(1000 + Math.random() * 9000),
+        ref: val('purNum').trim() || ('PO-' + Math.floor(1000 + Math.random() * 9000)),
         supplier: supplier,
         item: item,
-        amt: parseFloat(document.getElementById('purAmt').value) || 0,
-        date: new Date().toISOString().split('T')[0]
+        qty: qty,
+        uom: val('purUom').trim(),
+        rate: rate,
+        discount: disc,
+        tax: tax,
+        batch: val('purBatch').trim(),
+        status: val('purStatus') || 'Pending',
+        delivery: val('purDelivery'),
+        notes: val('purNotes').trim(),
+        amt: isNaN(typedAmt) ? Math.max(0, (qty * rate) - disc + tax) : typedAmt,
+        date: val('purDate') || new Date().toISOString().split('T')[0]
       };
       if (!userData.purchases) userData.purchases = [];
       userData.purchases.unshift(newP);
@@ -2893,8 +3001,13 @@
       saveData();
       renderAllData();
       closeModal('purchaseModal');
-      document.getElementById('purSupplier').value = '';
-      document.getElementById('purItem').value = '';
+      purAmtManual = false;
+      ['purNum', 'purSupplier', 'purItem', 'purUom', 'purRate', 'purAmt', 'purBatch', 'purNotes', 'purDelivery'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      const q = document.getElementById('purQty'); if (q) q.value = 1;
+      ['purDisc', 'purTax'].forEach(id => { const el = document.getElementById(id); if (el) el.value = 0; });
     }
 
     function savePayout() {
@@ -3555,13 +3668,16 @@
             <td class="p-2 font-bold text-emerald-600 font-mono">${p.ref}</td>
             <td class="p-2 font-bold">${p.supplier}</td>
             <td class="p-2">${p.item}</td>
+            <td class="p-2 font-bold">${p.qty != null ? p.qty : '-'} ${p.uom || ''}</td>
+            <td class="p-2">Rs ${p.rate != null ? p.rate : 0}</td>
+            <td class="p-2"><span class="bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded font-bold text-[9px]">${p.status || 'Pending'}</span></td>
             <td class="p-2 font-bold">Rs ${p.amt}</td>
             <td class="p-2 text-right space-x-1">
-              <button type="button" onclick='printUniversalSlip("PURCHASE BILL SLIP", {"Ref #":"${p.ref}", "Supplier":"${p.supplier}", "Item":"${p.item}", "Amount":"Rs ${p.amt}", "Date":"${p.date}"}, false)' class="px-2 py-0.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded font-bold transition text-[10px]"><i class="fa-solid fa-print"></i> Slip</button>
+              <button type="button" onclick='printUniversalSlip("PURCHASE BILL SLIP", {"Ref #":"${p.ref}", "Supplier":"${p.supplier}", "Item":"${p.item}", "Qty":"${p.qty != null ? p.qty : ""} ${p.uom || ""}", "Rate":"Rs ${p.rate != null ? p.rate : 0}", "Discount":"Rs ${p.discount || 0}", "Tax":"Rs ${p.tax || 0}", "Batch":"${p.batch || "-"}", "Status":"${p.status || "Pending"}", "Expected Delivery":"${p.delivery || "-"}", "Notes":"${p.notes || "-"}", "Amount":"Rs ${p.amt}", "Date":"${p.date}"}, false)' class="px-2 py-0.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded font-bold transition text-[10px]"><i class="fa-solid fa-print"></i> Slip</button>
               ${getDeleteBtnHtml('purchases', i)}
             </td>
           </tr>
-        `).join('') || `<tr><td colspan="5" class="p-4 text-center text-slate-400">No purchase records found.</td></tr>`;
+        `).join('') || `<tr><td colspan="8" class="p-4 text-center text-slate-400">No purchase records found.</td></tr>`;
       }
       // Render Payouts Table
       const payTBody = document.getElementById('payoutsTableBody');
