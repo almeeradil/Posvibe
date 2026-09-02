@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -2408,8 +2409,33 @@
         uom: it.uom || '',
         qty: it.qty == null ? 1 : it.qty,
         rate: it.rate || 0,
-        amount: it.amount != null ? it.amount : pvLineAmount(it)
+        // Line amount = taxable value (qty x rate). Tax & discount are shown in the totals block.
+        amount: (parseFloat(it.qty) || 0) * (parseFloat(it.rate) || 0)
       }));
+      // Structured totals: Subtotal -> GST % -> GST amount -> Discount -> Grand Total
+      (function () {
+        let subtotal = 0, taxAmount = 0, discount = 0;
+        const pcts = [];
+        items.forEach(it => {
+          const base = (parseFloat(it.qty) || 0) * (parseFloat(it.rate) || 0);
+          const pct = parseFloat(it.taxPct) || 0;
+          subtotal += base;
+          taxAmount += base * pct / 100;
+          discount += parseFloat(it.discount) || 0;
+          if (pcts.indexOf(pct) === -1) pcts.push(pct);
+        });
+        const grand = (parseFloat(o.amount) || 0) || (subtotal + taxAmount - discount);
+        data.__totals = {
+          subtotal: subtotal,
+          taxPct: pcts.length === 1 ? pcts[0] : (subtotal ? (taxAmount / subtotal) * 100 : 0),
+          taxMixed: pcts.length > 1,
+          taxAmount: taxAmount,
+          discount: discount,
+          grand: grand,
+          itemCount: items.length
+        };
+        delete data["Total Amount"];
+      })();
       printUniversalSlip("TAX INVOICE", data, false);
     }
 
@@ -3615,7 +3641,9 @@
       const s = getSettings();
       const data = Object.assign({}, dataObj);
       const multiItems = (data.__items && data.__items.length) ? data.__items.slice() : null;
+      const totalsInfo = data.__totals || null;
       delete data.__items;
+      delete data.__totals;
       const numKey = matchKey(data, [/#$/, /^Ref/i, /Voucher/i, /Receipt/i, /Number/i]);
       const dateKey = matchKey(data, [/date/i]);
       const docNumber = numKey ? data[numKey] : '';
@@ -3639,7 +3667,8 @@
       const qtyKey = matchKey(amounts, [/quantity/i, /^qty/i, /stock/i]);
       const rateKey = matchKey(amounts, [/^rate/i, /price/i]);
       const totalKey = matchKey(amounts, [/total amount/i, /^total/i, /^amount/i, /fee amount/i, /^fee/i]);
-      const totalVal = totalKey ? toAmount(amounts[totalKey]) : (qtyKey && rateKey ? toAmount(amounts[qtyKey]) * toAmount(amounts[rateKey]) : 0);
+      const totalVal = totalsInfo ? toAmount(totalsInfo.grand)
+        : (totalKey ? toAmount(amounts[totalKey]) : (qtyKey && rateKey ? toAmount(amounts[qtyKey]) * toAmount(amounts[rateKey]) : 0));
       const rowsFrom = obj => Object.keys(obj).map(k =>
         `<tr><td class="k">${escapeHtml(k)}</td><td class="v">${escapeHtml(obj[k])}</td></tr>`).join('');
       let itemsTable = '';
@@ -3684,14 +3713,30 @@
           </table>`;
       }
       let subtotalRow = '';
-      if (multiItems) {
+      if (totalsInfo) {
+        subtotalRow = `<tr><td>Subtotal${totalsInfo.itemCount > 1 ? ` (${totalsInfo.itemCount} items)` : ''}</td><td class="r">${money(toAmount(totalsInfo.subtotal))}</td></tr>`;
+      } else if (multiItems) {
         subtotalRow = `<tr><td>Subtotal (${multiItems.length} item${multiItems.length > 1 ? 's' : ''})</td><td class="r">${money(multiSubtotal)}</td></tr>`;
       } else if (descKey && qtyKey && rateKey) {
         subtotalRow = `<tr><td>Subtotal</td><td class="r">${money(toAmount(amounts[qtyKey]) * toAmount(amounts[rateKey]))}</td></tr>`;
       }
-      const summaryRows = Object.keys(amounts)
-        .filter(k => k !== totalKey && (!descKey || (k !== qtyKey && k !== rateKey)))
-        .map(k => `<tr><td class="k">${escapeHtml(k)}</td><td class="v r">${escapeHtml(amounts[k])}</td></tr>`).join('');
+      // Totals block order: Subtotal -> Tax (GST) % -> Tax (GST) Amount -> Discount -> Grand Total
+      let summaryRows = '';
+      if (totalsInfo) {
+        const pct = toAmount(totalsInfo.taxPct);
+        summaryRows =
+          `<tr><td>Tax (GST) %</td><td class="r">${totalsInfo.taxMixed ? 'Mixed' : (Math.round(pct * 100) / 100) + '%'}</td></tr>` +
+          `<tr><td>Tax (GST) Amount</td><td class="r">${money(toAmount(totalsInfo.taxAmount))}</td></tr>` +
+          `<tr><td>Discount</td><td class="r">- ${money(toAmount(totalsInfo.discount))}</td></tr>`;
+      } else {
+        const rest = Object.keys(amounts)
+          .filter(k => k !== totalKey && (!descKey || (k !== qtyKey && k !== rateKey)));
+        const rank = k => /(%|pct|percent)/i.test(k) && /(tax|gst)/i.test(k) ? 1
+          : /(tax|gst)/i.test(k) ? 2
+          : /discount/i.test(k) ? 3 : 4;
+        summaryRows = rest.sort((a, b) => rank(a) - rank(b))
+          .map(k => `<tr><td class="k">${escapeHtml(k)}</td><td class="v r">${escapeHtml(amounts[k])}</td></tr>`).join('');
+      }
       const detailRows = rowsFrom(Object.assign({}, descKey ? {} : itemInfo, others));
       const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${escapeHtml(title)} ${escapeHtml(docNumber)}</title>
       <style>
@@ -3742,7 +3787,7 @@
             <div class="doc-rule"></div>
           </div>
           <div class="brand">
-            <img src="${s.logo || '/logo.png'}">
+            <img src="/logo.png" alt="Posvibe">
             <span>POSVIBE</span>
           </div>
         </div>
