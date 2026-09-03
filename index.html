@@ -1,6 +1,3 @@
-
-
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -2143,14 +2140,11 @@
       loadData();
       setupEventListeners();
       setupProductSearchDropdowns();
-      const savedRole = sessionStorage.getItem('bizManagerRole');
-      if (savedRole) {
-        currentUserRole = savedRole;
-        document.getElementById('loginScreen').classList.add('hidden');
-        document.getElementById('appContainer').classList.remove('hidden');
-        updateRoleUI();
-        renderAllData();
-      }
+      // Har refresh par login screen dikhani hai:
+      // purana session clear karo aur login screen force karo.
+      sessionStorage.removeItem('bizManagerRole');
+      document.getElementById('loginScreen').classList.remove('hidden');
+      document.getElementById('appContainer').classList.add('hidden');
     });
 
     function handleLogin(e) {
