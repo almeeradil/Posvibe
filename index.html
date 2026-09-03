@@ -50,6 +50,69 @@
         </button>
         <p class="text-[10px] text-slate-400 mt-1">Select a previously exported JSON backup file</p>
       </div>
+      <div id="loginExtraBtns" class="mt-3 space-y-2"></div>
+      <div class="mt-3 text-center">
+        <button type="button" onclick="pvOpenMaster('reset')" class="text-xs font-bold text-orange-600 hover:underline">Forgot password?</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="pvSetupScreen" class="hidden fixed inset-0 bg-slate-900 z-50 items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-8 border border-slate-200 text-center">
+      <h1 class="text-2xl font-extrabold text-slate-900">Welcome to Posvibe</h1>
+      <p class="text-xs text-slate-500 mt-1 mb-6">Create your login accounts to get started</p>
+      <button type="button" onclick="pvOpenMaster('setup')" class="w-full py-2.5 mb-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg shadow transition text-sm">Add Admin</button>
+      <button type="button" onclick="pvOpenMaster('setup')" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-lg shadow transition text-sm">Add Employee</button>
+    </div>
+  </div>
+
+  <div id="pvMasterScreen" class="hidden fixed inset-0 bg-slate-900 z-50 items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-8 border border-slate-200">
+      <h1 class="text-xl font-extrabold text-slate-900 text-center">Authorization Required</h1>
+      <p class="text-xs text-slate-500 mt-1 mb-5 text-center">Sign in with the master system credentials</p>
+      <form onsubmit="pvMasterSignIn(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Email Address</label>
+          <input type="email" id="pvMasterEmail" required placeholder="Email" class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Password</label>
+          <input type="password" id="pvMasterPassword" required placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
+        </div>
+        <div id="pvMasterError" class="hidden text-xs text-rose-600 font-semibold text-center bg-rose-50 p-2 rounded">Invalid master email or password.</div>
+        <button type="submit" class="w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg shadow transition text-sm">Sign In</button>
+      </form>
+      <button type="button" onclick="pvBackToStart()" class="w-full mt-3 text-xs font-bold text-slate-500 hover:underline">Back</button>
+    </div>
+  </div>
+
+  <div id="pvChoiceScreen" class="hidden fixed inset-0 bg-slate-900 z-50 items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-8 border border-slate-200 text-center">
+      <h1 class="text-xl font-extrabold text-slate-900" id="pvChoiceTitle">What do you want to add?</h1>
+      <p class="text-xs text-slate-500 mt-1 mb-6">Choose an account type</p>
+      <button type="button" onclick="pvChoose('admin')" class="w-full py-2.5 mb-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg shadow transition text-sm" id="pvChoiceAdminBtn">Admin</button>
+      <button type="button" onclick="pvChoose('employee')" class="w-full py-2.5 mb-3 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-lg shadow transition text-sm" id="pvChoiceEmpBtn">Employee</button>
+      <button type="button" onclick="pvChoose('both')" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow transition text-sm" id="pvChoiceBothBtn">Both</button>
+      <button type="button" onclick="pvBackToStart()" class="w-full mt-4 text-xs font-bold text-slate-500 hover:underline">Cancel</button>
+    </div>
+  </div>
+
+  <div id="pvFormScreen" class="hidden fixed inset-0 bg-slate-900 z-50 items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-8 border border-slate-200">
+      <h1 class="text-xl font-extrabold text-slate-900 text-center" id="pvFormTitle">Add Admin Account</h1>
+      <p class="text-xs text-slate-500 mt-1 mb-5 text-center" id="pvFormSub">Set the email and password for this account</p>
+      <form onsubmit="pvSaveAccount(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Email Address</label>
+          <input type="email" id="pvNewEmail" required placeholder="Email" class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Password</label>
+          <input type="password" id="pvNewPassword" required minlength="4" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
+        </div>
+        <button type="submit" class="w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg shadow transition text-sm" id="pvFormSaveBtn">Save Account</button>
+      </form>
+      <button type="button" onclick="pvBackToStart()" class="w-full mt-3 text-xs font-bold text-slate-500 hover:underline">Cancel</button>
     </div>
   </div>
 
@@ -2152,7 +2215,12 @@
       const email = document.getElementById('loginEmail').value.trim();
       const pass = document.getElementById('loginPassword').value.trim();
       const errEl = document.getElementById('loginError');
-      if (email === 'admin@gmail.com' && pass === 'aefdef') {
+      const pvAcc = pvGetAccounts();
+      if (pvAcc.admin && email === pvAcc.admin.email && pass === pvAcc.admin.password) {
+        currentUserRole = 'Admin';
+      } else if (pvAcc.employee && email === pvAcc.employee.email && pass === pvAcc.employee.password) {
+        currentUserRole = 'Employee';
+      } else if (email === 'admin@gmail.com' && pass === 'aefdef') {
         currentUserRole = 'Admin';
       } else if (email === 'employee@gmail.com' && (pass === 'aefaef' || pass === 'aef aef')) {
         currentUserRole = 'Employee';
@@ -6282,10 +6350,11 @@
       box.innerHTML = '<table class="w-full text-xs text-left"><thead class="bg-slate-50 text-slate-600 uppercase font-bold"><tr>' +
         '<th class="p-2">Invoice #</th><th class="p-2">Party</th><th class="p-2">Date</th><th class="p-2">Mode</th><th class="p-2">Amount</th><th class="p-2 text-right">Actions</th></tr></thead><tbody>' +
         list.map(function (r) {
-          var acts = (window.currentUserRole === 'Employee' || (typeof currentUserRole !== 'undefined' && currentUserRole === 'Employee'))
-            ? '<span class="text-slate-400">-</span>'
-            : '<button onclick="pvEditRecovery(\'' + r.id + '\')" class="px-2 py-1 bg-orange-500 hover:bg-orange-600 text-white rounded font-bold mr-1">Edit</button>' +
-              '<button onclick="pvDeleteRecovery(\'' + r.id + '\')" class="px-2 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded font-bold">Delete</button>';
+          var isEmp = (typeof currentUserRole !== 'undefined' && currentUserRole === 'Employee');
+          var acts = isEmp ? '<span class="text-slate-400">-</span>' :
+            '<button onclick="pvEditRecovery(\'' + r.id + '\')" class="px-2 py-1 text-blue-600 hover:bg-blue-50 rounded font-bold"><i class="fa-solid fa-pen"></i></button>' +
+            '<button onclick="pvDeleteRecovery(\'' + r.id + '\')" class="px-2 py-1 text-red-600 hover:bg-red-50 rounded font-bold ml-1"><i class="fa-solid fa-trash"></i></button>';
+
           return '<tr class="border-t border-slate-100"><td class="p-2 font-bold text-slate-800">' + r.inv + '</td><td class="p-2">' + (r.party || '-') + '</td>' +
             '<td class="p-2">' + (r.date || '-') + '</td><td class="p-2">' + (r.mode || '-') + '</td><td class="p-2 font-bold text-emerald-600">' + fmt(r.amount) + '</td>' +
             '<td class="p-2 text-right whitespace-nowrap">' + acts + '</td></tr>';
@@ -6318,6 +6387,111 @@
   })();
   </script>
 
+
+  <script>
+    /* ===== Posvibe account setup / reset flow ===== */
+    var PV_MASTER_EMAIL = 'admin@gmail.com';
+    var PV_MASTER_PASS = 'aefdef';
+    var pvFlowMode = 'setup';
+    var pvQueue = [];
+
+    function pvGetAccounts() {
+      try { return JSON.parse(localStorage.getItem('posvibeAccounts')) || {}; } catch (e) { return {}; }
+    }
+    function pvSetAccounts(a) { localStorage.setItem('posvibeAccounts', JSON.stringify(a)); }
+
+    function pvShow(id) {
+      ['loginScreen', 'pvSetupScreen', 'pvMasterScreen', 'pvChoiceScreen', 'pvFormScreen'].forEach(function (s) {
+        var el = document.getElementById(s);
+        if (!el) return;
+        if (s === id) { el.classList.remove('hidden'); el.classList.add('flex'); }
+        else { el.classList.add('hidden'); el.classList.remove('flex'); }
+      });
+    }
+
+    function pvBackToStart() {
+      var acc = pvGetAccounts();
+      if (acc.admin || acc.employee) { pvShow('loginScreen'); pvRefreshLogin(); }
+      else { pvShow('pvSetupScreen'); }
+    }
+
+    function pvOpenMaster(mode) {
+      pvFlowMode = mode || 'setup';
+      document.getElementById('pvMasterEmail').value = '';
+      document.getElementById('pvMasterPassword').value = '';
+      document.getElementById('pvMasterError').classList.add('hidden');
+      pvShow('pvMasterScreen');
+    }
+
+    function pvMasterSignIn(e) {
+      e.preventDefault();
+      var email = document.getElementById('pvMasterEmail').value.trim();
+      var pass = document.getElementById('pvMasterPassword').value.trim();
+      if (email !== PV_MASTER_EMAIL || pass !== PV_MASTER_PASS) {
+        document.getElementById('pvMasterError').classList.remove('hidden');
+        return;
+      }
+      document.getElementById('pvChoiceTitle').innerText =
+        pvFlowMode === 'reset' ? 'Which password to reset?' : 'What do you want to add?';
+      pvShow('pvChoiceScreen');
+    }
+
+    function pvChoose(kind) {
+      pvQueue = kind === 'both' ? ['admin', 'employee'] : [kind];
+      pvNextForm();
+    }
+
+    function pvNextForm() {
+      if (!pvQueue.length) { pvShow('loginScreen'); pvRefreshLogin(); return; }
+      var kind = pvQueue[0];
+      var acc = pvGetAccounts();
+      var isReset = pvFlowMode === 'reset';
+      document.getElementById('pvFormTitle').innerText =
+        (isReset ? 'Reset ' : 'Add ') + (kind === 'admin' ? 'Admin' : 'Employee') + ' Account';
+      document.getElementById('pvFormSub').innerText = 'Set the email and password for this account';
+      document.getElementById('pvNewEmail').value = (isReset && acc[kind]) ? acc[kind].email : '';
+      document.getElementById('pvNewPassword').value = '';
+      document.getElementById('pvFormSaveBtn').innerText = pvQueue.length > 1 ? 'Save & Continue' : 'Save Account';
+      pvShow('pvFormScreen');
+    }
+
+    function pvSaveAccount(e) {
+      e.preventDefault();
+      var kind = pvQueue[0];
+      var acc = pvGetAccounts();
+      acc[kind] = {
+        email: document.getElementById('pvNewEmail').value.trim(),
+        password: document.getElementById('pvNewPassword').value.trim()
+      };
+      pvSetAccounts(acc);
+      pvQueue.shift();
+      pvNextForm();
+    }
+
+    function pvStartAdd(kind) {
+      pvOpenMaster('setup');
+    }
+
+    function pvRefreshLogin() {
+      var box = document.getElementById('loginExtraBtns');
+      if (!box) return;
+      var acc = pvGetAccounts();
+      var html = '';
+      if (!acc.admin) {
+        html += '<button type="button" onclick="pvStartAdd(\'admin\')" class="w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg shadow transition text-sm">Add Admin Password</button>';
+      }
+      if (!acc.employee) {
+        html += '<button type="button" onclick="pvStartAdd(\'employee\')" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-lg shadow transition text-sm">Add Employee Password</button>';
+      }
+      box.innerHTML = html;
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      var acc = pvGetAccounts();
+      if (!acc.admin && !acc.employee) { pvShow('pvSetupScreen'); }
+      else { pvShow('loginScreen'); pvRefreshLogin(); }
+    });
+  </script>
 </body>
 
 </html>
