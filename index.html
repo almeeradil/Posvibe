@@ -1,5 +1,7 @@
 
 
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -524,7 +526,13 @@
         <div id="tab-patients" class="tab-content hidden space-y-4">
           <div class="flex justify-between items-center bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
             <h4 class="text-sm font-bold text-slate-800">Patient Records / Clinical Info</h4>
-            <button onclick="openModal('patientModal')" class="px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-bold text-xs shadow transition">Add Patient</button>
+            <div class="flex items-center gap-2">
+              <div class="relative">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                <input type="text" id="patientSearch" oninput="renderPatientsTable()" placeholder="Search by name or phone..." class="pl-8 pr-3 py-1.5 border border-slate-200 rounded-lg text-xs w-56 focus:ring-2 focus:ring-orange-500">
+              </div>
+              <button onclick="openModal('patientModal')" class="px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-bold text-xs shadow transition">Add Patient</button>
+            </div>
           </div>
           <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
             <table class="w-full text-xs text-left border-collapse">
@@ -1403,12 +1411,24 @@
             <input type="number" id="patFee" placeholder="500" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500">
           </div>
         </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold uppercase text-slate-600 mb-1">Paid Amount (Rs)</label>
+            <input type="number" id="patPaid" placeholder="0" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500">
+          </div>
+          <div>
+            <label class="block font-bold uppercase text-slate-600 mb-1">Payment Status</label>
+            <select id="patStatus" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 bg-white">
+              <option value="Paid">Paid</option>
+              <option value="Pending">Pending</option>
+            </select>
+          </div>
+        </div>
         <div>
-          <label class="block font-bold uppercase text-slate-600 mb-1">Payment Status</label>
-          <select id="patStatus" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 bg-white">
-            <option value="Paid">Paid</option>
-            <option value="Pending">Pending</option>
-          </select>
+          <label class="block font-bold uppercase text-slate-600 mb-1">Medicines Prescribed</label>
+          <textarea id="patMedicines" rows="3" placeholder="One medicine per line e.g.
+Panadol 500mg - 1x3 for 5 days
+Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500"></textarea>
         </div>
         <div class="flex justify-end space-x-2 pt-2">
           <button type="button" onclick="closeModal('patientModal')" class="px-4 py-2 border rounded-lg font-bold text-slate-600 hover:bg-slate-100">Cancel</button>
@@ -2260,24 +2280,56 @@
       document.body.classList.toggle('role-employee', currentUserRole === 'Employee');
     }
 
-    function exportBackup() {
+    function pvBackupPayload() {
+      let accounts = {};
+      try { accounts = JSON.parse(localStorage.getItem('posvibeAccounts')) || {}; } catch (e) { accounts = {}; }
+      return {
+        app: 'Posvibe',
+        exportedAt: new Date().toISOString(),
+        data: userData,
+        accounts: accounts
+      };
+    }
+
+    function pvBackupFileName() {
+      const d = new Date();
+      const stamp = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0') + '_' + String(d.getHours()).padStart(2, '0') + String(d.getMinutes()).padStart(2, '0');
+      return 'posvibe-backup-' + stamp + '.json';
+    }
+
+    async function exportBackup() {
+      const text = JSON.stringify(pvBackupPayload(), null, 2);
+      const fileName = pvBackupFileName();
+
+      // Preferred: let the user choose the folder/drive (e.g. D:\Backups)
+      if (window.showSaveFilePicker) {
+        try {
+          const handle = await window.showSaveFilePicker({
+            suggestedName: fileName,
+            startIn: 'documents',
+            types: [{ description: 'JSON Backup', accept: { 'application/json': ['.json'] } }]
+          });
+          const writable = await handle.createWritable();
+          await writable.write(new Blob([text], { type: 'application/json' }));
+          await writable.close();
+          alert('Backup saved successfully.');
+          return;
+        } catch (e) {
+          if (e && e.name === 'AbortError') return; // user cancelled
+          // fall through to normal download
+        }
+      }
+
       try {
-        const payload = {
-          app: 'Posvibe',
-          exportedAt: new Date().toISOString(),
-          data: userData
-        };
-        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        const blob = new Blob([text], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        const d = new Date();
-        const stamp = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0') + '_' + String(d.getHours()).padStart(2, '0') + String(d.getMinutes()).padStart(2, '0');
         a.href = url;
-        a.download = 'posvibe-backup-' + stamp + '.json';
+        a.download = fileName;
         document.body.appendChild(a);
         a.click();
         a.remove();
-        URL.revokeObjectURL(url);
+        setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
       } catch (e) {
         alert('Backup export failed: ' + e.message);
       }
@@ -2295,6 +2347,9 @@
           if (!restored || typeof restored !== 'object') throw new Error('Invalid backup file');
           if (!confirm('Restore this backup? All current data on this device will be replaced.')) return;
           localStorage.setItem('bizManagerData', JSON.stringify(restored));
+          if (parsed && parsed.accounts && typeof parsed.accounts === 'object') {
+            localStorage.setItem('posvibeAccounts', JSON.stringify(parsed.accounts));
+          }
           alert('Backup restored successfully. Please sign in.');
           location.reload();
         } catch (e) {
@@ -2914,8 +2969,12 @@
         doctor: document.getElementById('patDoctor').value.trim(),
         service: document.getElementById('patService').value.trim(),
         fee: parseFloat(document.getElementById('patFee').value) || 0,
+        paid: parseFloat(document.getElementById('patPaid').value) || 0,
+        medicines: document.getElementById('patMedicines').value.trim(),
+        date: todayISO(),
         status: document.getElementById('patStatus').value
       };
+      if (newP.status === 'Paid' && !newP.paid) newP.paid = newP.fee;
       if (!userData.patients) userData.patients = [];
       userData.patients.unshift(newP);
       logActivity(`Added Patient Record: ${name}`);
@@ -2923,6 +2982,8 @@
       renderAllData();
       closeModal('patientModal');
       document.getElementById('patName').value = '';
+      document.getElementById('patPaid').value = '';
+      document.getElementById('patMedicines').value = '';
     }
 
     function saveDebitNote() {
@@ -3627,42 +3688,7 @@
         `).join('') || `<tr><td colspan="6" class="p-4 text-center text-slate-400">No quotations found.</td></tr>`;
       }
       // Render Patients Table
-      const patTBody = document.getElementById('patientsTableBody');
-      if (patTBody) {
-        patTBody.innerHTML = (userData.patients || []).map((p, i) => {
-          const isPaid = p.status === 'Paid';
-          const statusBadge = isPaid ?
-            '<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold text-[9px]">Paid</span>' :
-            '<span class="bg-rose-100 text-rose-800 px-2 py-0.5 rounded font-bold text-[9px]">Pending</span>';
-          return `
-            <tr class="border-b hover:bg-slate-50">
-              <td class="p-2">
-                <div class="font-bold text-slate-800">${p.name}</div>
-                <div class="text-[9px] text-slate-500">Age: ${p.age || 'N/A'} yrs | Ph: ${p.contact || 'N/A'}</div>
-              </td>
-              <td class="p-2">
-                <div class="font-semibold text-slate-700">${p.gender}</div>
-                <div class="text-[9px] text-slate-500">${p.address || 'N/A'}</div>
-              </td>
-              <td class="p-2 font-semibold text-slate-700">${p.doctor}</td>
-              <td class="p-2 text-slate-600">${p.service}</td>
-              <td class="p-2">
-                <div class="font-bold text-slate-900">Rs ${p.fee || 0}</div>
-                <div class="mt-0.5">${statusBadge}</div>
-              </td>
-              <td class="p-2 text-right space-x-1 whitespace-nowrap">
-                <button type="button" onclick='printUniversalSlip("PATIENT SLIP", {
-                  "Patient Name": "${p.name}", "Age / Gender": "${p.age} yrs / ${p.gender}",
-                  "Contact": "${p.contact}", "Home Address": "${p.address}",
-                  "Doctor / Hospital": "${p.doctor}", "Service Used": "${p.service}",
-                  "Fee Amount": "Rs ${p.fee}", "Status": "${p.status}"
-                }, false)' class="px-2 py-0.5 bg-orange-50 text-orange-600 hover:bg-orange-500 hover:text-white rounded font-bold transition text-[10px]"><i class="fa-solid fa-print"></i> Print</button>
-                ${getDeleteBtnHtml('patients', i)}
-              </td>
-            </tr>
-          `;
-        }).join('') || `<tr><td colspan="6" class="p-4 text-center text-slate-400">No patient records found.</td></tr>`;
-      }
+      renderPatientsTable();
       // Render Debit Notes Table
       const debTBody = document.getElementById('debitTableBody');
       if (debTBody) {
@@ -4084,6 +4110,129 @@
     function toAmount(v) {
       const n = parseFloat(String(v).replace(/[^0-9.\-]/g, ''));
       return isNaN(n) ? 0 : n;
+    }
+
+    function patientPending(p) {
+      const fee = parseFloat(p.fee) || 0;
+      const paid = p.paid != null ? (parseFloat(p.paid) || 0) : (p.status === 'Paid' ? fee : 0);
+      return Math.max(0, fee - paid);
+    }
+
+    function renderPatientsTable() {
+      const patTBody = document.getElementById('patientsTableBody');
+      if (!patTBody) return;
+      const qEl = document.getElementById('patientSearch');
+      const q = (qEl ? qEl.value : '').trim().toLowerCase();
+      const list = (userData.patients || []).map((p, i) => ({ p: p, i: i }))
+        .filter(o => !q ||
+          (o.p.name || '').toLowerCase().includes(q) ||
+          String(o.p.contact || '').toLowerCase().includes(q));
+      patTBody.innerHTML = list.map(o => {
+        const p = o.p, i = o.i;
+        const fee = parseFloat(p.fee) || 0;
+        const paid = p.paid != null ? (parseFloat(p.paid) || 0) : (p.status === 'Paid' ? fee : 0);
+        const pending = patientPending(p);
+        const statusBadge = pending <= 0 ?
+          '<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold text-[9px]">Paid</span>' :
+          '<span class="bg-rose-100 text-rose-800 px-2 py-0.5 rounded font-bold text-[9px]">Pending Rs ' + pending + '</span>';
+        const meds = (p.medicines || '').split('\n').filter(Boolean).join(', ');
+        return `
+          <tr class="border-b hover:bg-slate-50">
+            <td class="p-2">
+              <div class="font-bold text-slate-800">${escapeHtml(p.name)}</div>
+              <div class="text-[9px] text-slate-500">Age: ${escapeHtml(p.age || 'N/A')} yrs | Ph: ${escapeHtml(p.contact || 'N/A')}</div>
+            </td>
+            <td class="p-2">
+              <div class="font-semibold text-slate-700">${escapeHtml(p.gender || '')}</div>
+              <div class="text-[9px] text-slate-500">${escapeHtml(p.address || 'N/A')}</div>
+            </td>
+            <td class="p-2 font-semibold text-slate-700">${escapeHtml(p.doctor || '')}</td>
+            <td class="p-2 text-slate-600">
+              <div>${escapeHtml(p.service || '')}</div>
+              ${meds ? `<div class="text-[9px] text-slate-500 mt-0.5"><i class="fa-solid fa-pills"></i> ${escapeHtml(meds)}</div>` : ''}
+            </td>
+            <td class="p-2">
+              <div class="font-bold text-slate-900">Rs ${fee}</div>
+              <div class="text-[9px] text-slate-500">Paid Rs ${paid}</div>
+              <div class="mt-0.5">${statusBadge}</div>
+            </td>
+            <td class="p-2 text-right space-x-1 whitespace-nowrap">
+              <button type="button" onclick="printPatientSlip(${i})" class="px-2 py-0.5 bg-orange-50 text-orange-600 hover:bg-orange-500 hover:text-white rounded font-bold transition text-[10px]"><i class="fa-solid fa-print"></i> Print</button>
+              ${getDeleteBtnHtml('patients', i)}
+            </td>
+          </tr>
+        `;
+      }).join('') || `<tr><td colspan="6" class="p-4 text-center text-slate-400">${q ? 'No patient matched your search.' : 'No patient records found.'}</td></tr>`;
+    }
+
+    function printPatientSlip(index) {
+      const p = (userData.patients || [])[index];
+      if (!p) return;
+      const s = getSettings();
+      const fee = parseFloat(p.fee) || 0;
+      const paid = p.paid != null ? (parseFloat(p.paid) || 0) : (p.status === 'Paid' ? fee : 0);
+      const pending = Math.max(0, fee - paid);
+      const meds = (p.medicines || '').split('\n').map(m => m.trim()).filter(Boolean);
+      const medRows = meds.length
+        ? meds.map((m, i) => `<tr><td style="width:34px">${i + 1}</td><td>${escapeHtml(m)}</td></tr>`).join('')
+        : `<tr><td colspan="2">No medicines prescribed.</td></tr>`;
+      const row = (k, v) => `<tr><td class="k">${escapeHtml(k)}</td><td class="v">${escapeHtml(v)}</td></tr>`;
+      const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Patient Slip - ${escapeHtml(p.name)}</title>
+      <style>
+        *{box-sizing:border-box}
+        body{font-family:Arial,Helvetica,sans-serif;color:#111827;margin:0;padding:22px;font-size:12px;background:#fff;}
+        .sheet{max-width:780px;margin:0 auto;border:1px solid #d1d5db;padding:26px 28px;}
+        .head{text-align:center;border-bottom:3px solid #1e9bd7;padding-bottom:10px;margin-bottom:16px;}
+        .head img{max-height:70px;margin-bottom:6px;}
+        .head .cname{font-weight:900;font-size:18px;letter-spacing:1px;}
+        .head .cinfo{font-size:10.5px;color:#4b5563;margin-top:3px;line-height:1.5;}
+        .title{font-size:20px;font-weight:900;color:#1e9bd7;text-transform:uppercase;text-align:center;margin:6px 0 16px;}
+        table{width:100%;border-collapse:collapse;}
+        .kv td{padding:5px 6px;font-size:12px;border:1px solid #d1d5db;}
+        .kv td.k{background:#f3f4f6;font-weight:700;text-transform:uppercase;width:38%;font-size:11px;}
+        .kv td.v{font-weight:700;}
+        h4{margin:18px 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.4px;}
+        .meds td{padding:6px;border:1px solid #d1d5db;font-size:12px;}
+        .meds th{background:#e5e7eb;padding:6px;border:1px solid #111827;font-size:11px;text-transform:uppercase;text-align:left;}
+        .sign{display:flex;justify-content:space-between;margin-top:46px;font-size:11px;font-weight:700;}
+        .sign div{border-top:1px solid #111827;padding-top:5px;width:220px;text-align:center;}
+        @media print{body{padding:0}.sheet{border:none}@page{margin:12mm}}
+      </style></head><body><div class="sheet">
+        <div class="head">
+          ${s.logo ? `<img src="${s.logo}">` : ''}
+          <div class="cname">${escapeHtml(s.company || 'Clinic')}</div>
+          <div class="cinfo">
+            ${s.address ? escapeHtml(s.address) + '<br>' : ''}
+            ${s.phone ? 'Phone: ' + escapeHtml(s.phone) : ''}
+          </div>
+        </div>
+        <div class="title">Patient Slip</div>
+        <table class="kv">
+          ${row('Date', prettyDate(p.date || todayISO()))}
+          ${row('Doctor Name', p.doctor || '-')}
+          ${row('Patient Name', p.name || '-')}
+          ${row('Patient Phone Number', p.contact || '-')}
+          ${row('Service', p.service || '-')}
+          ${row('Total Fee', 'Rs ' + fee)}
+          ${row('Paid Amount', 'Rs ' + paid)}
+          ${row('Pending Amount', 'Rs ' + pending)}
+        </table>
+        <h4>Medicines Prescribed</h4>
+        <table class="meds">
+          <thead><tr><th style="width:34px">#</th><th>Medicine / Dosage</th></tr></thead>
+          <tbody>${medRows}</tbody>
+        </table>
+        <div class="sign">
+          <div>Patient Signature</div>
+          <div>Doctor Signature</div>
+        </div>
+      </div>
+      <script>window.onload=function(){window.print();}<\/script>
+      </body></html>`;
+      const w = window.open('', '_blank');
+      if (!w) { alert('Please allow pop-ups to print.'); return; }
+      w.document.write(html);
+      w.document.close();
     }
 
     function printUniversalSlip(title, dataObj, autoClose = false) {
