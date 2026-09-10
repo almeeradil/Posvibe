@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -244,7 +246,7 @@
         </div>
 
         <div id="tab-dashboard" class="tab-content space-y-6">
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div class="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-5 gap-4">
             <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
               <div class="text-xs font-bold uppercase text-slate-400">Total Sales Revenue</div>
               <div id="stat-dailysales" class="text-2xl font-black text-slate-900 mt-1">Rs 0</div>
@@ -252,6 +254,12 @@
             <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
               <div class="text-xs font-bold uppercase text-slate-400">Inventory Items</div>
               <div id="stat-stock" class="text-2xl font-black text-slate-900 mt-1">0 Items</div>
+              <div id="stat-lowstock" class="text-[11px] font-bold text-rose-600 mt-1">0 Low Stock</div>
+            </div>
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+              <div class="text-xs font-bold uppercase text-slate-400">Total Stock Value</div>
+              <div id="stat-stockvalue" class="text-2xl font-black text-emerald-700 mt-1">Rs 0</div>
+              <div class="text-[11px] font-semibold text-slate-400 mt-1">Inventory purchase value</div>
             </div>
             <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
               <div class="text-xs font-bold uppercase text-slate-400">Active Customers</div>
@@ -265,6 +273,7 @@
 
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+
               <h4 class="text-sm font-bold text-slate-800 mb-4">Sales Revenue Growth</h4>
               <div class="h-64"><canvas id="salesChart"></canvas></div>
             </div>
@@ -297,18 +306,17 @@
               <div class="h-64"><canvas id="reportsChart"></canvas></div>
             </div>
             <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-              <h4 class="text-sm font-bold text-slate-800 mb-4">Activity Tracking Audit Trail</h4>
-              <div class="overflow-y-auto max-h-64">
-                <table class="w-full text-xs text-left">
-                  <tbody id="trackingTableBody">
-                    <tr>
-                      <td colspan="2" class="p-4 text-center text-slate-400">No activity recorded yet.</td>
-                    </tr>
-                  </tbody>
-                </table>
+              <div class="flex items-center justify-between mb-4">
+                <h4 class="text-sm font-bold text-slate-800">Top 10 Selling Medicines</h4>
+                <span class="text-[11px] font-semibold text-slate-400">By quantity sold</span>
+              </div>
+              <div class="h-48 relative">
+                <canvas id="topMedsChart"></canvas>
+                <div id="topMedsChartEmpty" class="hidden absolute inset-0 flex items-center justify-center text-xs text-slate-400">No sales recorded yet.</div>
               </div>
             </div>
           </div>
+
         </div>
 
         <div id="tab-orders" class="tab-content hidden space-y-4">
@@ -3371,6 +3379,56 @@
       });
 
       updateExpensePieChart();
+      updateTopMedicinesChart();
+    }
+
+    // Circle (doughnut) chart of the 10 most sold medicines (by quantity).
+    function updateTopMedicinesChart() {
+      const tally = {};
+      (userData.orders || []).forEach(o => {
+        const items = (o.items && o.items.length) ? o.items : [{ name: o.prodName, qty: o.qty }];
+        items.forEach(it => {
+          const name = (it.name || '').trim();
+          if (!name) return;
+          tally[name] = (tally[name] || 0) + (Number(it.qty) || 0);
+        });
+      });
+      const entries = Object.entries(tally).filter(e => e[1] > 0).sort((a, b) => b[1] - a[1]).slice(0, 10);
+      const grand = entries.reduce((s, [, v]) => s + v, 0);
+      const emptyEl = document.getElementById('topMedsChartEmpty');
+      if (emptyEl) emptyEl.classList.toggle('hidden', entries.length > 0);
+
+      const palette = ['#f97316', '#3b82f6', '#10b981', '#e11d48', '#f59e0b', '#8b5cf6', '#06b6d4', '#84cc16', '#64748b', '#ef4444'];
+      window.__topMedsChart = renderChart(window.__topMedsChart, 'topMedsChart', {
+        type: 'doughnut',
+        data: {
+          labels: entries.map(e => e[0]),
+          datasets: [{
+            data: entries.map(e => e[1]),
+            backgroundColor: entries.map((_, i) => palette[i % palette.length]),
+            borderWidth: 2,
+            borderColor: '#fff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '58%',
+          animation: { duration: 300 },
+          plugins: {
+            legend: { position: 'right', labels: { boxWidth: 12, font: { size: 10 } } },
+            tooltip: {
+              callbacks: {
+                label: c => {
+                  const v = Number(c.parsed) || 0;
+                  const pct = grand ? ((v / grand) * 100).toFixed(1) : '0.0';
+                  return `${c.label}: ${v.toLocaleString()} units (${pct}%)`;
+                }
+              }
+            }
+          }
+        }
+      });
     }
 
     // Circle (doughnut) chart of real expense breakdown by category + purchases + payouts.
@@ -3444,6 +3502,12 @@
       if (sStock) sStock.innerText = (userData.inventory || []).length + " Items";
       if (sCust) sCust.innerText = (userData.customers || []).length + " Clients";
       if (sPay) sPay.innerText = "Rs " + totalPayout.toLocaleString();
+      const stockValue = (userData.inventory || []).reduce((s2, i2) => s2 + (Number(i2.stock) || 0) * (Number(i2.purchasePrice) || 0), 0);
+      const sStockVal = document.getElementById('stat-stockvalue');
+      if (sStockVal) sStockVal.innerText = "Rs " + stockValue.toLocaleString();
+      const lowCount = (userData.inventory || []).filter(i2 => (Number(i2.stock) || 0) <= 5).length;
+      const sLow = document.getElementById('stat-lowstock');
+      if (sLow) sLow.innerText = lowCount + " Low Stock";
       const dsEl = document.getElementById('dailySaleRevDisplay');
       const dpEl = document.getElementById('dailyPurchaseExpDisplay');
       const dtEl = document.getElementById('dailyTotalRevDisplay');
