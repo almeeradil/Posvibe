@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -6995,6 +6994,180 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
       else initMobileMenu();
     })();
   </script>
+  <style id="pv-mobile-app-shell">
+    #pvBottomNav { display: none; }
+
+    @media (max-width: 767px) {
+      /* compact app-like header */
+      #appContainer > main > header {
+        position: sticky;
+        top: 0;
+        z-index: 40;
+        min-height: 56px !important;
+        box-shadow: 0 1px 0 rgb(15 23 42 / 8%);
+        background: #ffffff;
+      }
+      #currentTabTitle { font-size: 15px !important; }
+
+      /* room for bottom tab bar */
+      #appContainer > main > .flex-1.overflow-y-auto { padding-bottom: 84px !important; }
+
+      #pvBottomNav {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        position: fixed;
+        left: 0; right: 0; bottom: 0;
+        z-index: 70;
+        background: #0f172a;
+        padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+        border-top: 1px solid rgb(255 255 255 / 8%);
+      }
+      #pvBottomNav button {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        padding: 6px 2px;
+        border-radius: 10px;
+        color: #94a3b8;
+        font-size: 10px;
+        font-weight: 600;
+        line-height: 1.1;
+      }
+      #pvBottomNav button i { font-size: 16px; }
+      #pvBottomNav button.pv-active { color: #fb923c; background: rgb(251 146 60 / 12%); }
+
+      /* card style listings instead of wide tables */
+      #appContainer .overflow-x-auto { overflow-x: visible; max-width: 100%; }
+      #appContainer table { min-width: 0 !important; width: 100%; display: block; }
+      #appContainer table thead { display: none; }
+      #appContainer table tbody, #appContainer table tfoot { display: block; }
+      #appContainer table tbody tr {
+        display: block;
+        margin-bottom: 10px;
+        padding: 12px;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        background: #ffffff;
+        box-shadow: 0 1px 2px rgb(15 23 42 / 6%);
+      }
+      #appContainer table tbody tr td {
+        display: flex !important;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        border: none !important;
+        padding: 4px 0 !important;
+        text-align: right !important;
+        white-space: normal !important;
+      }
+      #appContainer table tbody tr td::before {
+        content: attr(data-label);
+        flex: 0 0 42%;
+        text-align: left;
+        color: #64748b;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .03em;
+      }
+      #appContainer table tbody tr td:empty { display: none !important; }
+      #appContainer table tfoot tr { display: block; padding: 10px 12px; }
+      #appContainer table tfoot td { display: flex !important; justify-content: space-between; border: none !important; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #pvBottomNav button { transition: none; }
+    }
+  </style>
+  <script>
+    (function () {
+      var TABS = [
+        { id: 'dashboard', label: 'Home', icon: 'fa-solid fa-house' },
+        { id: 'orders', label: 'Invoices', icon: 'fa-solid fa-file-invoice-dollar' },
+        { id: 'inventory', label: 'Stock', icon: 'fa-solid fa-boxes-stacked' },
+        { id: 'customers', label: 'Customers', icon: 'fa-solid fa-users' },
+        { id: 'more', label: 'More', icon: 'fa-solid fa-bars' }
+      ];
+
+      function markActive(id) {
+        var nav = document.getElementById('pvBottomNav');
+        if (!nav) return;
+        Array.prototype.forEach.call(nav.children, function (b) {
+          b.classList.toggle('pv-active', b.dataset.tab === id);
+        });
+      }
+
+      function buildBottomNav() {
+        var app = document.getElementById('appContainer');
+        if (!app || document.getElementById('pvBottomNav')) return;
+        var nav = document.createElement('nav');
+        nav.id = 'pvBottomNav';
+        nav.setAttribute('aria-label', 'Main navigation');
+        TABS.forEach(function (t) {
+          var b = document.createElement('button');
+          b.type = 'button';
+          b.dataset.tab = t.id;
+          b.innerHTML = '<i class="' + t.icon + '"></i><span>' + t.label + '</span>';
+          b.onclick = function () {
+            if (t.id === 'more') { app.classList.toggle('pv-mobile-menu-open'); return; }
+            app.classList.remove('pv-mobile-menu-open');
+            if (typeof window.showTab === 'function') window.showTab(t.id);
+            markActive(t.id);
+            var scroller = app.querySelector('main > .flex-1.overflow-y-auto');
+            if (scroller) scroller.scrollTop = 0;
+          };
+          nav.appendChild(b);
+        });
+        app.appendChild(nav);
+        markActive('dashboard');
+
+        if (typeof window.showTab === 'function') {
+          var original = window.showTab;
+          window.showTab = function (tabId) {
+            var r = original.apply(this, arguments);
+            markActive(tabId);
+            return r;
+          };
+        }
+      }
+
+      function labelTables(root) {
+        var tables = (root || document).querySelectorAll ? (root || document).querySelectorAll('#appContainer table') : [];
+        Array.prototype.forEach.call(tables, function (table) {
+          var head = table.querySelector('thead tr');
+          if (!head) return;
+          var heads = Array.prototype.map.call(head.children, function (th) {
+            return (th.innerText || '').trim();
+          });
+          Array.prototype.forEach.call(table.querySelectorAll('tbody tr'), function (tr) {
+            Array.prototype.forEach.call(tr.children, function (td, i) {
+              if (!td.getAttribute('data-label') && heads[i]) td.setAttribute('data-label', heads[i]);
+            });
+          });
+        });
+      }
+
+      function init() {
+        buildBottomNav();
+        labelTables(document);
+        var app = document.getElementById('appContainer');
+        if (app && window.MutationObserver) {
+          var pending = null;
+          new MutationObserver(function () {
+            if (pending) return;
+            pending = setTimeout(function () { pending = null; labelTables(document); }, 120);
+          }).observe(app, { childList: true, subtree: true });
+        }
+      }
+
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+      else init();
+    })();
+  </script>
 </body>
+
 
 </html>
