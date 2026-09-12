@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -6857,6 +6858,142 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
       if (!acc.admin && !acc.employee) { pvShow('pvSetupScreen'); }
       else { pvShow('loginScreen'); pvRefreshLogin(); }
     });
+  </script>
+
+  <style id="pv-mobile-layout">
+    #pvMobileMenuButton,
+    #pvMobileOverlay { display: none; }
+
+    @media (max-width: 767px) {
+      html, body { width: 100%; min-height: 100%; overflow-x: hidden; }
+
+      #loginScreen,
+      #pvSetupScreen,
+      #pvMasterScreen,
+      #pvChoiceScreen,
+      #pvFormScreen { align-items: flex-start !important; overflow-y: auto; padding: 16px !important; }
+
+      #loginScreen > div,
+      #pvSetupScreen > div,
+      #pvMasterScreen > div,
+      #pvChoiceScreen > div,
+      #pvFormScreen > div { margin: auto 0; padding: 24px !important; }
+
+      #appContainer { width: 100%; min-height: 100dvh; height: 100dvh; }
+
+      #appContainer aside {
+        position: fixed;
+        inset: 0 auto 0 0;
+        width: min(82vw, 300px) !important;
+        z-index: 60;
+        transform: translateX(-105%);
+        transition: transform 220ms ease;
+      }
+
+      #appContainer.pv-mobile-menu-open aside { transform: translateX(0); }
+
+      #pvMobileOverlay {
+        position: fixed;
+        inset: 0;
+        z-index: 50;
+        background: rgb(15 23 42 / 55%);
+      }
+
+      #appContainer.pv-mobile-menu-open #pvMobileOverlay { display: block; }
+
+      #appContainer > main { width: 100%; min-width: 0; }
+
+      #appContainer > main > header {
+        height: auto !important;
+        min-height: 64px;
+        padding: 10px 12px !important;
+        gap: 8px;
+      }
+
+      #currentTabTitle {
+        min-width: 0;
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      #appContainer > main > header > div { gap: 6px !important; }
+      #appContainer > main > header > div button { padding: 8px 9px !important; }
+      #appContainer > main > header > div button span { display: none; }
+
+      #pvMobileMenuButton {
+        display: inline-flex;
+        flex: 0 0 38px;
+        width: 38px;
+        height: 38px;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        background: #ffffff;
+        color: #334155;
+      }
+
+      #appContainer > main > .flex-1.overflow-y-auto { padding: 14px !important; }
+      #appContainer .grid { gap: 12px !important; }
+      #appContainer .md\:grid-cols-2,
+      #appContainer .md\:grid-cols-3,
+      #appContainer .md\:grid-cols-4,
+      #appContainer .xl\:grid-cols-6 { grid-template-columns: minmax(0, 1fr) !important; }
+
+      #appContainer table { min-width: 680px; }
+      #appContainer .overflow-x-auto { max-width: calc(100vw - 28px); }
+
+      [id$="Modal"] { padding: 10px !important; }
+      [id$="Modal"] > div { max-height: calc(100dvh - 20px) !important; }
+      [id$="Modal"] .p-5,
+      [id$="Modal"] .p-6 { padding: 16px !important; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #appContainer aside { transition: none; }
+    }
+  </style>
+  <script>
+    (function () {
+      function closeMobileMenu() {
+        var app = document.getElementById('appContainer');
+        if (app) app.classList.remove('pv-mobile-menu-open');
+      }
+
+      function initMobileMenu() {
+        var app = document.getElementById('appContainer');
+        var header = app && app.querySelector('main > header');
+        var aside = app && app.querySelector('aside');
+        if (!app || !header || !aside || document.getElementById('pvMobileMenuButton')) return;
+
+        var button = document.createElement('button');
+        button.id = 'pvMobileMenuButton';
+        button.type = 'button';
+        button.setAttribute('aria-label', 'Open navigation menu');
+        button.innerHTML = '<i class="fa-solid fa-bars"></i>';
+        button.onclick = function () { app.classList.toggle('pv-mobile-menu-open'); };
+        header.insertBefore(button, header.firstChild);
+
+        var overlay = document.createElement('button');
+        overlay.id = 'pvMobileOverlay';
+        overlay.type = 'button';
+        overlay.setAttribute('aria-label', 'Close navigation menu');
+        overlay.onclick = closeMobileMenu;
+        app.insertBefore(overlay, app.firstChild);
+
+        aside.addEventListener('click', function (event) {
+          if (event.target.closest("button[onclick*='showTab']")) closeMobileMenu();
+        });
+        window.addEventListener('resize', function () {
+          if (window.innerWidth >= 768) closeMobileMenu();
+        });
+      }
+
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initMobileMenu);
+      else initMobileMenu();
+    })();
   </script>
 </body>
 
