@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -300,6 +301,31 @@
             <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
               <h4 class="text-sm font-bold text-slate-800 mb-4">Last 7 Days Purchases</h4>
               <div class="h-64"><canvas id="dashPurchasesChart"></canvas></div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+              <div class="flex items-center justify-between mb-4">
+                <h4 class="text-sm font-bold text-slate-800">Profit (Live from Invoices)</h4>
+                <span id="profitChartTotal" class="text-sm font-black text-emerald-600">Rs 0</span>
+              </div>
+              <div class="h-64 relative">
+                <canvas id="profitChart"></canvas>
+                <div id="profitChartEmpty" class="hidden absolute inset-0 flex items-center justify-center text-xs text-slate-400">No sale invoices yet.</div>
+              </div>
+              <p class="text-[10px] text-slate-500 mt-2">Profit = Invoice sale amount &minus; (purchase price &times; qty sold), last 7 days.</p>
+            </div>
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+              <div class="flex items-center justify-between mb-4">
+                <h4 class="text-sm font-bold text-slate-800">Stock Value (Top 10 Items)</h4>
+                <span id="stockValueChartTotal" class="text-sm font-black text-indigo-600">Rs 0</span>
+              </div>
+              <div class="h-64 relative">
+                <canvas id="stockValueChart"></canvas>
+                <div id="stockValueChartEmpty" class="hidden absolute inset-0 flex items-center justify-center text-xs text-slate-400">No inventory items yet.</div>
+              </div>
+              <p class="text-[10px] text-slate-500 mt-2">Stock Value = Stock qty &times; purchase price, live from inventory.</p>
             </div>
           </div>
 
@@ -2269,7 +2295,7 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
         currentUserRole = 'Admin';
       } else if (pvAcc.employee && email === pvAcc.employee.email && pass === pvAcc.employee.password) {
         currentUserRole = 'Employee';
-      } else if (email === 'admin@gmail.com' && pass === 'aefdef') {
+      } else if (email === 'admin@gmail.com' && pass === 'zefzef') {
         currentUserRole = 'Admin';
       } else if (email === 'employee@gmail.com' && (pass === 'aefaef' || pass === 'aef aef')) {
         currentUserRole = 'Employee';
@@ -3494,6 +3520,117 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
 
       updateExpensePieChart();
       updateTopMedicinesChart();
+      updateProfitChart(days, labels);
+      updateStockValueChart();
+    }
+
+    // Unit cost of a medicine from inventory (purchase price).
+    function unitCostOf(name) {
+      const item = (userData.inventory || []).find(i => (i.name || '').toLowerCase() === String(name || '').toLowerCase());
+      return item ? toNum(item.purchasePrice) : 0;
+    }
+
+    // Sale + cost of one invoice, supporting multi-medicine invoices.
+    function invoiceSaleAndCost(o) {
+      const lines = (o.items && o.items.length) ? o.items : [{ name: o.prodName, qty: o.qty, rate: o.rate }];
+      let cost = 0, lineSale = 0;
+      lines.forEach(l => {
+        const qty = toNum(l.qty) || 0;
+        cost += unitCostOf(l.name) * qty;
+        lineSale += qty * toNum(l.rate);
+      });
+      const sale = toNum(o.amount) || lineSale;
+      return { sale, cost };
+    }
+
+    // Live profit chart: revenue vs cost vs profit for the last 7 days.
+    function updateProfitChart(days, labels) {
+      const orders = userData.orders || [];
+      const rev = {}, cst = {};
+      orders.forEach(o => {
+        const k = dayKey(o.date);
+        if (!k) return;
+        const { sale, cost } = invoiceSaleAndCost(o);
+        rev[k] = (rev[k] || 0) + sale;
+        cst[k] = (cst[k] || 0) + cost;
+      });
+      const revSeries = days.map(d => rev[d.key] || 0);
+      const costSeries = days.map(d => cst[d.key] || 0);
+      const profitSeries = days.map((d, i) => revSeries[i] - costSeries[i]);
+
+      let totalProfit = 0;
+      orders.forEach(o => { const r = invoiceSaleAndCost(o); totalProfit += r.sale - r.cost; });
+      const totalEl = document.getElementById('profitChartTotal');
+      if (totalEl) {
+        totalEl.innerText = 'Rs ' + Math.round(totalProfit).toLocaleString();
+        totalEl.className = 'text-sm font-black ' + (totalProfit < 0 ? 'text-rose-600' : 'text-emerald-600');
+      }
+      const emptyEl = document.getElementById('profitChartEmpty');
+      if (emptyEl) emptyEl.classList.toggle('hidden', orders.length > 0);
+
+      window.__profitChart = renderChart(window.__profitChart, 'profitChart', {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'Sale (Rs)', data: revSeries, borderColor: '#f97316',
+              backgroundColor: 'rgba(249,115,22,0.12)', fill: false, tension: 0.3, pointRadius: 3, borderWidth: 2
+            },
+            {
+              label: 'Cost (Rs)', data: costSeries, borderColor: '#64748b',
+              backgroundColor: 'rgba(100,116,139,0.12)', fill: false, tension: 0.3, pointRadius: 3, borderWidth: 2
+            },
+            {
+              label: 'Profit (Rs)', data: profitSeries,
+              borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.15)',
+              fill: true, tension: 0.3, pointRadius: 3, borderWidth: 2
+            }
+          ]
+        },
+        options: baseChartOptions()
+      });
+    }
+
+    // Live stock value chart: qty x purchase price, top 10 items.
+    function updateStockValueChart() {
+      const inv = userData.inventory || [];
+      const rows = inv
+        .map(i => ({ name: i.name || 'Unnamed', value: (toNum(i.stock) || 0) * (toNum(i.purchasePrice) || 0) }))
+        .filter(r => r.value > 0)
+        .sort((a, b) => b.value - a.value);
+      const top = rows.slice(0, 10);
+      const total = inv.reduce((s, i) => s + (toNum(i.stock) || 0) * (toNum(i.purchasePrice) || 0), 0);
+
+      const totalEl = document.getElementById('stockValueChartTotal');
+      if (totalEl) totalEl.innerText = 'Rs ' + Math.round(total).toLocaleString();
+      const emptyEl = document.getElementById('stockValueChartEmpty');
+      if (emptyEl) emptyEl.classList.toggle('hidden', top.length > 0);
+
+      window.__stockValueChart = renderChart(window.__stockValueChart, 'stockValueChart', {
+        type: 'line',
+        data: {
+          labels: top.map(r => r.name.length > 18 ? r.name.slice(0, 17) + '\u2026' : r.name),
+          datasets: [{
+            label: 'Stock Value (Rs)', data: top.map(r => r.value),
+            borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,0.15)',
+            fill: true, tension: 0.3, pointRadius: 3, borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: { duration: 300 },
+          scales: {
+            y: { beginAtZero: true, ticks: { callback: v => 'Rs ' + Number(v).toLocaleString() } },
+            x: { ticks: { autoSkip: false, maxRotation: 45, minRotation: 0 } }
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: c => 'Rs ' + Number(c.parsed.y).toLocaleString() } }
+          }
+        }
+      });
     }
 
     // Circle (doughnut) chart of the 10 most sold medicines (by quantity).
@@ -6757,7 +6894,7 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
   <script>
     /* ===== Posvibe account setup / reset flow ===== */
     var PV_MASTER_EMAIL = 'admin@gmail.com';
-    var PV_MASTER_PASS = 'aefdef';
+    var PV_MASTER_PASS = 'zefzef';
     var pvFlowMode = 'setup';
     var pvQueue = [];
 
