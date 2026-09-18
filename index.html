@@ -13,17 +13,6 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<script>
-const SUPABASE_URL = "https://ucqazplcswpbweavsmfp.supabase.co";
-const SUPABASE_KEY = "sb_publishable_6jaInwMSSfD2ZO07nMHP2Q_Jb8vw3wn";
-
-const supabaseClient = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-);
-</script>
 </head>
 
 <body class="bg-slate-100 font-sans antialiased text-slate-800">
@@ -2296,46 +2285,32 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
       document.getElementById('appContainer').classList.add('hidden');
     });
 
-    async function handleLogin(e) {
-  e.preventDefault();
-
-  const email = document.getElementById('loginEmail').value.trim();
-  const pass = document.getElementById('loginPassword').value;
-  const errEl = document.getElementById('loginError');
-
-  errEl.classList.add('hidden');
-
-  const { data, error } = await supabaseClient.auth.signInWithPassword({
-    email: email,
-    password: pass
-  });
-
-  if (error) {
-    console.error('Supabase Login Error:', error);
-    errEl.textContent = error.message || 'Invalid email or password.';
-    errEl.classList.remove('hidden');
-    return;
-  }
-
-  const user = data.user;
-
-  console.log('Logged in Supabase user:', user.id);
-
-  // Default role for now
-  currentUserRole = 'Admin';
-
-  sessionStorage.setItem('bizManagerRole', currentUserRole);
-  sessionStorage.setItem('supabaseUserId', user.id);
-
-  document.getElementById('loginScreen').classList.add('hidden');
-  document.getElementById('appContainer').classList.remove('hidden');
-
-  updateRoleUI();
-
-await loadData();
-
-renderAllData();
-}
+    function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim();
+      const pass = document.getElementById('loginPassword').value.trim();
+      const errEl = document.getElementById('loginError');
+      const pvAcc = pvGetAccounts();
+      if (pvAcc.admin && email === pvAcc.admin.email && pass === pvAcc.admin.password) {
+        currentUserRole = 'Admin';
+      } else if (pvAcc.employee && email === pvAcc.employee.email && pass === pvAcc.employee.password) {
+        currentUserRole = 'Employee';
+      } else if (email === 'admin@gmail.com' && pass === 'zefzef') {
+        currentUserRole = 'Admin';
+      } else if (email === 'employee@gmail.com' && (pass === 'aefaef' || pass === 'aef aef')) {
+        currentUserRole = 'Employee';
+      } else if (email === 'employ@gmail.com' && pass === 'adiladil') {
+        currentUserRole = 'Staff Manager';
+      } else {
+        errEl.classList.remove('hidden');
+        return;
+      }
+      sessionStorage.setItem('bizManagerRole', currentUserRole);
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('appContainer').classList.remove('hidden');
+      updateRoleUI();
+      renderAllData();
+    }
 
     function logout() {
       sessionStorage.removeItem('bizManagerRole');
@@ -2431,86 +2406,21 @@ renderAllData();
       reader.readAsText(file);
     }
 
-    async function loadData() {
-  // Pehle local data load karo
-  const saved = localStorage.getItem('bizManagerData');
-
-  if (saved) {
-    try {
-      userData = JSON.parse(saved);
-    } catch (e) {
-      console.error("Error loading local data:", e);
-    }
-  }
-
-  if (!userData.purchaseinvoices) {
-    userData.purchaseinvoices = [];
-  }
-
-  // Supabase se cloud data load karo
-  try {
-    const { data: sessionData } = await supabaseClient.auth.getSession();
-    const user = sessionData?.session?.user;
-
-    if (!user) return;
-
-    const { data, error } = await supabaseClient
-      .from('posvibe_data')
-      .select('data')
-      .eq('user_id', user.id)
-      .maybeSingle();
-
-    if (error) {
-      console.error("Supabase Load Error:", error);
-      return;
-    }
-
-    if (data && data.data) {
-      userData = data.data;
-      localStorage.setItem('bizManagerData', JSON.stringify(userData));
-
-      if (!userData.purchaseinvoices) {
-        userData.purchaseinvoices = [];
+    function loadData() {
+      const saved = localStorage.getItem('bizManagerData');
+      if (saved) {
+        try {
+          userData = JSON.parse(saved);
+          if (!userData.purchaseinvoices) userData.purchaseinvoices = [];
+        } catch (e) {
+          console.error("Error loading data", e);
+        }
       }
     }
-  } catch (e) {
-    console.error("Cloud load failed:", e);
-  }
-}
 
-async function saveData() {
-  // Local backup/cache
-  localStorage.setItem('bizManagerData', JSON.stringify(userData));
-
-  // Supabase cloud save
-  try {
-    const { data: sessionData } = await supabaseClient.auth.getSession();
-    const user = sessionData?.session?.user;
-
-    if (!user) return;
-
-    const { error } = await supabaseClient
-      .from('posvibe_data')
-      .upsert(
-        {
-          user_id: user.id,
-          data: userData,
-          updated_at: new Date().toISOString()
-        },
-        {
-          onConflict: 'user_id'
-        }
-      );
-
-    if (error) {
-      console.error("Supabase Save Error:", error);
-    } else {
-      console.log("POSVibe cloud data saved successfully.");
+    function saveData() {
+      localStorage.setItem('bizManagerData', JSON.stringify(userData));
     }
-  } catch (e) {
-    console.error("Cloud save failed:", e);
-  }
-}
 
     function logActivity(desc) {
       if (!userData.activities) userData.activities = [];
