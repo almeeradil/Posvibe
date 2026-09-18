@@ -2296,32 +2296,43 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
       document.getElementById('appContainer').classList.add('hidden');
     });
 
-    function handleLogin(e) {
-      e.preventDefault();
-      const email = document.getElementById('loginEmail').value.trim();
-      const pass = document.getElementById('loginPassword').value.trim();
-      const errEl = document.getElementById('loginError');
-      const pvAcc = pvGetAccounts();
-      if (pvAcc.admin && email === pvAcc.admin.email && pass === pvAcc.admin.password) {
-        currentUserRole = 'Admin';
-      } else if (pvAcc.employee && email === pvAcc.employee.email && pass === pvAcc.employee.password) {
-        currentUserRole = 'Employee';
-      } else if (email === 'admin@gmail.com' && pass === 'zefzef') {
-        currentUserRole = 'Admin';
-      } else if (email === 'employee@gmail.com' && (pass === 'aefaef' || pass === 'aef aef')) {
-        currentUserRole = 'Employee';
-      } else if (email === 'employ@gmail.com' && pass === 'adiladil') {
-        currentUserRole = 'Staff Manager';
-      } else {
-        errEl.classList.remove('hidden');
-        return;
-      }
-      sessionStorage.setItem('bizManagerRole', currentUserRole);
-      document.getElementById('loginScreen').classList.add('hidden');
-      document.getElementById('appContainer').classList.remove('hidden');
-      updateRoleUI();
-      renderAllData();
-    }
+    async function handleLogin(e) {
+  e.preventDefault();
+
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPassword').value;
+  const errEl = document.getElementById('loginError');
+
+  errEl.classList.add('hidden');
+
+  const { data, error } = await supabaseClient.auth.signInWithPassword({
+    email: email,
+    password: pass
+  });
+
+  if (error) {
+    console.error('Supabase Login Error:', error);
+    errEl.textContent = error.message || 'Invalid email or password.';
+    errEl.classList.remove('hidden');
+    return;
+  }
+
+  const user = data.user;
+
+  console.log('Logged in Supabase user:', user.id);
+
+  // Default role for now
+  currentUserRole = 'Admin';
+
+  sessionStorage.setItem('bizManagerRole', currentUserRole);
+  sessionStorage.setItem('supabaseUserId', user.id);
+
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('appContainer').classList.remove('hidden');
+
+  updateRoleUI();
+  renderAllData();
+}
 
     function logout() {
       sessionStorage.removeItem('bizManagerRole');
