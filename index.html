@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -8,8 +7,8 @@
   <title>Posvibe</title>
 <link rel="icon" type="image/png" href="logo.png">
   <!-- Yeh wali line yahan daal dein -->
+  <link rel="manifest" href="manifest.json">
 
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5695863922452295" crossorigin="anonymous"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -25,6 +24,7 @@
         <p class="text-xs text-slate-500 mt-1">Sign in with your authorized system credentials</p>
       </div>
 
+      <div id="pvLoginBox">
       <form onsubmit="handleLogin(event)" class="space-y-4">
         <div>
           <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Email Address</label>
@@ -41,6 +41,23 @@
           Sign In to Dashboard
         </button>
       </form>
+      </div><!-- /pvLoginBox -->
+      <div id="pvSignupBox" class="hidden">
+        <form onsubmit="pvSignup(event)" class="space-y-3">
+          <input type="text" id="pvSignupName" required placeholder="Your name" class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
+          <input type="text" id="pvSignupBusiness" placeholder="Business name" class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
+          <input type="text" id="pvSignupPhone" placeholder="Phone number" class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
+          <input type="email" id="pvSignupEmail" required placeholder="Email" class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
+          <input type="password" id="pvSignupPassword" required placeholder="Password (min 6 characters)" class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
+          <p id="pvSignupMsg" class="text-xs font-semibold text-center text-rose-600"></p>
+          <button type="submit" class="w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg shadow transition text-sm">Create Account</button>
+        </form>
+      </div>
+      <div class="mt-4 text-center text-[11px] text-slate-500">
+        <button type="button" onclick="pvShowAuth('signup')" class="font-bold text-orange-600 hover:underline">New here? Create an account</button>
+        <span class="mx-1">|</span>
+        <button type="button" onclick="pvShowAuth('login')" class="font-bold text-slate-700 hover:underline">Sign in</button>
+      </div>
       <div class="mt-6 pt-4 border-t border-slate-100 text-center text-[11px] text-slate-400">
         Secure Invoicematic & Inventory Management Solution
       </div>
@@ -199,6 +216,9 @@
           <i class="fa-solid fa-barcode w-5 text-cyan-400"></i><span>Barcode Scanner</span>
         </button>
         <div class="pt-2 mt-2 border-t border-slate-800"></div>
+        <button id="pvUsersNavBtn" onclick="showTab('users')" class="hidden w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition group">
+          <i class="fa-solid fa-users w-5 text-sky-400"></i><span>Users</span>
+        </button>
         <button onclick="showTab('settings')" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition group">
           <i class="fa-solid fa-gear w-5 text-slate-300"></i><span>Settings</span>
         </button>
@@ -244,12 +264,8 @@
           </div>
         </div>
 
+        <div id="pvViewingBanner" class="hidden mb-4 rounded-lg bg-sky-50 border border-sky-200 text-sky-800 text-xs p-3"></div>
         <div id="tab-dashboard" class="tab-content space-y-6">
-          <div class="pv-ad bg-white border border-slate-200 rounded-xl shadow-sm p-2 overflow-hidden">
-            <div class="text-[9px] uppercase tracking-wider text-slate-400 font-bold mb-1 text-center">Advertisement</div>
-            <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-5695863922452295" data-ad-slot="5559457121" data-ad-format="auto" data-full-width-responsive="true"></ins>
-            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-          </div>
           <div class="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-6 gap-4">
             <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
               <div class="text-xs font-bold uppercase text-slate-400">Total Sales Revenue</div>
@@ -990,6 +1006,20 @@
           </div>
         </div>
 
+        <div id="tab-users" class="tab-content hidden space-y-4">
+          <div class="bg-white rounded-xl shadow border border-slate-200 p-4">
+            <h3 class="text-sm font-extrabold text-slate-900 mb-1">All Users</h3>
+            <p class="text-[11px] text-slate-500 mb-3">Open any user to view and edit their invoices, inventory and every other section. Mark a user as paid to unlock their app.</p>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left">
+                <thead class="bg-slate-50 text-[10px] uppercase font-bold text-slate-500">
+                  <tr><th class="p-2">Name</th><th class="p-2">Email</th><th class="p-2">Business</th><th class="p-2">Phone</th><th class="p-2">Status</th><th class="p-2">Actions</th></tr>
+                </thead>
+                <tbody id="pvUsersTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
         <div id="tab-settings" class="tab-content hidden space-y-4">
           <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
             <h4 class="text-sm font-bold text-slate-800 mb-1">Business Settings</h4>
@@ -1148,10 +1178,6 @@
             <button onclick="saveEditRecord()" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-bold text-xs">Save Changes</button>
           </div>
         </div>
-      </div>
-      <div class="border-t border-slate-200 bg-white px-4 py-2">
-        <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-5695863922452295" data-ad-slot="5559457121" data-ad-format="horizontal" data-full-width-responsive="true"></ins>
-        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
       </div>
     </main>
   </div>
@@ -3354,6 +3380,385 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
         html += `<tr><td class="label">${key}:</td><td>${dataObj[key]}</td></tr>`;
       }
       html += `</table><script>window.print();${autoClose ? 'window.close();' : ''}<\/script>
+  <!-- ===================== LOVABLE CLOUD LAYER (Posvibe) ===================== -->
+  <div id="pvUnpaidModal" class="hidden fixed inset-0 bg-slate-900/70 z-[80] flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 text-center">
+      <i class="fa-solid fa-lock text-3xl text-rose-600"></i>
+      <h3 class="mt-3 text-lg font-extrabold text-slate-900">You have not paid</h3>
+      <p class="mt-2 text-xs text-slate-500">Your account is not verified yet. Please complete your payment to activate Posvibe.</p>
+      <button type="button" onclick="document.getElementById('pvUnpaidModal').classList.add('hidden')"
+        class="mt-5 w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-lg text-sm">OK</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script>
+  (function () {
+    /* ---- Lovable Cloud connection (works anywhere this file is hosted) ---- */
+    var SB_URL = 'https://ftyzpdertwinutptvcff.supabase.co';
+    var SB_KEY = 'sb_publishable_CcJPhyvwE1FK7fCKGpILrA_OjltOsqr';
+    var sb = window.supabase.createClient(SB_URL, SB_KEY, {
+      auth: { persistSession: true, autoRefreshToken: true, storageKey: 'posvibe-auth' }
+    });
+    window.pvSb = sb;
+
+    /* ---- Table / column map ---- */
+    var NUM_COLS = ['qty', 'rate', 'tax_pct', 'discount', 'amount', 'amt', 'fee', 'paid',
+      'stock', 'purchase_price', 'sale_price', 'credit', 'tax'];
+    var COLLECTIONS = {
+      orders: { table: 'orders', cols: ['inv', 'date', 'cust_name', 'cust_ntn_cnic', 'cust_address', 'cust_province', 'prod_name', 'hs_code', 'uom', 'qty', 'rate', 'tax_pct', 'discount', 'items', 'amount'] },
+      purchaseinvoices: { table: 'purchase_invoices', cols: ['ref', 'date', 'supplier', 'sup_ntn_cnic', 'sup_address', 'sup_province', 'item', 'hs_code', 'uom', 'qty', 'rate', 'tax_pct', 'discount', 'items', 'amt'] },
+      quotations: { table: 'quotations', cols: ['customer', 'product', 'rate', 'discount', 'date'] },
+      patients: { table: 'patients', cols: ['name', 'age', 'gender', 'contact', 'address', 'doctor', 'service', 'fee', 'paid', 'medicines', 'date', 'status'] },
+      debitnotes: { table: 'debit_notes', cols: ['ref', 'date', 'party', 'orig_inv', 'item', 'qty', 'rate', 'tax', 'amt', 'reason'] },
+      inventory: { table: 'inventory', cols: ['name', 'batch', 'stock', 'unit', 'expiry', 'purchase_price', 'sale_price'] },
+      customers: { table: 'customers', cols: ['name', 'owner', 'contact', 'category', 'address', 'ntn_cnic', 'credit'] },
+      suppliers: { table: 'suppliers', cols: ['name', 'contact_person', 'contact', 'email', 'address', 'ntn_tax', 'credit'] },
+      purchases: { table: 'purchases', cols: ['ref', 'supplier', 'item', 'qty', 'uom', 'rate', 'discount', 'tax', 'batch', 'status', 'delivery', 'notes', 'amt', 'date'] },
+      payouts: { table: 'payouts', cols: ['voucher', 'recipient', 'mode', 'amount', 'date'] },
+      salaries: { table: 'salaries', cols: ['ref', 'date', 'employee', 'designation', 'month', 'mode', 'remarks', 'amount'] },
+      attendance: { table: 'attendance', cols: ['ref', 'date', 'employee', 'status', 'time_in', 'time_out', 'hours', 'off_day', 'remarks'] },
+      expenses: { table: 'expenses', cols: ['ref', 'date', 'category', 'description', 'paid_to', 'mode', 'amount'] },
+      cashbank: { table: 'cashbank', cols: ['ref', 'date', 'account', 'type', 'description', 'amount'] },
+      otherincome: { table: 'other_income', cols: ['ref', 'date', 'source', 'description', 'account', 'amount'] },
+      scans: { table: 'scans', cols: ['code', 'name', 'qty', 'date'] },
+      activities: { table: 'activities', cols: ['date', 'description'] }
+    };
+    var SETTINGS_COLS = ['company', 'tagline', 'address', 'phone', 'email', 'ntn', 'strn',
+      'currency', 'tax', 'bank', 'footer', 'inv_prefix', 'quo_prefix', 'logo'];
+
+    function toSnake(k) { return k === 'desc' ? 'description' : k.replace(/[A-Z]/g, function (m) { return '_' + m.toLowerCase(); }); }
+    function toCamel(c) { return c === 'description' ? 'desc' : c.replace(/_([a-z])/g, function (_, m) { return m.toUpperCase(); }); }
+    function num(v) { var n = parseFloat(v); return isNaN(n) ? null : n; }
+    function uid() {
+      return 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+    }
+
+    /* ---- session state ---- */
+    var state = { user: null, profile: null, isAdmin: false, targetUserId: null, targetLabel: '' };
+    window.pvState = state;
+
+    function isVerifiedNow() { return state.isAdmin || !!(state.profile && state.profile.is_verified); }
+
+    function showUnpaid() {
+      var m = document.getElementById('pvUnpaidModal');
+      if (m) m.classList.remove('hidden');
+    }
+    window.pvShowUnpaid = showUnpaid;
+
+    /* ---- block every action for unverified users ---- */
+    document.addEventListener('click', function (e) {
+      if (!state.user) return;
+      if (isVerifiedNow()) return;
+      var el = e.target.closest('button, a, [onclick], input[type=submit]');
+      if (!el) return;
+      if (el.closest('#pvUnpaidModal')) return;
+      var oc = (el.getAttribute('onclick') || '');
+      if (oc.indexOf('logout') > -1 || oc.indexOf('closeModal') > -1) return;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      showUnpaid();
+    }, true);
+    document.addEventListener('submit', function (e) {
+      if (state.user && !isVerifiedNow()) { e.preventDefault(); e.stopImmediatePropagation(); showUnpaid(); }
+    }, true);
+
+    /* ================= LOAD from Cloud ================= */
+    function rowToRecord(row, cols) {
+      var rec = {};
+      cols.forEach(function (c) {
+        var v = row[c];
+        if (v === null || v === undefined) return;
+        rec[toCamel(c)] = v;
+      });
+      if (row.extra && typeof row.extra === 'object') {
+        Object.keys(row.extra).forEach(function (k) { if (!(k in rec)) rec[k] = row.extra[k]; });
+      }
+      rec._rid = row.row_id;
+      return rec;
+    }
+
+    async function pvLoadFromCloud() {
+      var uidTarget = state.targetUserId;
+      if (!uidTarget) return;
+      var names = Object.keys(COLLECTIONS);
+      var results = await Promise.all(names.map(function (n) {
+        return sb.from(COLLECTIONS[n].table).select('*').eq('user_id', uidTarget)
+          .order('created_at', { ascending: false });
+      }));
+      names.forEach(function (n, i) {
+        var r = results[i];
+        if (r.error) { console.error(n, r.error); window.userData[n] = window.userData[n] || []; return; }
+        window.userData[n] = (r.data || []).map(function (row) { return rowToRecord(row, COLLECTIONS[n].cols); });
+      });
+      var s = await sb.from('app_settings').select('*').eq('user_id', uidTarget).maybeSingle();
+      if (s.data) {
+        var st = {};
+        SETTINGS_COLS.forEach(function (c) { if (s.data[c] !== null) st[toCamel(c)] = s.data[c]; });
+        if (s.data.extra) Object.keys(s.data.extra).forEach(function (k) { st[k] = s.data.extra[k]; });
+        window.userData.settings = Object.assign({}, window.userData.settings || {}, st);
+        if (s.data.counters) window.userData.counters = s.data.counters;
+        if (s.data.grow) window.userData.grow = s.data.grow;
+      }
+      if (typeof ensureExtraData === 'function') ensureExtraData();
+      if (typeof renderAllData === 'function') renderAllData();
+      if (typeof loadSettingsForm === 'function') loadSettingsForm();
+      if (typeof loadGrowSettings === 'function') loadGrowSettings();
+    }
+    window.pvLoadFromCloud = pvLoadFromCloud;
+
+    /* ================= SAVE to Cloud ================= */
+    var syncTimer = null, syncing = false, dirtyAgain = false;
+
+    async function syncCollection(name) {
+      var cfg = COLLECTIONS[name];
+      var list = window.userData[name] || [];
+      var uidTarget = state.targetUserId;
+      var rows = list.map(function (rec) {
+        if (!rec._rid) rec._rid = uid();
+        var row = { user_id: uidTarget, row_id: rec._rid, extra: {} };
+        Object.keys(rec).forEach(function (k) {
+          if (k === '_rid') return;
+          var col = toSnake(k);
+          if (cfg.cols.indexOf(col) > -1) {
+            row[col] = NUM_COLS.indexOf(col) > -1 ? num(rec[k]) : rec[k];
+          } else {
+            row.extra[k] = rec[k];
+          }
+        });
+        return row;
+      });
+      if (rows.length) {
+        var up = await sb.from(cfg.table).upsert(rows, { onConflict: 'user_id,row_id' });
+        if (up.error) console.error('save ' + name, up.error);
+      }
+      var keep = rows.map(function (r) { return r.row_id; });
+      var del = sb.from(cfg.table).delete().eq('user_id', uidTarget);
+      if (keep.length) del = del.not('row_id', 'in', '(' + keep.map(function (k) { return '"' + k + '"'; }).join(',') + ')');
+      var d = await del;
+      if (d.error) console.error('cleanup ' + name, d.error);
+    }
+
+    async function syncSettings() {
+      var st = window.userData.settings || {};
+      var row = { user_id: state.targetUserId, counters: window.userData.counters || {}, grow: window.userData.grow || {}, extra: {}, updated_at: new Date().toISOString() };
+      Object.keys(st).forEach(function (k) {
+        var col = toSnake(k);
+        if (SETTINGS_COLS.indexOf(col) > -1) row[col] = col === 'tax' ? num(st[k]) : st[k];
+        else row.extra[k] = st[k];
+      });
+      var r = await sb.from('app_settings').upsert(row, { onConflict: 'user_id' });
+      if (r.error) console.error('save settings', r.error);
+    }
+
+    async function pvSyncAll() {
+      if (!state.targetUserId) return;
+      if (syncing) { dirtyAgain = true; return; }
+      syncing = true;
+      try {
+        var names = Object.keys(COLLECTIONS);
+        for (var i = 0; i < names.length; i++) await syncCollection(names[i]);
+        await syncSettings();
+      } catch (e) { console.error(e); }
+      syncing = false;
+      if (dirtyAgain) { dirtyAgain = false; pvSyncAll(); }
+    }
+    window.pvSyncAll = pvSyncAll;
+
+    /* replace local storage persistence with cloud persistence */
+    window.saveData = function () {
+      if (!state.targetUserId) return;
+      clearTimeout(syncTimer);
+      syncTimer = setTimeout(pvSyncAll, 500);
+    };
+    window.loadData = function () { /* cloud load happens after sign in */ };
+
+    /* ================= AUTH ================= */
+    function showLogin() {
+      document.getElementById('loginScreen').classList.remove('hidden');
+      document.getElementById('appContainer').classList.add('hidden');
+      ['pvSetupScreen', 'pvMasterScreen'].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) { el.classList.add('hidden'); el.classList.remove('flex'); }
+      });
+    }
+
+    function authError(msg) {
+      var el = document.getElementById('loginError');
+      if (el) { el.innerText = msg; el.classList.remove('hidden'); }
+    }
+
+    window.handleLogin = async function (e) {
+      if (e) e.preventDefault();
+      var email = (document.getElementById('loginEmail').value || '').trim();
+      var pass = (document.getElementById('loginPassword').value || '').trim();
+      var res = await sb.auth.signInWithPassword({ email: email, password: pass });
+      if (res.error) { authError(res.error.message || 'Invalid email or password.'); return; }
+      document.getElementById('loginError').classList.add('hidden');
+      await pvStartSession();
+    };
+
+    window.pvSignup = async function (e) {
+      if (e) e.preventDefault();
+      var email = (document.getElementById('pvSignupEmail').value || '').trim();
+      var pass = (document.getElementById('pvSignupPassword').value || '').trim();
+      var name = (document.getElementById('pvSignupName').value || '').trim();
+      var biz = (document.getElementById('pvSignupBusiness').value || '').trim();
+      var phone = (document.getElementById('pvSignupPhone').value || '').trim();
+      var msg = document.getElementById('pvSignupMsg');
+      msg.className = 'text-xs font-semibold text-center text-rose-600';
+      if (pass.length < 6) { msg.innerText = 'Password must be at least 6 characters.'; return; }
+      var res = await sb.auth.signUp({ email: email, password: pass, options: { emailRedirectTo: window.location.origin } });
+      if (res.error) { msg.innerText = res.error.message; return; }
+      var u = res.data.user;
+      if (u) {
+        await sb.from('profiles').insert({ id: u.id, email: email, full_name: name, business_name: biz, phone: phone });
+      }
+      if (res.data.session) {
+        await pvStartSession();
+      } else {
+        msg.className = 'text-xs font-semibold text-center text-emerald-600';
+        msg.innerText = 'Account created. Please sign in.';
+        window.pvShowAuth('login');
+      }
+    };
+
+    window.pvShowAuth = function (which) {
+      document.getElementById('pvLoginBox').classList.toggle('hidden', which !== 'login');
+      document.getElementById('pvSignupBox').classList.toggle('hidden', which !== 'signup');
+    };
+
+    window.logout = async function () {
+      await sb.auth.signOut();
+      state.user = null; state.profile = null; state.isAdmin = false; state.targetUserId = null;
+      showLogin();
+      var e1 = document.getElementById('loginEmail'); if (e1) e1.value = '';
+      var e2 = document.getElementById('loginPassword'); if (e2) e2.value = '';
+    };
+
+    async function pvStartSession() {
+      var g = await sb.auth.getUser();
+      var user = g.data && g.data.user;
+      if (!user) { showLogin(); return; }
+      state.user = user;
+      var p = await sb.from('profiles').select('*').eq('id', user.id).maybeSingle();
+      if (!p.data) {
+        await sb.from('profiles').insert({ id: user.id, email: user.email });
+        p = await sb.from('profiles').select('*').eq('id', user.id).maybeSingle();
+      }
+      state.profile = p.data || { is_verified: false };
+      var r = await sb.from('user_roles').select('role').eq('user_id', user.id);
+      state.isAdmin = !!(r.data || []).some(function (x) { return x.role === 'admin'; });
+      state.targetUserId = user.id;
+      state.targetLabel = user.email;
+
+      window.currentUserRole = state.isAdmin ? 'Admin' : 'Admin';
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('appContainer').classList.remove('hidden');
+      ['pvSetupScreen', 'pvMasterScreen'].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) { el.classList.add('hidden'); el.classList.remove('flex'); }
+      });
+      if (typeof updateRoleUI === 'function') updateRoleUI();
+      var nav = document.getElementById('pvUsersNavBtn');
+      if (nav) nav.classList.toggle('hidden', !state.isAdmin);
+      pvRenderBanner();
+      await pvLoadFromCloud();
+      if (!isVerifiedNow()) showUnpaid();
+      if (state.isAdmin) pvRenderUsers();
+    }
+    window.pvStartSession = pvStartSession;
+
+    /* ================= ADMIN: USERS ================= */
+    function pvRenderBanner() {
+      var b = document.getElementById('pvViewingBanner');
+      if (!b) return;
+      if (state.isAdmin && state.targetUserId !== state.user.id) {
+        b.classList.remove('hidden');
+        b.innerHTML = '<span class="font-bold">Viewing data of: ' + state.targetLabel + '</span>' +
+          ' <button type="button" onclick="pvBackToOwnData()" class="ml-3 underline font-bold">Back to my data</button>';
+      } else {
+        b.classList.add('hidden');
+        b.innerHTML = '';
+      }
+    }
+
+    window.pvBackToOwnData = async function () {
+      state.targetUserId = state.user.id;
+      state.targetLabel = state.user.email;
+      pvRenderBanner();
+      await pvLoadFromCloud();
+    };
+
+    window.pvOpenUser = async function (id, label) {
+      state.targetUserId = id;
+      state.targetLabel = label;
+      pvRenderBanner();
+      await pvLoadFromCloud();
+      if (typeof showTab === 'function') showTab('dashboard');
+    };
+
+    window.pvToggleVerified = async function (id, value) {
+      var r = await sb.from('profiles').update({ is_verified: value }).eq('id', id);
+      if (r.error) { alert(r.error.message); return; }
+      if (state.user && id === state.user.id) state.profile.is_verified = value;
+      pvRenderUsers();
+    };
+
+    window.pvRenderUsers = async function () {
+      var host = document.getElementById('pvUsersTableBody');
+      if (!host || !state.isAdmin) return;
+      var r = await sb.from('profiles').select('*').order('created_at', { ascending: false });
+      if (r.error) { host.innerHTML = '<tr><td colspan="6" class="p-3 text-xs text-rose-600">' + r.error.message + '</td></tr>'; return; }
+      host.innerHTML = (r.data || []).map(function (p) {
+        var label = (p.email || p.id).replace(/'/g, "\\'");
+        return '<tr class="border-b border-slate-100 hover:bg-slate-50">' +
+          '<td class="p-2 text-xs font-bold text-slate-800">' + (p.full_name || '-') + '</td>' +
+          '<td class="p-2 text-xs">' + (p.email || '-') + '</td>' +
+          '<td class="p-2 text-xs">' + (p.business_name || '-') + '</td>' +
+          '<td class="p-2 text-xs">' + (p.phone || '-') + '</td>' +
+          '<td class="p-2 text-xs">' + (p.is_verified
+            ? '<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-bold">Paid</span>'
+            : '<span class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 font-bold">Not paid</span>') + '</td>' +
+          '<td class="p-2 text-xs space-x-2 whitespace-nowrap">' +
+          '<button type="button" onclick="pvOpenUser(\'' + p.id + '\',\'' + label + '\')" class="px-2 py-1 bg-slate-900 text-white rounded font-bold">Open data</button>' +
+          '<button type="button" onclick="pvToggleVerified(\'' + p.id + '\',' + (!p.is_verified) + ')" class="px-2 py-1 ' +
+          (p.is_verified ? 'bg-rose-600' : 'bg-emerald-600') + ' text-white rounded font-bold">' +
+          (p.is_verified ? 'Mark unpaid' : 'Mark paid') + '</button>' +
+          '</td></tr>';
+      }).join('') || '<tr><td colspan="6" class="p-3 text-xs text-slate-400">No users yet.</td></tr>';
+    };
+
+    /* keep Users list fresh when its tab opens */
+    var origShowTab = window.showTab;
+    window.showTab = function (tabId) {
+      if (typeof origShowTab === 'function') origShowTab(tabId);
+      var t = document.getElementById('tab-users');
+      if (tabId === 'users') {
+        document.querySelectorAll('.tab-content').forEach(function (el) { el.classList.add('hidden'); });
+        if (t) t.classList.remove('hidden');
+        var title = document.getElementById('currentTabTitle');
+        if (title) title.innerText = 'Users';
+        pvRenderUsers();
+      }
+    };
+
+    /* master/setup screens are replaced by cloud accounts */
+    window.pvOpenMaster = function () {
+      alert('Accounts are managed in Lovable Cloud now. Use Sign up to create an account, or ask the admin to verify you.');
+    };
+
+    /* ---- boot ---- */
+    document.addEventListener('DOMContentLoaded', function () {
+      setTimeout(async function () {
+        showLogin();
+        var s = await sb.auth.getSession();
+        if (s.data && s.data.session) await pvStartSession();
+      }, 0);
+    });
+  })();
+  </script>
+  <!-- =================== END LOVABLE CLOUD LAYER =================== -->
 </body>
 </html>`;
       const w = window.open('', '_blank');
@@ -7313,9 +7718,6 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
       else init();
     })();
   </script>
-
-  <!-- Lovable Cloud persistence, login logging & audit trail -->
-  <script src="cloud.js"></script>
 </body>
 
 
