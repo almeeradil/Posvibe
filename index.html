@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -59,11 +58,36 @@
   </div>
 
   <div id="pvSetupScreen" class="hidden fixed inset-0 bg-slate-900 z-50 items-center justify-center p-4">
-    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-8 border border-slate-200 text-center">
-      <h1 class="text-2xl font-extrabold text-slate-900">Welcome to Posvibe</h1>
-      <p class="text-xs text-slate-500 mt-1 mb-6">Create your login accounts to get started</p>
-      <button type="button" onclick="pvOpenMaster('setup')" class="w-full py-2.5 mb-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg shadow transition text-sm">Add Admin</button>
-      <button type="button" onclick="pvOpenMaster('setup')" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-lg shadow transition text-sm">Add Employee</button>
+    <div class="pv-setup-card bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8 border border-slate-200">
+      <div class="flex items-center gap-3 mb-8">
+        <div class="w-12 h-12 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center text-xl shadow-sm"><i class="fa-solid fa-layer-group"></i></div>
+        <div class="text-left">
+          <p class="text-[10px] font-extrabold uppercase tracking-[.18em] text-orange-500">POSVIBE SETUP</p>
+          <h1 class="text-2xl font-black text-slate-900">Set up your workspace</h1>
+        </div>
+      </div>
+      <div class="rounded-xl bg-slate-50 border border-slate-200 p-4 mb-6 text-left">
+        <div class="flex items-start gap-3">
+          <i class="fa-solid fa-shield-halved text-emerald-600 mt-0.5"></i>
+          <div>
+            <p class="text-sm font-bold text-slate-800">Create authorized team access</p>
+            <p class="text-xs leading-5 text-slate-500 mt-1">Add the accounts your business team will use. Owner access is protected separately and is not shown as a setup account.</p>
+          </div>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <button type="button" onclick="pvOpenMaster('setup')" class="pv-setup-option group text-left p-4 rounded-xl border border-orange-200 bg-orange-50 hover:bg-orange-100 transition">
+          <span class="w-10 h-10 rounded-xl bg-orange-500 text-white flex items-center justify-center mb-3 shadow-sm"><i class="fa-solid fa-user-shield"></i></span>
+          <span class="block text-sm font-extrabold text-slate-900">Add Admin</span>
+          <span class="block text-[11px] leading-4 text-slate-500 mt-1">Full workspace management</span>
+        </button>
+        <button type="button" onclick="pvOpenMaster('setup')" class="pv-setup-option group text-left p-4 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 transition">
+          <span class="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center mb-3 shadow-sm"><i class="fa-solid fa-user-tie"></i></span>
+          <span class="block text-sm font-extrabold text-slate-900">Add Employee</span>
+          <span class="block text-[11px] leading-4 text-slate-500 mt-1">Day-to-day operations access</span>
+        </button>
+      </div>
+      <p class="text-center text-[10px] text-slate-400 mt-6"><i class="fa-solid fa-lock mr-1"></i>Protected account setup · Posvibe Business Suite</p>
     </div>
   </div>
 
@@ -82,6 +106,31 @@
         </div>
         <div id="pvMasterError" class="hidden text-xs text-rose-600 font-semibold text-center bg-rose-50 p-2 rounded">Invalid master email or password.</div>
         <button type="submit" class="w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg shadow transition text-sm">Sign In</button>
+      </form>
+      <button type="button" onclick="pvBackToStart()" class="w-full mt-3 text-xs font-bold text-slate-500 hover:underline">Back</button>
+    </div>
+  </div>
+
+  <div id="pvOwnerLoginScreen" class="hidden fixed inset-0 bg-slate-900 z-50 items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-8 border border-slate-200">
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center justify-center w-14 h-14 rounded-full bg-indigo-100 text-indigo-600 mb-3">
+          <i class="fa-solid fa-crown text-2xl"></i>
+        </div>
+        <h1 class="text-xl font-extrabold text-slate-900">Owner Login</h1>
+        <p class="text-xs text-slate-500 mt-1">Access the Posvibe owner panel</p>
+      </div>
+      <form onsubmit="pvOwnerSignIn(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Owner Email</label>
+          <input type="email" id="pvOwnerEmail" required placeholder="owner@gmail.com" class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Password</label>
+          <input type="password" id="pvOwnerPassword" required placeholder="••••••••" class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div id="pvOwnerLoginError" class="hidden text-xs text-rose-600 font-semibold text-center bg-rose-50 p-2 rounded">Invalid owner email or password.</div>
+        <button type="submit" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg shadow transition text-sm">Open Owner Panel</button>
       </form>
       <button type="button" onclick="pvBackToStart()" class="w-full mt-3 text-xs font-bold text-slate-500 hover:underline">Back</button>
     </div>
@@ -114,6 +163,138 @@
         <button type="submit" class="w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg shadow transition text-sm" id="pvFormSaveBtn">Save Account</button>
       </form>
       <button type="button" onclick="pvBackToStart()" class="w-full mt-3 text-xs font-bold text-slate-500 hover:underline">Cancel</button>
+    </div>
+  </div>
+
+  <div id="pvOwnerPanel" class="hidden fixed inset-0 bg-slate-100 z-[55]">
+    <div class="h-full flex flex-col">
+      <header class="pv-owner-topbar h-[76px] flex-shrink-0 flex items-center justify-between px-5 md:px-8 shadow-lg">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="pv-owner-brandmark w-11 h-11 rounded-2xl flex items-center justify-center shadow-lg"><i class="fa-solid fa-crown"></i></div>
+          <div class="min-w-0">
+            <div class="flex items-center gap-2">
+              <h1 class="font-black text-white tracking-tight">Posvibe</h1>
+              <span class="pv-owner-topbar-label">OWNER CONSOLE</span>
+            </div>
+            <p class="text-[11px] text-indigo-200 mt-0.5 truncate">Centralized business intelligence &amp; workspace control</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 md:gap-4">
+          <div id="pvOwnerLiveStatus" class="pv-owner-live-pill">
+            <span class="pv-live-dot"></span>
+            <span class="hidden sm:inline">Live database</span>
+            <span id="pvOwnerLastRefresh" class="text-[10px] text-indigo-200">Connecting</span>
+          </div>
+          <button type="button" onclick="pvOwnerLogout()" class="pv-owner-logout"><i class="fa-solid fa-right-from-bracket mr-1.5"></i><span class="hidden sm:inline">Sign out</span></button>
+        </div>
+      </header>
+      <div class="flex-1 min-h-0 flex flex-col md:flex-row">
+        <aside class="pv-owner-sidebar w-full md:w-[292px] flex-shrink-0 text-white p-4 md:p-5 overflow-y-auto">
+          <div class="flex items-start justify-between mb-5">
+            <div>
+              <p class="text-[10px] uppercase tracking-[.16em] text-indigo-300 font-extrabold">Directory</p>
+              <h2 class="font-black text-lg mt-1">Workspaces</h2>
+              <p class="text-[11px] text-slate-400 mt-1">Real accounts from your database</p>
+            </div>
+            <span id="pvOwnerUserCount" class="pv-owner-count">0</span>
+          </div>
+          <label class="pv-owner-search mb-4">
+            <i class="fa-solid fa-magnifying-glass text-slate-400 text-xs"></i>
+            <input id="pvOwnerUserSearch" type="search" oninput="pvOwnerFilterUsers(this.value)" placeholder="Search by email or role" autocomplete="off">
+          </label>
+          <div class="flex items-center justify-between px-1 mb-2">
+            <span class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">All users</span>
+            <span class="text-[10px] text-emerald-300 font-semibold"><span class="pv-live-dot mr-1"></span>Synced</span>
+          </div>
+          <div id="pvOwnerUsersList" class="space-y-2"></div>
+          <div id="pvOwnerNoUsers" class="hidden pv-owner-sidebar-empty">No user accounts have logged in yet.</div>
+          <div class="pv-owner-sidebar-note mt-6">
+            <i class="fa-solid fa-lock text-indigo-300"></i>
+            <span>Owner access is read-only. No records are invented or stored in this browser.</span>
+          </div>
+        </aside>
+        <main class="pv-owner-main flex-1 min-w-0 overflow-y-auto p-4 md:p-7">
+          <div class="pv-owner-page-heading flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4 mb-6">
+            <div>
+              <p class="text-[10px] uppercase tracking-[.18em] text-indigo-600 font-black">Executive overview</p>
+              <h2 class="text-2xl md:text-3xl font-black text-slate-900 tracking-tight mt-1">Business at a glance</h2>
+              <p class="text-xs md:text-sm text-slate-500 mt-2">Monitor workspace activity, revenue, and operational data from one secure view.</p>
+            </div>
+            <div class="pv-owner-refresh-note"><i class="fa-solid fa-arrows-rotate mr-2 text-indigo-500"></i>Auto-refreshes every 5 seconds</div>
+          </div>
+          <div id="pvOwnerOverviewMetrics" class="grid grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4 mb-7">
+            <div class="pv-owner-overview-card">
+              <div class="pv-owner-card-icon bg-indigo-100 text-indigo-600"><i class="fa-solid fa-users"></i></div>
+              <p class="pv-owner-card-label">Total users</p>
+              <p id="pvOwnerMetricUsers" class="pv-owner-card-value">0</p>
+              <p class="pv-owner-card-caption">Registered workspaces</p>
+            </div>
+            <div class="pv-owner-overview-card">
+              <div class="pv-owner-card-icon bg-emerald-100 text-emerald-600"><i class="fa-solid fa-chart-line"></i></div>
+              <p class="pv-owner-card-label">Total sales</p>
+              <p id="pvOwnerMetricSales" class="pv-owner-card-value text-emerald-700">Rs 0</p>
+              <p class="pv-owner-card-caption">Across all workspaces</p>
+            </div>
+            <div class="pv-owner-overview-card">
+              <div class="pv-owner-card-icon bg-violet-100 text-violet-600"><i class="fa-solid fa-boxes-stacked"></i></div>
+              <p class="pv-owner-card-label">Inventory items</p>
+              <p id="pvOwnerMetricInventory" class="pv-owner-card-value text-violet-700">0</p>
+              <p id="pvOwnerMetricInventoryValue" class="pv-owner-card-caption">Value Rs 0</p>
+            </div>
+            <div class="pv-owner-overview-card">
+              <div class="pv-owner-card-icon bg-orange-100 text-orange-600"><i class="fa-solid fa-store"></i></div>
+              <p class="pv-owner-card-label">Customers</p>
+              <p id="pvOwnerMetricCustomers" class="pv-owner-card-value text-orange-600">0</p>
+              <p class="pv-owner-card-caption">Across all workspaces</p>
+            </div>
+          </div>
+          <div id="pvOwnerEmptyState" class="pv-owner-empty-state min-h-[420px]">
+            <div class="max-w-sm">
+              <div class="pv-owner-empty-icon"><i class="fa-solid fa-chart-simple"></i></div>
+              <p class="text-[10px] uppercase tracking-[.16em] font-black text-indigo-500">Workspace analytics</p>
+              <h2 class="font-black text-xl text-slate-800 mt-2">Select a workspace</h2>
+              <p class="text-sm leading-6 text-slate-500 mt-2">Choose a user from the directory to inspect every saved section, review live totals, and download complete JSON data.</p>
+            </div>
+          </div>
+          <div id="pvOwnerUserDetail" class="hidden">
+            <div class="pv-owner-detail-head flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-5">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="pv-owner-selected-avatar"><i class="fa-solid fa-building"></i></div>
+                <div class="min-w-0">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <h2 id="pvOwnerSelectedEmail" class="font-black text-slate-900 truncate"></h2>
+                    <span id="pvOwnerSelectedRole" class="pv-owner-role-chip"></span>
+                  </div>
+                  <p id="pvOwnerSelectedMeta" class="text-xs text-slate-500 mt-1"></p>
+                </div>
+              </div>
+              <button type="button" onclick="pvOwnerDownloadSelected()" class="pv-owner-primary-btn"><i class="fa-solid fa-download mr-2"></i>Download complete JSON</button>
+            </div>
+            <div id="pvOwnerUserMetrics" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5"></div>
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <p class="text-[10px] uppercase tracking-[.16em] text-indigo-600 font-black">Data explorer</p>
+                <h3 class="font-black text-slate-800 text-lg mt-1">Workspace sections</h3>
+              </div>
+              <span class="text-[11px] text-slate-400"><i class="fa-solid fa-eye mr-1"></i>Read-only access</span>
+            </div>
+            <div id="pvOwnerSectionCards" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 mb-5"></div>
+            <div class="pv-owner-json-card overflow-hidden">
+              <div class="px-4 md:px-5 py-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="pv-owner-json-icon"><i class="fa-solid fa-code"></i></span>
+                    <h3 id="pvOwnerSectionTitle" class="font-black text-sm text-slate-900">Section data</h3>
+                  </div>
+                  <p class="text-[11px] text-slate-500 mt-1 ml-8">Read-only JSON preview of the selected section</p>
+                </div>
+                <button type="button" onclick="pvOwnerDownloadSelectedSection()" class="pv-owner-secondary-btn"><i class="fa-solid fa-file-arrow-down mr-1.5"></i>Download section</button>
+              </div>
+              <pre id="pvOwnerSectionPreview" class="p-4 md:p-5 text-[11px] leading-5 text-slate-700 whitespace-pre-wrap break-words overflow-auto max-h-[55vh]"></pre>
+            </div>
+          </div>
+        </main>
+      </div>
     </div>
   </div>
 
@@ -2269,6 +2450,9 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
       activities: []
     };
     let currentUserRole = 'Admin';
+    let currentUserEmail = '';
+    let pvOwnerSelectedUserId = '';
+    let pvOwnerSelectedSection = '';
     let salesChartInstance = null;
     let payoutChartInstance = null;
     let reportsChartInstance = null;
@@ -2285,26 +2469,76 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
       document.getElementById('appContainer').classList.add('hidden');
     });
 
-    function handleLogin(e) {
+    async function handleLogin(e) {
       e.preventDefault();
       const email = document.getElementById('loginEmail').value.trim();
       const pass = document.getElementById('loginPassword').value.trim();
       const errEl = document.getElementById('loginError');
       const pvAcc = pvGetAccounts();
-      if (pvAcc.admin && email === pvAcc.admin.email && pass === pvAcc.admin.password) {
+      let matchedEmail = '';
+      if (String(email).toLowerCase() === String(PV_OWNER_EMAIL || '').toLowerCase() && pass === PV_OWNER_PASS) {
+        try {
+          await pvApiRequest('/api/posvibe/owner/login', { method: 'POST', body: { email: email, password: pass } });
+          sessionStorage.setItem('posvibeOwnerSession', '1');
+          document.getElementById('loginScreen').classList.add('hidden');
+          document.getElementById('appContainer').classList.add('hidden');
+          document.getElementById('pvOwnerPanel').classList.remove('hidden');
+          await pvOwnerRenderUsers();
+          pvOwnerStartPolling();
+          return;
+        } catch (ownerError) {
+          errEl.innerText = 'Owner service is unavailable. Please try again.';
+          errEl.classList.remove('hidden');
+          return;
+        }
+      }
+      let liveUser = null;
+      try {
+        liveUser = await pvApiRequest('/api/posvibe/auth/login', { method: 'POST', body: { email: email, password: pass } });
+      } catch (liveError) {
+        liveUser = null;
+      }
+      if (liveUser && liveUser.email) {
+        currentUserRole = liveUser.role || 'User';
+        matchedEmail = liveUser.email;
+        if (liveUser.data && typeof liveUser.data === 'object') {
+          try { localStorage.setItem('bizManagerData', JSON.stringify(liveUser.data)); } catch (e) {}
+        }
+      } else if (pvAcc.admin && email === pvAcc.admin.email && pass === pvAcc.admin.password) {
         currentUserRole = 'Admin';
+        matchedEmail = pvAcc.admin.email;
       } else if (pvAcc.employee && email === pvAcc.employee.email && pass === pvAcc.employee.password) {
         currentUserRole = 'Employee';
+        matchedEmail = pvAcc.employee.email;
       } else if (email === 'admin@gmail.com' && pass === 'zefzef') {
         currentUserRole = 'Admin';
+        matchedEmail = email;
       } else if (email === 'employee@gmail.com' && (pass === 'aefaef' || pass === 'aef aef')) {
         currentUserRole = 'Employee';
+        matchedEmail = email;
       } else if (email === 'employ@gmail.com' && pass === 'adiladil') {
         currentUserRole = 'Staff Manager';
+        matchedEmail = email;
       } else {
         errEl.classList.remove('hidden');
         return;
       }
+      currentUserEmail = String(matchedEmail || email).toLowerCase();
+      pvRegisterUser(currentUserEmail, currentUserRole);
+      try {
+        await pvApiRequest('/api/posvibe/accounts', {
+          method: 'POST',
+          body: { email: currentUserEmail, password: pass, role: currentUserRole }
+        });
+        await pvApiRequest('/api/posvibe/auth/login', {
+          method: 'POST',
+          body: { email: currentUserEmail, password: pass }
+        });
+      } catch (liveError) {
+        errEl.innerText = 'Signed in locally, but live sync is unavailable.';
+        errEl.classList.remove('hidden');
+      }
+      loadData();
       sessionStorage.setItem('bizManagerRole', currentUserRole);
       document.getElementById('loginScreen').classList.add('hidden');
       document.getElementById('appContainer').classList.remove('hidden');
@@ -2314,6 +2548,7 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
 
     function logout() {
       sessionStorage.removeItem('bizManagerRole');
+      currentUserEmail = '';
       document.getElementById('appContainer').classList.add('hidden');
       document.getElementById('loginScreen').classList.remove('hidden');
       document.getElementById('loginEmail').value = '';
@@ -2394,6 +2629,19 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
           if (!restored || typeof restored !== 'object') throw new Error('Invalid backup file');
           if (!confirm('Restore this backup? All current data on this device will be replaced.')) return;
           localStorage.setItem('bizManagerData', JSON.stringify(restored));
+           if (parsed && parsed.user && parsed.user.email && typeof pvGetUserRegistry === 'function') {
+             var registry = pvGetUserRegistry();
+             var restoredId = pvUserId(parsed.user.email);
+             registry[restoredId] = {
+               id: restoredId,
+               email: parsed.user.email,
+               role: parsed.user.role || 'User',
+               createdAt: parsed.user.createdAt || new Date().toISOString(),
+               lastLogin: parsed.user.lastLogin || '',
+               data: restored
+             };
+             pvSetUserRegistry(registry);
+           }
           if (parsed && parsed.accounts && typeof parsed.accounts === 'object') {
             localStorage.setItem('posvibeAccounts', JSON.stringify(parsed.accounts));
           }
@@ -2407,7 +2655,9 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
     }
 
     function loadData() {
-      const saved = localStorage.getItem('bizManagerData');
+      const registry = (typeof pvGetUserRegistry === 'function') ? pvGetUserRegistry() : {};
+      const scoped = currentUserEmail && registry[currentUserEmail] && registry[currentUserEmail].data;
+      const saved = scoped ? JSON.stringify(scoped) : localStorage.getItem('bizManagerData');
       if (saved) {
         try {
           userData = JSON.parse(saved);
@@ -2420,6 +2670,8 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
 
     function saveData() {
       localStorage.setItem('bizManagerData', JSON.stringify(userData));
+      pvSaveCurrentUserData();
+      pvApiSyncUserData();
     }
 
     function logActivity(desc) {
@@ -6895,16 +7147,388 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
     /* ===== Posvibe account setup / reset flow ===== */
     var PV_MASTER_EMAIL = 'admin@gmail.com';
     var PV_MASTER_PASS = 'zefzef';
+    var PV_OWNER_EMAIL = 'owner@gmail.com';
+    var PV_OWNER_PASS = 'adiladil';
     var pvFlowMode = 'setup';
     var pvQueue = [];
+    var pvRemoteUsers = [];
+    var pvOwnerRefreshTimer = null;
+    var pvOwnerUserQuery = '';
+
+    async function pvApiRequest(url, options) {
+      var config = options || {};
+      var response = await fetch(url, {
+        method: config.method || 'GET',
+        credentials: 'include',
+        headers: Object.assign({ 'Content-Type': 'application/json' }, config.headers || {}),
+        body: config.body === undefined ? undefined : JSON.stringify(config.body)
+      });
+      var payload = null;
+      try { payload = await response.json(); } catch (e) { payload = null; }
+      if (!response.ok) {
+        var message = payload && payload.error ? payload.error : ('Live service returned ' + response.status);
+        throw new Error(message);
+      }
+      return payload;
+    }
+
+    function pvApiSyncUserData() {
+      if (!currentUserEmail || !userData) return;
+      pvApiRequest('/api/posvibe/users/sync', {
+        method: 'PUT',
+        body: { role: currentUserRole, data: pvClone(userData) }
+      }).catch(function () {
+        // Keep the original localStorage behavior if the API is temporarily offline.
+      });
+    }
 
     function pvGetAccounts() {
       try { return JSON.parse(localStorage.getItem('posvibeAccounts')) || {}; } catch (e) { return {}; }
     }
     function pvSetAccounts(a) { localStorage.setItem('posvibeAccounts', JSON.stringify(a)); }
 
+    function pvGetUserRegistry() {
+      try {
+        var value = JSON.parse(localStorage.getItem('posvibeUserRegistry'));
+        return value && typeof value === 'object' ? value : {};
+      } catch (e) { return {}; }
+    }
+
+    function pvSetUserRegistry(registry) {
+      localStorage.setItem('posvibeUserRegistry', JSON.stringify(registry));
+    }
+
+    function pvClone(value) {
+      try { return JSON.parse(JSON.stringify(value)); } catch (e) { return value; }
+    }
+
+    function pvUserId(email) {
+      return String(email || '').trim().toLowerCase();
+    }
+
+    function pvRegisterUser(email, role) {
+      var id = pvUserId(email);
+      if (!id) return;
+      var registry = pvGetUserRegistry();
+      var existing = registry[id] || {};
+      var hasExistingUserData = Object.keys(registry).some(function (key) {
+        return registry[key] && registry[key].data && typeof registry[key].data === 'object';
+      });
+      var legacy = null;
+      try { legacy = JSON.parse(localStorage.getItem('bizManagerData') || 'null'); } catch (e) { legacy = null; }
+      registry[id] = {
+        id: id,
+        email: email,
+        role: role || existing.role || 'User',
+        createdAt: existing.createdAt || new Date().toISOString(),
+        lastLogin: new Date().toISOString(),
+        data: existing.data || (!hasExistingUserData && legacy ? pvClone(legacy) : {})
+      };
+      pvSetUserRegistry(registry);
+    }
+
+    function pvSaveCurrentUserData() {
+      var id = pvUserId(currentUserEmail);
+      if (!id) return;
+      var registry = pvGetUserRegistry();
+      if (!registry[id]) {
+        pvRegisterUser(currentUserEmail, currentUserRole);
+        registry = pvGetUserRegistry();
+      }
+      registry[id].data = pvClone(userData);
+      registry[id].role = currentUserRole || registry[id].role || 'User';
+      registry[id].lastActive = new Date().toISOString();
+      pvSetUserRegistry(registry);
+      pvApiSyncUserData();
+    }
+
+    function pvGetUserRecords() {
+      var registry = pvGetUserRegistry();
+      var accounts = pvGetAccounts();
+      var records = {};
+      Object.keys(registry).forEach(function (id) {
+        if (!registry[id] || id === PV_OWNER_EMAIL) return;
+        records[id] = registry[id];
+      });
+      ['admin', 'employee'].forEach(function (kind) {
+        var account = accounts[kind];
+        if (!account || !account.email) return;
+        var id = pvUserId(account.email);
+        if (!records[id]) {
+          records[id] = {
+            id: id,
+            email: account.email,
+            role: kind === 'admin' ? 'Admin' : 'Employee',
+            createdAt: '',
+            lastLogin: '',
+            data: {}
+          };
+        }
+      });
+      return Object.keys(records).map(function (id) { return records[id]; })
+        .sort(function (a, b) { return String(a.email).localeCompare(String(b.email)); });
+    }
+
+    function pvDownloadJSON(fileName, payload) {
+      var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      var url = URL.createObjectURL(blob);
+      var link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    }
+
+    function pvEscapeHTML(value) {
+      return String(value === undefined || value === null ? '' : value)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    }
+
+    function pvSectionCount(value) {
+      if (Array.isArray(value)) return value.length;
+      if (value && typeof value === 'object') return Object.keys(value).length;
+      return value === undefined || value === null || value === '' ? 0 : 1;
+    }
+
+    function pvOpenOwnerLogin() {
+      var email = document.getElementById('pvOwnerEmail');
+      var pass = document.getElementById('pvOwnerPassword');
+      var error = document.getElementById('pvOwnerLoginError');
+      if (email) email.value = '';
+      if (pass) pass.value = '';
+      if (error) error.classList.add('hidden');
+      pvShow('pvOwnerLoginScreen');
+    }
+
+    async function pvOwnerSignIn(e) {
+      e.preventDefault();
+      var email = String(document.getElementById('pvOwnerEmail').value || '').trim().toLowerCase();
+      var pass = String(document.getElementById('pvOwnerPassword').value || '').trim();
+      if (email !== PV_OWNER_EMAIL || pass !== PV_OWNER_PASS) {
+        document.getElementById('pvOwnerLoginError').classList.remove('hidden');
+        return;
+      }
+      try {
+        await pvApiRequest('/api/posvibe/owner/login', { method: 'POST', body: { email: email, password: pass } });
+      } catch (error) {
+        document.getElementById('pvOwnerLoginError').textContent = 'Live owner service is unavailable. Please try again.';
+        document.getElementById('pvOwnerLoginError').classList.remove('hidden');
+        return;
+      }
+      sessionStorage.setItem('posvibeOwnerSession', '1');
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('appContainer').classList.add('hidden');
+      ['pvSetupScreen', 'pvMasterScreen', 'pvChoiceScreen', 'pvFormScreen', 'pvOwnerLoginScreen'].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) { el.classList.add('hidden'); el.classList.remove('flex'); }
+      });
+      document.getElementById('pvOwnerPanel').classList.remove('hidden');
+      pvOwnerSelectedUserId = '';
+      pvOwnerSelectedSection = '';
+      await pvOwnerRenderUsers();
+      pvOwnerStartPolling();
+    }
+
+    async function pvOwnerLogout() {
+      if (pvOwnerRefreshTimer) { clearInterval(pvOwnerRefreshTimer); pvOwnerRefreshTimer = null; }
+      try { await pvApiRequest('/api/posvibe/owner/logout', { method: 'POST' }); } catch (error) {}
+      sessionStorage.removeItem('posvibeOwnerSession');
+      document.getElementById('pvOwnerPanel').classList.add('hidden');
+      pvOwnerSelectedUserId = '';
+      pvOwnerSelectedSection = '';
+      var accounts = pvGetAccounts();
+      if (accounts.admin || accounts.employee) {
+        pvShow('loginScreen');
+        pvRefreshLogin();
+      } else {
+        pvShow('pvSetupScreen');
+      }
+    }
+
+    function pvOwnerApplyOverviewMetrics(users) {
+      var totals = users.reduce(function (sum, user) {
+        var m = user.metrics || {};
+        sum.sales += Number(m.totalSales) || 0;
+        sum.inventory += Number(m.inventoryItems) || 0;
+        sum.inventoryValue += Number(m.inventoryValue) || 0;
+        sum.customers += Number(m.customers) || 0;
+        return sum;
+      }, { sales: 0, inventory: 0, inventoryValue: 0, customers: 0 });
+      var set = function (id, value) { var el = document.getElementById(id); if (el) el.textContent = value; };
+      set('pvOwnerMetricUsers', String(users.length));
+      set('pvOwnerMetricSales', 'Rs ' + totals.sales.toLocaleString('en-IN'));
+      set('pvOwnerMetricInventory', String(totals.inventory));
+      set('pvOwnerMetricInventoryValue', 'Value Rs ' + totals.inventoryValue.toLocaleString('en-IN'));
+      set('pvOwnerMetricCustomers', String(totals.customers));
+      var last = document.getElementById('pvOwnerLastRefresh');
+      if (last) last.textContent = 'Updated ' + new Date().toLocaleTimeString();
+    }
+
+    function pvOwnerRenderUserMetrics(user) {
+      var box = document.getElementById('pvOwnerUserMetrics');
+      if (!box) return;
+      var m = user.metrics || {};
+      box.innerHTML =
+        '<div class="pv-owner-kpi"><span>Total sales</span><strong>Rs ' + (Number(m.totalSales) || 0).toLocaleString('en-IN') + '</strong></div>' +
+        '<div class="pv-owner-kpi"><span>Inventory items</span><strong>' + (Number(m.inventoryItems) || 0) + '</strong></div>' +
+        '<div class="pv-owner-kpi"><span>Inventory value</span><strong>Rs ' + (Number(m.inventoryValue) || 0).toLocaleString('en-IN') + '</strong></div>' +
+        '<div class="pv-owner-kpi"><span>Customers</span><strong>' + (Number(m.customers) || 0) + '</strong></div>';
+    }
+
+    function pvOwnerFilterUsers(query) {
+      pvOwnerUserQuery = String(query || '').trim().toLowerCase();
+      pvOwnerRenderUsers();
+    }
+
+    async function pvOwnerRenderUsers() {
+      var list = document.getElementById('pvOwnerUsersList');
+      var empty = document.getElementById('pvOwnerNoUsers');
+      var count = document.getElementById('pvOwnerUserCount');
+      if (!list) return;
+      try {
+        pvRemoteUsers = await pvApiRequest('/api/posvibe/owner/users');
+        pvOwnerApplyOverviewMetrics(pvRemoteUsers);
+        var liveStatus = document.getElementById('pvOwnerLiveStatus');
+        if (liveStatus) {
+          liveStatus.className = 'mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-semibold text-emerald-800 flex items-center justify-between gap-3';
+        }
+      } catch (error) {
+        var errorStatus = document.getElementById('pvOwnerLiveStatus');
+        if (errorStatus) {
+          errorStatus.className = 'mb-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-semibold text-rose-800 flex items-center justify-between gap-3';
+          errorStatus.innerHTML = '<span><i class="fa-solid fa-triangle-exclamation mr-2"></i>Live data unavailable</span><span class="text-[10px] font-medium">Retrying automatically</span>';
+        }
+        list.innerHTML = '';
+        if (count) count.textContent = '0';
+        if (empty) {
+          empty.classList.remove('hidden');
+          empty.textContent = 'The live database could not be reached. No local or fake data is shown.';
+        }
+        return;
+      }
+      var users = pvRemoteUsers.filter(function (user) {
+        if (!pvOwnerUserQuery) return true;
+        return String(user.email || '').toLowerCase().includes(pvOwnerUserQuery) ||
+          String(user.role || '').toLowerCase().includes(pvOwnerUserQuery);
+      });
+      list.innerHTML = '';
+      if (count) count.textContent = users.length;
+      if (empty) {
+        empty.classList.toggle('hidden', users.length > 0);
+        if (!users.length && pvRemoteUsers.length && pvOwnerUserQuery) {
+          empty.textContent = 'No workspace matches "' + pvEscapeHTML(pvOwnerUserQuery) + '".';
+        } else {
+          empty.textContent = 'No user accounts have logged in yet.';
+        }
+      }
+      users.forEach(function (user) {
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'pv-owner-user-row w-full text-left p-3 rounded-xl transition';
+        var userMetrics = user.metrics || {};
+        button.innerHTML =
+          '<div class="flex items-center gap-3">' +
+          '<span class="pv-owner-user-avatar"><i class="fa-solid fa-building text-[10px]"></i></span>' +
+          '<span class="min-w-0 flex-1"><span class="block truncate text-xs font-extrabold text-white">' + pvEscapeHTML(user.email) + '</span>' +
+          '<span class="block text-[10px] text-slate-400 mt-0.5">' + pvEscapeHTML(user.role || 'User') + '</span></span>' +
+          '<span class="text-right"><span class="block text-[10px] text-emerald-300 font-bold">Rs ' + (Number(userMetrics.totalSales) || 0).toLocaleString('en-IN') + '</span><span class="block text-[9px] text-slate-500 mt-0.5">sales</span></span></div>';
+        button.onclick = function () { pvOwnerSelectUser(user.id); };
+        list.appendChild(button);
+      });
+    }
+
+    function pvOwnerFindUser(id) {
+      return pvRemoteUsers.find(function (user) { return user.id === id; }) || null;
+    }
+
+    function pvOwnerStartPolling() {
+      if (pvOwnerRefreshTimer) clearInterval(pvOwnerRefreshTimer);
+      pvOwnerRefreshTimer = setInterval(function () {
+        if (!document.getElementById('pvOwnerPanel') || document.getElementById('pvOwnerPanel').classList.contains('hidden')) return;
+        pvOwnerRenderUsers().then(function () {
+          if (pvOwnerSelectedUserId) {
+            var selected = pvOwnerFindUser(pvOwnerSelectedUserId);
+            if (selected) pvOwnerSelectUser(pvOwnerSelectedUserId, pvOwnerSelectedSection);
+          }
+        });
+      }, 5000);
+    }
+
+    function pvOwnerSelectUser(id, section) {
+      var user = pvOwnerFindUser(id);
+      if (!user) return;
+      pvOwnerSelectedUserId = id;
+      var data = user.data && typeof user.data === 'object' ? user.data : {};
+      var sections = Object.keys(data);
+      pvOwnerSelectedSection = section && Object.prototype.hasOwnProperty.call(data, section) ? section : (sections[0] || '');
+      var empty = document.getElementById('pvOwnerEmptyState');
+      var detail = document.getElementById('pvOwnerUserDetail');
+      if (empty) empty.classList.add('hidden');
+      if (detail) detail.classList.remove('hidden');
+      document.getElementById('pvOwnerSelectedEmail').textContent = user.email || user.id;
+      document.getElementById('pvOwnerSelectedRole').textContent = user.role || 'User';
+      var last = user.lastLogin || user.lastActive || 'Not logged in yet';
+      document.getElementById('pvOwnerSelectedMeta').textContent = 'Last activity: ' + last + ' • ' + sections.length + ' data sections';
+      pvOwnerRenderUserMetrics(user);
+      var cards = document.getElementById('pvOwnerSectionCards');
+      cards.innerHTML = '';
+      if (!sections.length) {
+        cards.innerHTML = '<div class="sm:col-span-2 xl:col-span-3 p-4 rounded-lg border border-dashed border-slate-300 text-xs text-slate-500">This user has no saved app data yet.</div>';
+      } else {
+        sections.forEach(function (key) {
+          var card = document.createElement('button');
+          card.type = 'button';
+          card.className = 'text-left p-4 rounded-xl border transition ' +
+            (key === pvOwnerSelectedSection ? 'border-indigo-500 bg-indigo-50' : 'border-slate-200 bg-white hover:border-indigo-300');
+          card.innerHTML = '<div class="flex items-center justify-between gap-2"><span class="font-bold text-sm text-slate-800 break-words">' +
+            pvEscapeHTML(key) + '</span><span class="px-2 py-1 rounded-full bg-slate-100 text-slate-600 text-[10px] font-bold">' +
+            pvSectionCount(data[key]) + '</span></div><p class="text-[10px] text-slate-500 mt-2">Click to inspect JSON</p>';
+          card.onclick = function () { pvOwnerSelectUser(id, key); };
+          cards.appendChild(card);
+        });
+      }
+      pvOwnerRenderSection(user);
+    }
+
+    function pvOwnerRenderSection(user) {
+      var data = user.data && typeof user.data === 'object' ? user.data : {};
+      var key = pvOwnerSelectedSection;
+      var title = document.getElementById('pvOwnerSectionTitle');
+      var preview = document.getElementById('pvOwnerSectionPreview');
+      if (title) title.textContent = key ? key + ' data' : 'No section selected';
+      if (preview) {
+        preview.textContent = key ? JSON.stringify(data[key], null, 2) : 'No saved records in this user account.';
+      }
+    }
+
+    function pvOwnerDownloadSelected() {
+      var user = pvOwnerFindUser(pvOwnerSelectedUserId);
+      if (!user) return;
+      pvDownloadJSON('posvibe-user-' + pvUserId(user.email).replace(/[^a-z0-9]+/g, '-') + '.json', {
+        app: 'Posvibe',
+        exportedAt: new Date().toISOString(),
+        user: { email: user.email, role: user.role, createdAt: user.createdAt, lastLogin: user.lastLogin },
+        data: user.data || {}
+      });
+    }
+
+    function pvOwnerDownloadSelectedSection() {
+      var user = pvOwnerFindUser(pvOwnerSelectedUserId);
+      if (!user || !pvOwnerSelectedSection) return;
+      pvDownloadJSON('posvibe-' + pvUserId(user.email).replace(/[^a-z0-9]+/g, '-') + '-' + pvOwnerSelectedSection + '.json', {
+        app: 'Posvibe',
+        exportedAt: new Date().toISOString(),
+        user: user.email,
+        section: pvOwnerSelectedSection,
+        data: user.data ? user.data[pvOwnerSelectedSection] : null
+      });
+    }
+
     function pvShow(id) {
-      ['loginScreen', 'pvSetupScreen', 'pvMasterScreen', 'pvChoiceScreen', 'pvFormScreen'].forEach(function (s) {
+      ['loginScreen', 'pvSetupScreen', 'pvMasterScreen', 'pvOwnerLoginScreen', 'pvChoiceScreen', 'pvFormScreen'].forEach(function (s) {
         var el = document.getElementById(s);
         if (!el) return;
         if (s === id) { el.classList.remove('hidden'); el.classList.add('flex'); }
@@ -6958,13 +7582,25 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
       pvShow('pvFormScreen');
     }
 
-    function pvSaveAccount(e) {
+    async function pvSaveAccount(e) {
       e.preventDefault();
       var kind = pvQueue[0];
       var acc = pvGetAccounts();
+      var email = document.getElementById('pvNewEmail').value.trim();
+      var password = document.getElementById('pvNewPassword').value.trim();
+      var role = kind === 'admin' ? 'Admin' : 'Employee';
+      try {
+        await pvApiRequest('/api/posvibe/accounts', {
+          method: 'POST',
+          body: { email: email, password: password, role: role }
+        });
+      } catch (error) {
+        alert('Account could not be saved to the live database. Please try again.');
+        return;
+      }
       acc[kind] = {
-        email: document.getElementById('pvNewEmail').value.trim(),
-        password: document.getElementById('pvNewPassword').value.trim()
+        email: email,
+        password: password
       };
       pvSetAccounts(acc);
       pvQueue.shift();
@@ -6986,6 +7622,7 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
       if (!acc.employee) {
         html += '<button type="button" onclick="pvStartAdd(\'employee\')" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-lg shadow transition text-sm">Add Employee Password</button>';
       }
+      html += '<button type="button" onclick="pvOpenOwnerLogin()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg shadow transition text-sm"><i class="fa-solid fa-crown mr-1"></i>Add Owner</button>';
       box.innerHTML = html;
     }
 
@@ -6997,6 +7634,57 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
   </script>
 
   <style id="pv-mobile-layout">
+    #pvOwnerPanel { background: #f8fafc !important; color: #0f172a; }
+    #pvOwnerPanel .pv-owner-topbar { background: linear-gradient(110deg, #111827 0%, #1e1b4b 55%, #312e81 100%); border-bottom: 1px solid rgba(255,255,255,.1); }
+    #pvOwnerPanel .pv-owner-brandmark { background: linear-gradient(135deg, #fbbf24, #f97316); color: #fff; font-size: 18px; }
+    #pvOwnerPanel .pv-owner-topbar-label { color: #c7d2fe; font-size: 9px; font-weight: 800; letter-spacing: .14em; border: 1px solid rgba(199,210,254,.3); border-radius: 999px; padding: 3px 7px; }
+    #pvOwnerPanel .pv-owner-live-pill { display: flex; align-items: center; gap: 7px; padding: 8px 11px; border: 1px solid rgba(165,180,252,.25); border-radius: 999px; background: rgba(255,255,255,.08); color: #e0e7ff; font-size: 10px; font-weight: 700; }
+    #pvOwnerPanel .pv-live-dot { display: inline-block; width: 7px; height: 7px; border-radius: 999px; background: #34d399; box-shadow: 0 0 0 3px rgba(52,211,153,.16); }
+    #pvOwnerPanel .pv-owner-logout { border: 1px solid rgba(248,113,113,.4); background: rgba(127,29,29,.28); color: #fecaca; border-radius: 10px; padding: 9px 12px; font-size: 11px; font-weight: 800; transition: .2s ease; }
+    #pvOwnerPanel .pv-owner-logout:hover { background: #dc2626; color: #fff; }
+    #pvOwnerPanel .pv-owner-sidebar { background: linear-gradient(180deg, #0f172a 0%, #171b3d 100%) !important; }
+    #pvOwnerPanel .pv-owner-count { min-width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; background: rgba(99,102,241,.28); border: 1px solid rgba(129,140,248,.35); color: #c7d2fe; font-size: 11px; font-weight: 900; }
+    #pvOwnerPanel .pv-owner-search { display: flex; align-items: center; gap: 9px; padding: 11px 12px; border: 1px solid rgba(148,163,184,.2); background: rgba(255,255,255,.07); border-radius: 12px; }
+    #pvOwnerPanel .pv-owner-search:focus-within { border-color: #818cf8; box-shadow: 0 0 0 3px rgba(129,140,248,.13); }
+    #pvOwnerPanel .pv-owner-search input { width: 100%; min-width: 0; outline: none; background: transparent; color: #fff; font-size: 11px; }
+    #pvOwnerPanel .pv-owner-search input::placeholder { color: #94a3b8; }
+    #pvOwnerPanel .pv-owner-user-row { background: rgba(255,255,255,.055); border: 1px solid rgba(255,255,255,.06); }
+    #pvOwnerPanel .pv-owner-user-row:hover { background: rgba(99,102,241,.34); border-color: rgba(165,180,252,.28); transform: translateY(-1px); }
+    #pvOwnerPanel .pv-owner-user-avatar { width: 34px; height: 34px; flex: 0 0 34px; display: inline-flex; align-items: center; justify-content: center; border-radius: 11px; background: rgba(129,140,248,.2); color: #c7d2fe; }
+    #pvOwnerPanel .pv-owner-sidebar-empty { padding: 18px 13px; border: 1px dashed rgba(148,163,184,.25); border-radius: 12px; color: #94a3b8; font-size: 11px; line-height: 1.5; text-align: center; }
+    #pvOwnerPanel .pv-owner-sidebar-note { display: flex; align-items: flex-start; gap: 9px; padding: 12px; border-radius: 12px; background: rgba(99,102,241,.1); border: 1px solid rgba(129,140,248,.15); color: #94a3b8; font-size: 10px; line-height: 1.5; }
+    #pvOwnerPanel .pv-owner-main { background: radial-gradient(circle at top right, rgba(224,231,255,.7), transparent 34%), #f8fafc; }
+    #pvOwnerPanel .pv-owner-refresh-note { padding: 8px 11px; border: 1px solid #e2e8f0; border-radius: 10px; background: rgba(255,255,255,.82); color: #64748b; font-size: 10px; font-weight: 700; box-shadow: 0 2px 7px rgba(15,23,42,.03); }
+    #pvOwnerPanel .pv-owner-overview-card { position: relative; min-height: 148px; padding: 17px; background: rgba(255,255,255,.9); border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 8px 22px rgba(15,23,42,.045); overflow: hidden; }
+    #pvOwnerPanel .pv-owner-overview-card::after { content: ""; position: absolute; width: 90px; height: 90px; right: -32px; bottom: -38px; border-radius: 999px; background: rgba(99,102,241,.06); }
+    #pvOwnerPanel .pv-owner-card-icon { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 13px; }
+    #pvOwnerPanel .pv-owner-card-label { margin-top: 15px; color: #64748b; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
+    #pvOwnerPanel .pv-owner-card-value { margin-top: 4px; color: #0f172a; font-size: 23px; line-height: 1.15; font-weight: 950; letter-spacing: -.03em; }
+    #pvOwnerPanel .pv-owner-card-caption { margin-top: 7px; color: #94a3b8; font-size: 10px; font-weight: 600; }
+    #pvOwnerPanel .pv-owner-empty-state { display: flex; align-items: center; justify-content: center; text-align: center; border: 1px dashed #cbd5e1; border-radius: 18px; background: rgba(255,255,255,.6); }
+    #pvOwnerPanel .pv-owner-empty-icon { width: 58px; height: 58px; display: flex; align-items: center; justify-content: center; margin: 0 auto 17px; border-radius: 18px; background: linear-gradient(135deg, #eef2ff, #e0e7ff); color: #6366f1; font-size: 22px; }
+    #pvOwnerPanel .pv-owner-detail-head { padding: 18px; border: 1px solid #e2e8f0; border-radius: 16px; background: rgba(255,255,255,.9); box-shadow: 0 6px 18px rgba(15,23,42,.04); }
+    #pvOwnerPanel .pv-owner-selected-avatar { width: 43px; height: 43px; flex: 0 0 43px; display: flex; align-items: center; justify-content: center; border-radius: 13px; background: linear-gradient(135deg, #4f46e5, #7c3aed); color: #fff; box-shadow: 0 6px 14px rgba(79,70,229,.22); }
+    #pvOwnerPanel .pv-owner-role-chip { padding: 4px 8px; border-radius: 999px; background: #eef2ff; color: #4f46e5; font-size: 10px; font-weight: 900; }
+    #pvOwnerPanel .pv-owner-primary-btn, #pvOwnerPanel .pv-owner-secondary-btn { white-space: nowrap; border-radius: 10px; font-size: 11px; font-weight: 800; transition: .2s ease; }
+    #pvOwnerPanel .pv-owner-primary-btn { padding: 10px 13px; background: #4f46e5; color: #fff; box-shadow: 0 5px 12px rgba(79,70,229,.2); }
+    #pvOwnerPanel .pv-owner-primary-btn:hover { background: #4338ca; transform: translateY(-1px); }
+    #pvOwnerPanel .pv-owner-secondary-btn { padding: 8px 11px; background: #0f172a; color: #fff; }
+    #pvOwnerPanel .pv-owner-secondary-btn:hover { background: #1e293b; }
+    #pvOwnerPanel .pv-owner-json-card { border: 1px solid #e2e8f0; border-radius: 16px; background: #fff; box-shadow: 0 7px 20px rgba(15,23,42,.04); }
+    #pvOwnerPanel .pv-owner-json-icon { width: 27px; height: 27px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; background: #f1f5f9; color: #475569; font-size: 11px; }
+    .pv-owner-kpi { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px; box-shadow: 0 5px 16px rgba(15,23,42,.04); }
+    .pv-owner-kpi span { display: block; color: #64748b; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; }
+    .pv-owner-kpi strong { display: block; color: #0f172a; font-size: 20px; line-height: 1.2; margin-top: 8px; }
+    #pvSetupScreen { background: radial-gradient(circle at 15% 15%, rgba(251,146,60,.12), transparent 28%), radial-gradient(circle at 85% 85%, rgba(99,102,241,.18), transparent 28%), #0f172a !important; }
+    #pvSetupScreen .pv-setup-card { box-shadow: 0 24px 70px rgba(0,0,0,.3); }
+    #pvSetupScreen .pv-setup-option:hover { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(15,23,42,.08); }
+    @media (max-width: 767px) {
+      #pvOwnerOverviewMetrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      #pvOwnerUserMetrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      #pvOwnerPanel .pv-owner-main { padding: 16px; }
+      #pvOwnerPanel .pv-owner-page-heading h2 { font-size: 25px; }
+    }
     #pvMobileMenuButton,
     #pvMobileOverlay { display: none; }
 
@@ -7006,12 +7694,14 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
       #loginScreen,
       #pvSetupScreen,
       #pvMasterScreen,
+      #pvOwnerLoginScreen,
       #pvChoiceScreen,
       #pvFormScreen { align-items: flex-start !important; overflow-y: auto; padding: 16px !important; }
 
       #loginScreen > div,
       #pvSetupScreen > div,
       #pvMasterScreen > div,
+      #pvOwnerLoginScreen > div,
       #pvChoiceScreen > div,
       #pvFormScreen > div { margin: auto 0; padding: 24px !important; }
 
