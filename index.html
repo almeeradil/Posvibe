@@ -7326,6 +7326,395 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
       else init();
     })();
   </script>
+  <!-- ===== Posvibe Owner / Verification / Timer / Exit backup ===== -->
+  <style>
+    .pvo-wrap{position:fixed;inset:0;z-index:9000;background:#f1f5f9;display:none;flex-direction:column;font-family:inherit}
+    .pvo-wrap.show{display:flex}
+    .pvo-top{background:#0f172a;color:#fff;padding:14px 22px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .pvo-body{flex:1;overflow:auto;padding:22px}
+    .pvo-card{background:#fff;border:1px solid #e2e8f0;border-radius:14px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+    .pvo-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:18px}
+    .pvo-stat{padding:16px}
+    .pvo-stat b{display:block;font-size:26px;color:#0f172a}
+    .pvo-stat span{font-size:11px;text-transform:uppercase;font-weight:700;color:#64748b;letter-spacing:.05em}
+    .pvo-table{width:100%;border-collapse:collapse;font-size:13px}
+    .pvo-table th{text-align:left;font-size:11px;text-transform:uppercase;color:#64748b;padding:10px 12px;background:#f8fafc;border-bottom:1px solid #e2e8f0;white-space:nowrap}
+    .pvo-table td{padding:11px 12px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+    .pvo-table tbody tr{cursor:pointer}
+    .pvo-table tbody tr:hover{background:#fff7ed}
+    .pvo-btn{border:0;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer}
+    .pvo-orange{background:#f97316;color:#fff}.pvo-dark{background:#0f172a;color:#fff}.pvo-light{background:#e2e8f0;color:#0f172a}
+    .pvo-sw{position:relative;width:42px;height:22px;border-radius:99px;background:#cbd5e1;display:inline-block;transition:.2s;vertical-align:middle}
+    .pvo-sw::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.2s}
+    .pvo-sw.on{background:#10b981}.pvo-sw.on::after{left:23px}
+    .pvo-pill{font-size:10px;font-weight:800;padding:3px 8px;border-radius:99px;text-transform:uppercase}
+    .pvo-pill.ok{background:#d1fae5;color:#047857}.pvo-pill.no{background:#ffe4e6;color:#be123c}
+    .pvo-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0}
+    .pvo-tab{padding:7px 12px;border-radius:8px;font-size:12px;font-weight:700;background:#e2e8f0;cursor:pointer;border:0}
+    .pvo-tab.active{background:#f97316;color:#fff}
+    .pvo-scroll{overflow:auto;max-height:60vh}
+    #pvLockBox{position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:8500;background:#be123c;color:#fff;padding:10px 18px;border-radius:12px;font-weight:800;font-size:13px;box-shadow:0 10px 30px rgba(0,0,0,.25);display:none}
+    #pvTimer{display:flex;gap:4px;align-items:center;font-variant-numeric:tabular-nums}
+    #pvTimer .u{background:#0f172a;color:#fff;border-radius:6px;padding:3px 6px;font-size:12px;font-weight:800;min-width:30px;text-align:center}
+    #pvTimer .u small{display:block;font-size:8px;font-weight:600;color:#fdba74}
+    .pvx-modal{position:fixed;inset:0;z-index:9500;background:rgba(15,23,42,.6);display:none;align-items:center;justify-content:center;padding:16px}
+    .pvx-modal.show{display:flex}
+    @media(max-width:700px){.pvo-hide-sm{display:none}.pvo-body{padding:12px}}
+  </style>
+
+  <div id="pvLockBox"><i class="fa-solid fa-lock mr-1"></i> Account not verified — You have not paid. Contact owner to activate.</div>
+
+  <div id="pvOwnerLogin" class="pvx-modal">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-8">
+      <div class="text-center mb-5">
+        <img src="logo.png" class="inline-block w-14 h-14 rounded-full object-cover mb-2" alt="Posvibe">
+        <h1 class="text-xl font-extrabold text-slate-900">Owner Login</h1>
+        <p class="text-xs text-slate-500">Sign in to the Posvibe Owner Panel</p>
+      </div>
+      <form onsubmit="pvOwnerSubmit(event)" class="space-y-3">
+        <input type="email" id="pvOwnerEmail" required placeholder="owner email" class="w-full px-3 py-2 text-sm border rounded-lg">
+        <input type="password" id="pvOwnerPass" required placeholder="password" class="w-full px-3 py-2 text-sm border rounded-lg">
+        <div id="pvOwnerErr" class="hidden text-xs text-rose-600 font-semibold text-center bg-rose-50 p-2 rounded">Invalid owner credentials.</div>
+        <button class="w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg text-sm">Open Owner Panel</button>
+      </form>
+      <button type="button" onclick="document.getElementById('pvOwnerLogin').classList.remove('show')" class="w-full mt-3 text-xs font-bold text-slate-500">Cancel</button>
+    </div>
+  </div>
+
+  <div id="pvOwnerPanel" class="pvo-wrap">
+    <div class="pvo-top">
+      <div class="flex items-center gap-3">
+        <img src="logo.png" class="w-9 h-9 rounded-full object-cover" alt="">
+        <div><div class="font-extrabold text-base">Posvibe Owner Panel</div><div class="text-[11px] text-orange-300 font-bold uppercase tracking-wider">All registered users</div></div>
+      </div>
+      <div class="flex items-center gap-2">
+        <input id="pvoSearch" oninput="pvoRender()" placeholder="Search users…" class="px-3 py-1.5 rounded-lg text-sm text-slate-900 w-44">
+        <button class="pvo-btn pvo-orange" onclick="pvoLoad()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+        <button class="pvo-btn pvo-light" onclick="pvoLogout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+      </div>
+    </div>
+    <div class="pvo-body">
+      <div id="pvoList">
+        <div class="pvo-stats" id="pvoStats"></div>
+        <div class="pvo-card">
+          <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between"><h2 class="font-extrabold text-slate-800"><i class="fa-solid fa-users text-orange-500 mr-1"></i> Users</h2><span class="text-xs text-slate-400" id="pvoUpdated"></span></div>
+          <div class="overflow-x-auto"><table class="pvo-table"><thead><tr>
+            <th>#</th><th>User ID</th><th>Shop / Email</th><th>Status</th><th class="pvo-hide-sm">Registered</th><th class="pvo-hide-sm">Last sync</th><th class="pvo-hide-sm">Data</th><th>is_verified</th><th>Backup</th>
+          </tr></thead><tbody id="pvoRows"></tbody></table></div>
+        </div>
+      </div>
+      <div id="pvoDetail" style="display:none"></div>
+    </div>
+  </div>
+
+  <div id="pvExitModal" class="pvx-modal">
+    <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 text-center">
+      <div class="w-12 h-12 mx-auto rounded-full bg-orange-100 text-orange-600 flex items-center justify-center mb-3"><i class="fa-solid fa-door-open"></i></div>
+      <h3 class="font-extrabold text-slate-900 text-lg">Leaving Posvibe?</h3>
+      <p class="text-xs text-slate-500 mt-1 mb-5">Save a backup of your data before you go.</p>
+      <div class="grid grid-cols-3 gap-2">
+        <button class="pvo-btn pvo-light" onclick="pvExit('cancel')">Cancel</button>
+        <button class="pvo-btn pvo-dark" onclick="pvExit('leave')">Leave</button>
+        <button class="pvo-btn pvo-orange" onclick="pvExit('backup')">Save Backup</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (function () {
+    var API = '/api/public/pv';
+    var owner = null; // {ownerEmail, ownerPass}
+    var pvoUsers = [];
+    var pvVerified = true;
+    var pvCreatedAt = null;
+    var appActive = false;
+
+    function post(body) {
+      return fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+        .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.error || r.status); return j; }); });
+    }
+    function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
+    function fmt(d) { if (!d) return '-'; var x = new Date(d); return x.toLocaleDateString() + ' ' + x.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
+
+    function deviceKey() {
+      var k = localStorage.getItem('pvDeviceKey');
+      if (!k) {
+        k = (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2) + Date.now()) + '-' + Math.random().toString(36).slice(2, 10);
+        localStorage.setItem('pvDeviceKey', k);
+      }
+      return k;
+    }
+    function identity() {
+      var acc = {}; try { acc = JSON.parse(localStorage.getItem('posvibeAccounts')) || {}; } catch (e) {}
+      var a = acc.admin || acc.employee || {};
+      return { email: a.email || '', shopName: a.shop || a.shopName || a.name || '' };
+    }
+
+    // ---------- Sync user data to Cloud ----------
+    var syncT = null;
+    function syncNow() {
+      var id = identity();
+      return post({ action: 'sync', deviceKey: deviceKey(), email: id.email, shopName: id.shopName, data: (typeof userData !== 'undefined' ? userData : {}) })
+        .then(applyStatus).catch(function () {});
+    }
+    function scheduleSync() { clearTimeout(syncT); syncT = setTimeout(syncNow, 1500); }
+    if (typeof window.saveData === 'function') {
+      var _save = window.saveData;
+      window.saveData = function () { var r = _save.apply(this, arguments); scheduleSync(); return r; };
+      try { saveData = window.saveData; } catch (e) {}
+    }
+    function applyStatus(s) {
+      if (!s) return;
+      pvVerified = s.is_verified !== false;
+      if (s.created_at) { pvCreatedAt = new Date(s.created_at).getTime(); localStorage.setItem('pvStartAt', String(pvCreatedAt)); }
+      updateLock();
+    }
+    function pollStatus() {
+      var id = identity();
+      post({ action: 'status', deviceKey: deviceKey(), email: id.email, shopName: id.shopName }).then(applyStatus).catch(function () {});
+    }
+    setInterval(function () { if (appActive) pollStatus(); }, 20000);
+
+    // ---------- Verification lock ----------
+    function updateLock() {
+      var box = document.getElementById('pvLockBox');
+      box.style.display = (appActive && !pvVerified) ? 'block' : 'none';
+    }
+    document.addEventListener('click', function (e) {
+      if (!appActive || pvVerified) return;
+      var t = e.target;
+      if (t.closest && t.closest('#pvExitModal,#pvLockBox')) return;
+      if (t.closest && t.closest('[onclick*="logout"]')) return;
+      e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+      alert('You have not paid');
+    }, true);
+
+    // ---------- 15-day timer ----------
+    function startAt() {
+      if (pvCreatedAt) return pvCreatedAt;
+      var s = Number(localStorage.getItem('pvStartAt'));
+      if (!s) { s = Date.now(); localStorage.setItem('pvStartAt', String(s)); }
+      return s;
+    }
+    function mountTimer() {
+      if (document.getElementById('pvTimer')) return;
+      var hdr = document.querySelector('#appContainer header > div.flex');
+      if (!hdr) return;
+      var el = document.createElement('div');
+      el.id = 'pvTimer';
+      el.title = '15-day period';
+      hdr.insertBefore(el, hdr.firstChild);
+    }
+    function tick() {
+      var el = document.getElementById('pvTimer'); if (!el) return;
+      var left = Math.max(0, startAt() + 15 * 86400000 - Date.now());
+      var d = Math.floor(left / 86400000), h = Math.floor(left % 86400000 / 3600000), m = Math.floor(left % 3600000 / 60000), s = Math.floor(left % 60000 / 1000);
+      var p = function (n) { return String(n).padStart(2, '0'); };
+      el.innerHTML = '<i class="fa-regular fa-clock text-orange-500 mr-1"></i>' +
+        [['Days', d], ['Hrs', h], ['Min', m], ['Sec', s]].map(function (x) { return '<span class="u">' + p(x[1]) + '<small>' + x[0] + '</small></span>'; }).join('');
+    }
+    setInterval(tick, 1000);
+
+    // ---------- Hook app login/logout ----------
+    var appC = document.getElementById('appContainer');
+    new MutationObserver(function () {
+      var on = !appC.classList.contains('hidden');
+      if (on && !appActive) { appActive = true; mountTimer(); tick(); syncNow(); }
+      if (!on) appActive = false;
+      updateLock();
+    }).observe(appC, { attributes: true, attributeFilter: ['class'] });
+
+    // ---------- Owner entry points ----------
+    window.pvOpenOwnerLogin = function () {
+      document.getElementById('pvOwnerErr').classList.add('hidden');
+      document.getElementById('pvOwnerLogin').classList.add('show');
+    };
+    function addBtn(parentSel, cls, before) {
+      var p = document.querySelector(parentSel); if (!p) return;
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = cls; b.onclick = window.pvOpenOwnerLogin;
+      b.innerHTML = '<i class="fa-solid fa-crown mr-1"></i>' + (before || 'Owner Login');
+      p.appendChild(b);
+    }
+    addBtn('#pvSetupScreen > div', 'w-full py-2.5 mt-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow transition text-sm', 'Add Owner');
+    addBtn('#loginExtraBtns', 'w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow transition text-sm', 'Owner Login');
+    // keep owner button when loginExtraBtns is re-rendered
+    var extra = document.getElementById('loginExtraBtns');
+    if (extra) new MutationObserver(function () {
+      if (!extra.querySelector('.fa-crown')) addBtn('#loginExtraBtns', 'w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow transition text-sm', 'Owner Login');
+    }).observe(extra, { childList: true });
+
+    function openOwner(em, pw, onFail) {
+      post({ action: 'owner_login', ownerEmail: em, ownerPass: pw }).then(function () {
+        owner = { ownerEmail: em, ownerPass: pw };
+        sessionStorage.setItem('pvOwner', JSON.stringify(owner));
+        document.getElementById('pvOwnerLogin').classList.remove('show');
+        document.getElementById('pvOwnerPanel').classList.add('show');
+        pvoBack(); pvoLoad();
+      }).catch(onFail || function () {});
+    }
+    window.pvOwnerSubmit = function (e) {
+      e.preventDefault();
+      openOwner(document.getElementById('pvOwnerEmail').value.trim(), document.getElementById('pvOwnerPass').value, function () {
+        document.getElementById('pvOwnerErr').classList.remove('hidden');
+      });
+    };
+    // Owner credentials also work from the normal login form
+    if (typeof window.handleLogin === 'function') {
+      var _login = window.handleLogin;
+      window.handleLogin = function (e) {
+        var em = (document.getElementById('loginEmail').value || '').trim().toLowerCase();
+        if (em === 'owner@gmail.com') {
+          e.preventDefault();
+          openOwner(em, document.getElementById('loginPassword').value, function () { document.getElementById('loginError').classList.remove('hidden'); });
+          return;
+        }
+        return _login.apply(this, arguments);
+      };
+      try { handleLogin = window.handleLogin; } catch (e) {}
+    }
+    window.pvoLogout = function () {
+      owner = null; sessionStorage.removeItem('pvOwner');
+      document.getElementById('pvOwnerPanel').classList.remove('show');
+    };
+
+    // ---------- Owner panel ----------
+    window.pvoLoad = function () {
+      if (!owner) return;
+      post(Object.assign({ action: 'owner_list' }, owner)).then(function (r) {
+        pvoUsers = r.users || [];
+        document.getElementById('pvoUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString();
+        pvoRender();
+      }).catch(function (e) { alert('Could not load users: ' + e.message); });
+    };
+    setInterval(function () { if (owner && document.getElementById('pvoList').style.display !== 'none') pvoLoad(); }, 15000);
+
+    window.pvoRender = function () {
+      var q = (document.getElementById('pvoSearch').value || '').toLowerCase();
+      var list = pvoUsers.filter(function (u) { return !q || ((u.email || '') + ' ' + (u.shop_name || '') + ' ' + u.id).toLowerCase().indexOf(q) >= 0; });
+      var ver = pvoUsers.filter(function (u) { return u.is_verified; }).length;
+      var sales = pvoUsers.reduce(function (a, u) { return a + u.counts.sales; }, 0);
+      var purch = pvoUsers.reduce(function (a, u) { return a + u.counts.purchases; }, 0);
+      document.getElementById('pvoStats').innerHTML = [
+        ['Total Users', pvoUsers.length, 'fa-users'], ['Verified', ver, 'fa-circle-check'], ['Unverified', pvoUsers.length - ver, 'fa-circle-xmark'],
+        ['Sale Invoices', sales, 'fa-file-invoice'], ['Purchase Invoices', purch, 'fa-cart-shopping']
+      ].map(function (s) { return '<div class="pvo-card pvo-stat"><span><i class="fa-solid ' + s[2] + ' text-orange-500 mr-1"></i>' + s[0] + '</span><b>' + s[1] + '</b></div>'; }).join('');
+      document.getElementById('pvoRows').innerHTML = list.length ? list.map(function (u, i) {
+        var active = u.updated_at && (Date.now() - new Date(u.updated_at).getTime() < 120000);
+        return '<tr onclick="pvoOpen(\'' + u.id + '\')">' +
+          '<td class="text-slate-400 font-bold">' + (i + 1) + '</td>' +
+          '<td><code class="text-[11px] bg-slate-100 px-1.5 py-0.5 rounded">' + u.id.slice(0, 8) + '</code></td>' +
+          '<td><div class="font-bold text-slate-800">' + esc(u.shop_name || 'Unnamed shop') + '</div><div class="text-xs text-slate-500">' + esc(u.email || '—') + '</div></td>' +
+          '<td>' + (active ? '<span class="pvo-pill ok">Online</span>' : '<span class="pvo-pill" style="background:#e2e8f0;color:#475569">Offline</span>') + '</td>' +
+          '<td class="pvo-hide-sm text-xs">' + fmt(u.created_at) + '</td>' +
+          '<td class="pvo-hide-sm text-xs">' + fmt(u.updated_at) + '</td>' +
+          '<td class="pvo-hide-sm text-xs text-slate-500">' + u.counts.sales + ' sales · ' + u.counts.purchases + ' purch · ' + u.counts.products + ' items</td>' +
+          '<td onclick="event.stopPropagation()"><span class="pvo-sw ' + (u.is_verified ? 'on' : '') + '" style="cursor:pointer" onclick="pvoToggle(\'' + u.id + '\')"></span> <span class="pvo-pill ' + (u.is_verified ? 'ok' : 'no') + '">' + (u.is_verified ? 'True' : 'False') + '</span></td>' +
+          '<td onclick="event.stopPropagation()"><button class="pvo-btn pvo-dark" onclick="pvoBackup(\'' + u.id + '\')"><i class="fa-solid fa-download"></i> Download Backup</button></td>' +
+          '</tr>';
+      }).join('') : '<tr><td colspan="9" class="text-center text-slate-400 py-10">No users yet</td></tr>';
+    };
+
+    window.pvoToggle = function (id) {
+      var u = pvoUsers.find(function (x) { return x.id === id; }); if (!u) return;
+      u.is_verified = !u.is_verified; pvoRender();
+      post(Object.assign({ action: 'owner_verify', id: id, value: u.is_verified }, owner)).catch(function () { u.is_verified = !u.is_verified; pvoRender(); alert('Update failed'); });
+    };
+
+    function download(name, obj) {
+      var blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
+      var url = URL.createObjectURL(blob), a = document.createElement('a');
+      a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 30000);
+    }
+    window.pvoBackup = function (id) {
+      post(Object.assign({ action: 'owner_get', id: id }, owner)).then(function (u) {
+        var nm = (u.shop_name || u.email || u.id.slice(0, 8)).replace(/[^a-z0-9]+/gi, '-');
+        download('posvibe-backup-' + nm + '-' + new Date().toISOString().slice(0, 10) + '.json',
+          { app: 'Posvibe', exportedAt: new Date().toISOString(), user: { id: u.id, email: u.email, shop_name: u.shop_name }, data: u.data });
+      }).catch(function (e) { alert('Backup failed: ' + e.message); });
+    };
+
+    var SECTIONS = [['orders', 'Sale Invoices'], ['purchaseinvoices', 'Purchase Invoices'], ['products', 'Stock / Products'], ['customers', 'Customers'], ['suppliers', 'Suppliers'], ['quotations', 'Quotations'], ['purchases', 'Purchases'], ['payouts', 'Payouts'], ['recoveries', 'Recoveries'], ['activities', 'Activity']];
+    var detail = null;
+    window.pvoBack = function () { document.getElementById('pvoDetail').style.display = 'none'; document.getElementById('pvoList').style.display = ''; };
+    window.pvoOpen = function (id) {
+      post(Object.assign({ action: 'owner_get', id: id }, owner)).then(function (u) {
+        detail = u;
+        document.getElementById('pvoList').style.display = 'none';
+        document.getElementById('pvoDetail').style.display = '';
+        var d = u.data || {};
+        var keys = SECTIONS.filter(function (s) { return Array.isArray(d[s[0]]); });
+        Object.keys(d).forEach(function (k) { if (Array.isArray(d[k]) && !keys.some(function (s) { return s[0] === k; })) keys.push([k, k]); });
+        var stats = keys.slice(0, 6).map(function (s) { return '<div class="pvo-card pvo-stat"><span>' + s[1] + '</span><b>' + d[s[0]].length + '</b></div>'; }).join('');
+        document.getElementById('pvoDetail').innerHTML =
+          '<button class="pvo-btn pvo-light mb-4" onclick="pvoBack()"><i class="fa-solid fa-arrow-left"></i> Back to users</button>' +
+          '<div class="pvo-card p-5 mb-4 flex flex-wrap items-center justify-between gap-3"><div><div class="text-xl font-extrabold text-slate-900">' + esc(u.shop_name || 'Unnamed shop') + '</div><div class="text-sm text-slate-500">' + esc(u.email || '—') + ' · ID ' + u.id.slice(0, 8) + ' · Registered ' + fmt(u.created_at) + '</div></div>' +
+          '<div class="flex gap-2 items-center"><span class="pvo-pill ' + (u.is_verified ? 'ok' : 'no') + '">' + (u.is_verified ? 'Verified' : 'Not verified') + '</span><button class="pvo-btn pvo-dark" onclick="pvoBackup(\'' + u.id + '\')"><i class="fa-solid fa-download"></i> Download Backup</button></div></div>' +
+          '<div class="pvo-stats">' + stats + '</div>' +
+          '<div class="pvo-tabs">' + keys.map(function (s, i) { return '<button class="pvo-tab' + (i ? '' : ' active') + '" onclick="pvoTab(this,\'' + s[0] + '\')">' + s[1] + ' (' + d[s[0]].length + ')</button>'; }).join('') + '</div>' +
+          '<div class="pvo-card"><div class="pvo-scroll" id="pvoTabBody"></div></div>';
+        if (keys[0]) pvoShowSection(keys[0][0]); else document.getElementById('pvoTabBody').innerHTML = '<p class="p-6 text-slate-400">No data synced yet.</p>';
+      }).catch(function (e) { alert('Could not open user: ' + e.message); });
+    };
+    window.pvoTab = function (btn, key) {
+      document.querySelectorAll('#pvoDetail .pvo-tab').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active'); pvoShowSection(key);
+    };
+    function cell(v) {
+      if (v == null) return '';
+      if (Array.isArray(v)) return v.length + ' items';
+      if (typeof v === 'object') return esc(JSON.stringify(v).slice(0, 60));
+      return esc(String(v).slice(0, 80));
+    }
+    function pvoShowSection(key) {
+      var rows = (detail.data || {})[key] || [];
+      if (!rows.length) { document.getElementById('pvoTabBody').innerHTML = '<p class="p-6 text-slate-400">No records.</p>'; return; }
+      var cols = [];
+      rows.slice(0, 50).forEach(function (r) { if (r && typeof r === 'object') Object.keys(r).forEach(function (k) { if (cols.indexOf(k) < 0) cols.push(k); }); });
+      cols = cols.slice(0, 10);
+      document.getElementById('pvoTabBody').innerHTML = '<table class="pvo-table" style="cursor:default"><thead><tr>' + cols.map(function (c) { return '<th>' + esc(c) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+        rows.map(function (r) { return '<tr style="cursor:default">' + cols.map(function (c) { return '<td class="text-xs">' + cell(r && r[c]) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table>';
+    }
+
+    // restore owner session on refresh
+    try { var so = JSON.parse(sessionStorage.getItem('pvOwner')); if (so) openOwner(so.ownerEmail, so.ownerPass); } catch (e) {}
+
+    // ---------- Exit / close backup prompt ----------
+    window.addEventListener('beforeunload', function (e) {
+      if (!appActive) return;
+      e.preventDefault(); e.returnValue = '';
+    });
+    var exitShown = false;
+    document.addEventListener('mouseout', function (e) {
+      if (!appActive || exitShown || e.relatedTarget || e.clientY > 5) return;
+      exitShown = true;
+      document.getElementById('pvExitModal').classList.add('show');
+    });
+    window.pvExit = function (choice) {
+      document.getElementById('pvExitModal').classList.remove('show');
+      setTimeout(function () { exitShown = false; }, 8000);
+      if (choice === 'backup' && typeof exportBackup === 'function') exportBackup();
+      if (choice === 'leave' && typeof logout === 'function') logout();
+    };
+    // Also ask before logging out
+    if (typeof window.logout === 'function') {
+      var _logout = window.logout, bypass = false;
+      window.logout = function () {
+        if (bypass || !appActive) { bypass = false; return _logout.apply(this, arguments); }
+        exitShown = true;
+        document.getElementById('pvExitModal').classList.add('show');
+      };
+      window.pvExit = function (choice) {
+        document.getElementById('pvExitModal').classList.remove('show');
+        setTimeout(function () { exitShown = false; }, 8000);
+        if (choice === 'backup' && typeof exportBackup === 'function') exportBackup();
+        if (choice === 'leave') { bypass = true; window.logout(); }
+      };
+      try { logout = window.logout; } catch (e) {}
+    }
+  })();
+  </script>
 </body>
 
 
