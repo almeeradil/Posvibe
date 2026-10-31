@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -45,27 +46,49 @@
       <div class="text-center mb-6">
         <img src="logo.png" alt="Posvibe logo" class="inline-block w-16 h-16 rounded-full object-cover mb-3 shadow-lg">
         <h1 class="text-2xl font-extrabold text-slate-900">Posvibe</h1>
-        <p class="text-xs text-slate-500 mt-1">Sign in with your authorized system credentials</p>
+        <p class="text-xs text-slate-500 mt-1">Smart Invoicing &amp; Multi-Device Cloud POS</p>
       </div>
 
-      <form onsubmit="handleLogin(event)" class="space-y-4">
-        <div>
-          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Email Address</label>
-          <input type="email" id="loginEmail" required placeholder="Email" class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
-        </div>
-        <div>
-          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Password</label>
-          <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
-        </div>
-        <div id="loginError" class="hidden text-xs text-rose-600 font-semibold text-center bg-rose-50 p-2 rounded">
-          Invalid email or password. Please try again.
-        </div>
-        <button type="submit" class="w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg shadow transition text-sm">
-          Sign In to Dashboard
+      <!-- First-time View: Continue with Google -->
+      <div id="firstTimeGoogleView" class="space-y-4">
+        <button type="button" onclick="pvOpenGoogleChooser()" class="w-full py-3 px-4 bg-white hover:bg-slate-50 text-slate-800 font-bold rounded-lg border border-slate-300 shadow-sm transition flex items-center justify-center gap-3 text-sm">
+          <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+          </svg>
+          <span>Continue with Google</span>
         </button>
-      </form>
+      </div>
+
+      <!-- Returning User View: Pre-filled Email & Password -->
+      <div id="returningUserView" class="hidden space-y-4">
+        <form onsubmit="handleLogin(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Email Address</label>
+            <input type="email" id="loginEmail" required placeholder="Email" class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium">
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Password</label>
+            <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium">
+          </div>
+          <div id="loginError" class="hidden text-xs text-rose-600 font-semibold text-center bg-rose-50 p-2 rounded">
+            Invalid email or password. Please try again.
+          </div>
+          <button type="submit" class="w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg shadow transition text-sm">
+            Sign In to Dashboard
+          </button>
+        </form>
+        <div class="pt-2 text-center">
+          <button type="button" onclick="pvOpenGoogleChooser()" class="text-xs font-bold text-orange-600 hover:underline">
+            Switch Google Account
+          </button>
+        </div>
+      </div>
+
       <div class="mt-6 pt-4 border-t border-slate-100 text-center text-[11px] text-slate-400">
-        Secure Invoicematic & Inventory Management Solution
+        Secure Invoicematic &amp; Inventory Management Solution
       </div>
       <div class="mt-3 text-center">
         <input type="file" id="restoreBackupFile" accept=".json,application/json" class="hidden" onchange="handleRestoreBackup(event)">
@@ -74,69 +97,97 @@
         </button>
         <p class="text-[10px] text-slate-400 mt-1">Select a previously exported JSON backup file</p>
       </div>
-      <div id="loginExtraBtns" class="mt-3 space-y-2"></div>
-      <div class="mt-3 text-center">
-        <button type="button" onclick="pvOpenMaster('reset')" class="text-xs font-bold text-orange-600 hover:underline">Forgot password?</button>
+    </div>
+  </div>
+
+  <!-- Google Account Chooser & Permissions Consent Modal -->
+  <div id="pvGoogleAuthModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 border border-slate-200 my-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2.5">
+          <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+          </svg>
+          <div>
+            <h3 class="font-extrabold text-slate-900 text-sm">Sign in with Google</h3>
+            <p class="text-[11px] text-slate-500">to continue to PosVibe Cloud</p>
+          </div>
+        </div>
+        <button type="button" onclick="pvCloseGoogleChooser()" class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
       </div>
-    </div>
-  </div>
 
-  <div id="pvSetupScreen" class="hidden fixed inset-0 bg-slate-900 z-50 items-center justify-center p-4">
-    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-8 border border-slate-200 text-center">
-      <h1 class="text-2xl font-extrabold text-slate-900">Welcome to Posvibe</h1>
-      <p class="text-xs text-slate-500 mt-1 mb-6">Create your login accounts to get started</p>
-      <button type="button" onclick="pvOpenMaster('setup')" class="w-full py-2.5 mb-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg shadow transition text-sm">Add Admin</button>
-      <button type="button" onclick="pvOpenMaster('setup')" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-lg shadow transition text-sm">Add Employee</button>
-    </div>
-  </div>
+      <!-- Consent / Permission Notice Box -->
+      <div class="my-4 p-3.5 bg-blue-50/80 border border-blue-200 rounded-xl text-xs text-blue-900">
+        <div class="font-extrabold text-blue-950 flex items-center gap-1.5 mb-1.5">
+          <i class="fa-solid fa-shield-halved text-blue-600"></i>
+          <span>Permissions &amp; Profile Access Consent</span>
+        </div>
+        <p class="text-[11px] leading-relaxed text-blue-900/90 mb-2">
+          By signing in, PosVibe is accessing all your Google Account profile information:
+        </p>
+        <ul class="text-[11px] space-y-1 list-disc list-inside text-blue-950/90 font-medium">
+          <li>Name and profile picture</li>
+          <li>Primary Google Account email address</li>
+          <li>Cloud database linked to your account</li>
+          <li>Real-time data synchronization across all your laptops</li>
+        </ul>
+      </div>
 
-  <div id="pvMasterScreen" class="hidden fixed inset-0 bg-slate-900 z-50 items-center justify-center p-4">
-    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-8 border border-slate-200">
-      <h1 class="text-xl font-extrabold text-slate-900 text-center">Authorization Required</h1>
-      <p class="text-xs text-slate-500 mt-1 mb-5 text-center">Sign in with the master system credentials</p>
-      <form onsubmit="pvMasterSignIn(event)" class="space-y-4">
-        <div>
-          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Email Address</label>
-          <input type="email" id="pvMasterEmail" required placeholder="Email" class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
-        </div>
-        <div>
-          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Password</label>
-          <input type="password" id="pvMasterPassword" required placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
-        </div>
-        <div id="pvMasterError" class="hidden text-xs text-rose-600 font-semibold text-center bg-rose-50 p-2 rounded">Invalid master email or password.</div>
-        <button type="submit" class="w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg shadow transition text-sm">Sign In</button>
-      </form>
-      <button type="button" onclick="pvBackToStart()" class="w-full mt-3 text-xs font-bold text-slate-500 hover:underline">Back</button>
-    </div>
-  </div>
+      <!-- Account Selection Options -->
+      <div class="space-y-2 mb-4">
+        <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">Choose an account to continue</label>
+        
+        <!-- Detected Account -->
+        <button type="button" onclick="pvSelectGoogleAccount('wajihaadil2@gmail.com', 'Wajiha Adil', 'WA')" class="w-full text-left p-3 border border-slate-200 hover:border-orange-500 hover:bg-orange-50/40 rounded-xl transition flex items-center justify-between group">
+          <div class="flex items-center space-x-3">
+            <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-orange-500 to-amber-500 text-white font-bold text-xs flex items-center justify-center shadow">
+              WA
+            </div>
+            <div>
+              <div class="font-bold text-xs text-slate-900 group-hover:text-orange-600">Wajiha Adil</div>
+              <div class="text-[11px] text-slate-500">wajihaadil2@gmail.com</div>
+            </div>
+          </div>
+          <i class="fa-solid fa-chevron-right text-xs text-slate-400 group-hover:text-orange-500"></i>
+        </button>
 
-  <div id="pvChoiceScreen" class="hidden fixed inset-0 bg-slate-900 z-50 items-center justify-center p-4">
-    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-8 border border-slate-200 text-center">
-      <h1 class="text-xl font-extrabold text-slate-900" id="pvChoiceTitle">What do you want to add?</h1>
-      <p class="text-xs text-slate-500 mt-1 mb-6">Choose an account type</p>
-      <button type="button" onclick="pvChoose('admin')" class="w-full py-2.5 mb-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg shadow transition text-sm" id="pvChoiceAdminBtn">Admin</button>
-      <button type="button" onclick="pvChoose('employee')" class="w-full py-2.5 mb-3 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-lg shadow transition text-sm" id="pvChoiceEmpBtn">Employee</button>
-      <button type="button" onclick="pvChoose('both')" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow transition text-sm" id="pvChoiceBothBtn">Both</button>
-      <button type="button" onclick="pvBackToStart()" class="w-full mt-4 text-xs font-bold text-slate-500 hover:underline">Cancel</button>
-    </div>
-  </div>
+        <!-- Use another Google account toggle -->
+        <button type="button" onclick="pvToggleCustomAccountForm()" class="w-full text-left p-3 border border-dashed border-slate-300 hover:border-slate-400 hover:bg-slate-50 rounded-xl transition flex items-center justify-between text-xs text-slate-700 font-semibold">
+          <div class="flex items-center space-x-3">
+            <div class="w-9 h-9 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center font-bold text-sm">
+              <i class="fa-solid fa-user-plus text-xs"></i>
+            </div>
+            <span>Use another Google account</span>
+          </div>
+          <i id="pvCustomAccountChevron" class="fa-solid fa-chevron-down text-xs text-slate-400"></i>
+        </button>
 
-  <div id="pvFormScreen" class="hidden fixed inset-0 bg-slate-900 z-50 items-center justify-center p-4">
-    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-8 border border-slate-200">
-      <h1 class="text-xl font-extrabold text-slate-900 text-center" id="pvFormTitle">Add Admin Account</h1>
-      <p class="text-xs text-slate-500 mt-1 mb-5 text-center" id="pvFormSub">Set the email and password for this account</p>
-      <form onsubmit="pvSaveAccount(event)" class="space-y-4">
-        <div>
-          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Email Address</label>
-          <input type="email" id="pvNewEmail" required placeholder="Email" class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
+        <!-- Custom Account Form -->
+        <div id="pvCustomAccountBox" class="hidden p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-3 mt-2 text-xs">
+          <div>
+            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Google Email Address</label>
+            <input type="email" id="pvCustomGoogleEmail" placeholder="yourname@gmail.com" class="w-full px-3 py-2 border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-orange-500">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Account Password / PIN</label>
+            <input type="password" id="pvCustomGooglePassword" placeholder="••••••••" class="w-full px-3 py-2 border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-orange-500">
+          </div>
+          <button type="button" onclick="pvConfirmCustomGoogleAccount()" class="w-full py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-bold text-xs shadow transition">
+            Continue with this Account
+          </button>
         </div>
-        <div>
-          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Password</label>
-          <input type="password" id="pvNewPassword" required minlength="4" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
-        </div>
-        <button type="submit" class="w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg shadow transition text-sm" id="pvFormSaveBtn">Save Account</button>
-      </form>
-      <button type="button" onclick="pvBackToStart()" class="w-full mt-3 text-xs font-bold text-slate-500 hover:underline">Cancel</button>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+        <button type="button" onclick="pvCloseGoogleChooser()" class="px-4 py-2 border border-slate-200 rounded-lg font-bold text-xs text-slate-600 hover:bg-slate-50">
+          Cancel
+        </button>
+      </div>
     </div>
   </div>
 
@@ -241,7 +292,11 @@
 
       <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shadow-sm z-10">
         <h3 id="currentTabTitle" class="text-base font-extrabold text-slate-800">Dashboard Overview</h3>
-        <div class="flex items-center space-x-4">
+        <div class="flex items-center space-x-3">
+          <button id="pvSyncBtn" type="button" onclick="triggerManualSync()" title="Real-time Multi-Device Cloud Sync. Click to refresh" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-[11px] font-bold text-slate-700 transition">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" id="pvSyncDot"></span>
+            <span id="pvSyncLabel">Cloud Synced</span>
+          </button>
           <button onclick="openModal('orderModal')" class="px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-bold text-xs shadow transition flex items-center space-x-1.5">
             <i class="fa-solid fa-plus"></i><span>New Invoice</span>
           </button>
@@ -1167,6 +1222,27 @@
           </div>
         </div>
       </div>
+
+      <!-- In-app Delete Confirmation Modal (never blocked by browser / iframe) -->
+      <div id="deleteConfirmModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 border border-slate-200 text-center">
+          <div class="w-14 h-14 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner">
+            <i class="fa-solid fa-trash-can"></i>
+          </div>
+          <h3 class="text-base font-extrabold text-slate-900 mb-1" id="delModalTitle">Delete Record?</h3>
+          <p class="text-xs text-slate-500 mb-5 leading-relaxed" id="delModalDesc">
+            Are you sure you want to delete this record? This action will remove it and sync across all your devices immediately.
+          </p>
+          <div class="flex items-center justify-center gap-3">
+            <button type="button" onclick="closeModal('deleteConfirmModal')" class="w-1/2 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition">
+              Cancel
+            </button>
+            <button type="button" id="delModalConfirmBtn" class="w-1/2 py-2.5 px-4 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs shadow-md shadow-rose-600/30 transition">
+              Yes, Delete
+            </button>
+          </div>
+        </div>
+      </div>
     </main>
   </div>
 
@@ -1432,77 +1508,174 @@
     </div>
   </div>
 
-  <div id="patientModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 border border-slate-200">
+  <div id="patientModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-xl shadow-2xl max-w-xl w-full p-6 border border-slate-200 my-6 max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center pb-3 border-b border-slate-100 mb-4">
-        <h3 class="font-extrabold text-slate-900 text-base">Add Patient Record</h3>
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-hospital-user text-orange-500 text-lg"></i>
+          <div>
+            <h3 class="font-extrabold text-slate-900 text-base">Add Clinical Patient Record</h3>
+            <p class="text-[10px] text-slate-400">Prescription, Vitals, Blood Test &amp; Services</p>
+          </div>
+        </div>
         <button onclick="closeModal('patientModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
+
       <div class="space-y-4 text-xs">
-        <div>
-          <label class="block font-bold uppercase text-slate-600 mb-1">Patient Full Name *</label>
-          <input type="text" id="patName" placeholder="Patient name" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500">
+        <!-- Name & MR# -->
+        <div class="grid grid-cols-3 gap-3">
+          <div class="col-span-2">
+            <label class="block font-bold uppercase text-slate-600 mb-1">Patient Full Name *</label>
+            <input type="text" id="patName" placeholder="e.g. Muhammad Aslam" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 font-semibold text-slate-800">
+          </div>
+          <div>
+            <label class="block font-bold uppercase text-slate-600 mb-1">M.R # (Record No)</label>
+            <input type="text" id="patMrNo" placeholder="MR-2026" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 font-mono">
+          </div>
         </div>
-        <div class="grid grid-cols-2 gap-3">
+
+        <!-- Age, Gender, Contact -->
+        <div class="grid grid-cols-3 gap-3">
           <div>
             <label class="block font-bold uppercase text-slate-600 mb-1">Age (Years)</label>
-            <input type="number" id="patAge" placeholder="30" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500">
+            <input type="number" id="patAge" placeholder="32" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500">
           </div>
           <div>
             <label class="block font-bold uppercase text-slate-600 mb-1">Gender</label>
             <select id="patGender" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 bg-white">
               <option value="Male">Male</option>
               <option value="Female">Female</option>
+              <option value="Child">Child</option>
               <option value="Other">Other</option>
             </select>
           </div>
-        </div>
-        <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block font-bold uppercase text-slate-600 mb-1">Contact Phone</label>
             <input type="text" id="patContact" placeholder="0300-1234567" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500">
           </div>
-          <div>
-            <label class="block font-bold uppercase text-slate-600 mb-1">Doctor / Consultant</label>
-            <input type="text" id="patDoctor" placeholder="Dr. Ali" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500">
-          </div>
         </div>
-        <div>
-          <label class="block font-bold uppercase text-slate-600 mb-1">Address</label>
-          <input type="text" id="patAddress" placeholder="City address" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500">
-        </div>
-        <div class="grid grid-cols-3 gap-3">
-          <div class="col-span-2">
-            <label class="block font-bold uppercase text-slate-600 mb-1">Service / Consultation</label>
-            <input type="text" id="patService" placeholder="Checkup / Lab Test" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500">
-          </div>
-          <div>
-            <label class="block font-bold uppercase text-slate-600 mb-1">Fee (Rs)</label>
-            <input type="number" id="patFee" placeholder="500" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500">
-          </div>
-        </div>
+
+        <!-- Doctor & Address -->
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block font-bold uppercase text-slate-600 mb-1">Paid Amount (Rs)</label>
-            <input type="number" id="patPaid" placeholder="0" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500">
+            <label class="block font-bold uppercase text-slate-600 mb-1">Doctor / Consultant</label>
+            <input type="text" id="patDoctor" placeholder="Dr. A.R. Malik (Consultant Physician)" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500">
           </div>
           <div>
-            <label class="block font-bold uppercase text-slate-600 mb-1">Payment Status</label>
-            <select id="patStatus" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 bg-white">
-              <option value="Paid">Paid</option>
-              <option value="Pending">Pending</option>
-            </select>
+            <label class="block font-bold uppercase text-slate-600 mb-1">Patient City / Address</label>
+            <input type="text" id="patAddress" placeholder="e.g. Madani Park, Jaranwala" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500">
           </div>
         </div>
-        <div>
-          <label class="block font-bold uppercase text-slate-600 mb-1">Medicines Prescribed</label>
-          <textarea id="patMedicines" rows="3" placeholder="One medicine per line e.g.
-Panadol 500mg - 1x3 for 5 days
-Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500"></textarea>
+
+        <!-- Services Dropdown (OPD, ECG, X-Ray, Blood Test, Lab, Thyroid, etc.) -->
+        <div class="grid grid-cols-3 gap-3">
+          <div class="col-span-2">
+            <label class="block font-bold uppercase text-slate-600 mb-1">Clinical Service / Investigation *</label>
+            <select id="patService" onchange="toggleBloodFields()" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 bg-white font-semibold text-slate-800">
+              <option value="OPD (General Outpatient)">OPD (General Outpatient)</option>
+              <option value="Blood Test (CBC, Hb, Blood Group)">Blood Test (CBC, Hb, Blood Group)</option>
+              <option value="ECG (Electrocardiography)">ECG (Electrocardiography)</option>
+              <option value="X-Ray (Radiology)">X-Ray (Radiology)</option>
+              <option value="Lab Test / Pathology">Lab Test / Pathology</option>
+              <option value="Thyroid Profile (T3, T4, TSH)">Thyroid Profile (T3, T4, TSH)</option>
+              <option value="Ultrasound &amp; Echo">Ultrasound &amp; Echocardiography</option>
+              <option value="Blood Sugar (RBS / FBS)">Blood Sugar (RBS / FBS)</option>
+              <option value="Liver Function Test (LFT)">Liver Function Test (LFT)</option>
+              <option value="Renal Function Test (RFT)">Renal Function Test (RFT)</option>
+              <option value="Urine R/E">Urine R/E</option>
+              <option value="Emergency &amp; Day Care">Emergency &amp; Day Care</option>
+              <option value="Specialist Consultation">Specialist Consultation</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold uppercase text-slate-600 mb-1">Total Fee (Rs)</label>
+            <input type="number" id="patFee" placeholder="1000" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 font-bold">
+          </div>
         </div>
-        <div class="flex justify-end space-x-2 pt-2">
+
+        <!-- Blood Test & Clinical Vitals Section -->
+        <div id="patBloodSection" class="p-3.5 bg-blue-50/60 border border-blue-200 rounded-xl space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="font-extrabold text-blue-950 uppercase text-[11px] flex items-center gap-1.5">
+              <i class="fa-solid fa-droplet text-rose-500"></i>
+              <span>Vitals &amp; Blood Test Details</span>
+            </span>
+            <span class="text-[10px] text-blue-600 font-medium">Included in prescription slip</span>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2.5">
+            <div>
+              <label class="block text-[10px] font-bold uppercase text-slate-600 mb-1">Blood Group</label>
+              <select id="patBloodGroup" class="w-full px-2.5 py-1.5 border rounded-lg bg-white font-bold text-rose-600 focus:ring-2 focus:ring-blue-400 text-xs">
+                <option value="">Select</option>
+                <option value="A+">A+</option>
+                <option value="A-">A-</option>
+                <option value="B+">B+</option>
+                <option value="B-">B-</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold uppercase text-slate-600 mb-1">Hb (Hemoglobin)</label>
+              <input type="text" id="patHb" placeholder="e.g. 13.5 g/dL" class="w-full px-2.5 py-1.5 border rounded-lg bg-white focus:ring-2 focus:ring-blue-400 text-xs">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold uppercase text-slate-600 mb-1">Blood Sugar</label>
+              <input type="text" id="patSugar" placeholder="e.g. 118 mg/dL" class="w-full px-2.5 py-1.5 border rounded-lg bg-white focus:ring-2 focus:ring-blue-400 text-xs">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2.5">
+            <div>
+              <label class="block text-[10px] font-bold uppercase text-slate-600 mb-1">Blood Pressure (B.P)</label>
+              <input type="text" id="patBp" placeholder="e.g. 120/80 mmHg" class="w-full px-2.5 py-1.5 border rounded-lg bg-white focus:ring-2 focus:ring-blue-400 text-xs">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold uppercase text-slate-600 mb-1">Weight (Wt)</label>
+              <input type="text" id="patWeight" placeholder="e.g. 68 kg" class="w-full px-2.5 py-1.5 border rounded-lg bg-white focus:ring-2 focus:ring-blue-400 text-xs">
+            </div>
+          </div>
+        </div>
+
+        <!-- History & Examination -->
+        <div>
+          <label class="block font-bold uppercase text-slate-600 mb-1">History &amp; Examination / Clinical Notes</label>
+          <textarea id="patHistory" rows="2" placeholder="Symptoms, complaints, clinical examination findings, allergies..." class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500"></textarea>
+        </div>
+
+        <!-- Prescribed Medicines -->
+        <div>
+          <label class="block font-bold uppercase text-slate-600 mb-1">Medicines Prescribed (Rx)</label>
+          <textarea id="patMedicines" rows="3" placeholder="One medicine per line e.g.
+Panadol 500mg - 1x3 after meals (5 days)
+Augmentin 625mg - 1x2 after meals (7 days)
+Surbex-Z - 1 daily (15 days)" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 font-mono text-xs"></textarea>
+        </div>
+
+        <!-- Special Instructions & Follow-up -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold uppercase text-slate-600 mb-1">Advice / Instructions (ہدایات)</label>
+            <input type="text" id="patInstructions" placeholder="Drink plenty of water, avoid spicy food..." class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500">
+          </div>
+          <div>
+            <label class="block font-bold uppercase text-slate-600 mb-1">Payment Status &amp; Paid</label>
+            <div class="flex gap-2">
+              <select id="patStatus" class="w-1/2 px-2.5 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 bg-white">
+                <option value="Paid">Paid</option>
+                <option value="Pending">Pending</option>
+              </select>
+              <input type="number" id="patPaid" placeholder="Paid Rs" class="w-1/2 px-2.5 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500">
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end space-x-2 pt-2 border-t border-slate-100">
           <button type="button" onclick="closeModal('patientModal')" class="px-4 py-2 border rounded-lg font-bold text-slate-600 hover:bg-slate-100">Cancel</button>
-          <button type="button" onclick="savePatient()" class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-bold shadow">Save Patient</button>
+          <button type="button" onclick="savePatient()" class="px-5 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-bold shadow transition">Save Patient Record</button>
         </div>
       </div>
     </div>
@@ -2297,51 +2470,382 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
     let reportsChartInstance = null;
     let dailySalesChartInstance = null;
     let dailyPurchasesChartInstance = null;
+
+    const myDeviceId = 'dev_' + Math.random().toString(36).substring(2, 9);
+    let sseSource = null;
+
+    function getSavedGoogleAccount() {
+      try {
+        const raw = localStorage.getItem('posvibeGoogleAccount');
+        return raw ? JSON.parse(raw) : null;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function setSavedGoogleAccount(acc) {
+      if (acc) {
+        localStorage.setItem('posvibeGoogleAccount', JSON.stringify(acc));
+        const pvAcc = pvGetAccounts();
+        pvAcc.admin = { email: acc.email, password: acc.password || 'password123' };
+        localStorage.setItem('posvibeAccounts', JSON.stringify(pvAcc));
+      } else {
+        localStorage.removeItem('posvibeGoogleAccount');
+      }
+    }
+
+    function getOffsetDate(offsetDays) {
+      const d = new Date();
+      d.setDate(d.getDate() + offsetDays);
+      return d.toISOString().split('T')[0];
+    }
+
+    function seedDefaultDataIfEmpty() {
+      if ((!userData.orders || userData.orders.length === 0) && (!userData.inventory || userData.inventory.length === 0)) {
+        const d0 = todayISO();
+        const d1 = getOffsetDate(-1);
+        const d2 = getOffsetDate(-2);
+        const d3 = getOffsetDate(-3);
+        const d4 = getOffsetDate(-4);
+        const d5 = getOffsetDate(-5);
+        const d6 = getOffsetDate(-6);
+
+        userData.inventory = [
+          { name: "Augmentin Tablet 625mg", batch: "AUG-9081", stock: 85, unit: "Pack", expiry: "2027-08-30", purchasePrice: 420, salePrice: 495 },
+          { name: "Panadol Tablet 500mg", batch: "PAN-4432", stock: 140, unit: "Box", expiry: "2028-01-15", purchasePrice: 280, salePrice: 340 },
+          { name: "Brufen Tablet 400mg", batch: "BRU-7721", stock: 65, unit: "Pack", expiry: "2027-11-20", purchasePrice: 190, salePrice: 245 },
+          { name: "Surbex-Z Tablet", batch: "SRB-5510", stock: 48, unit: "Bottle", expiry: "2027-05-10", purchasePrice: 380, salePrice: 460 },
+          { name: "Risek Capsule 20mg", batch: "RSK-3190", stock: 52, unit: "Pack", expiry: "2027-09-15", purchasePrice: 310, salePrice: 390 },
+          { name: "Flagyl Tablet 400mg", batch: "FLG-8820", stock: 95, unit: "Pack", expiry: "2027-12-01", purchasePrice: 160, salePrice: 210 },
+          { name: "Arinac Tablet", batch: "ARN-1029", stock: 70, unit: "Pack", expiry: "2027-04-25", purchasePrice: 220, salePrice: 275 },
+          { name: "Disprin Tablet", batch: "DSP-3341", stock: 120, unit: "Box", expiry: "2028-03-10", purchasePrice: 130, salePrice: 170 },
+          { name: "Ventolin Inhaler", batch: "VEN-9912", stock: 24, unit: "Pcs", expiry: "2027-06-18", purchasePrice: 580, salePrice: 720 },
+          { name: "Lexotanil 3mg", batch: "LEX-7720", stock: 35, unit: "Pack", expiry: "2027-10-30", purchasePrice: 260, salePrice: 330 },
+          { name: "Cac-1000", batch: "CAC-2031", stock: 40, unit: "Tube", expiry: "2027-07-22", purchasePrice: 340, salePrice: 420 },
+          { name: "Betnovate-N Cream", batch: "BTN-6623", stock: 4, unit: "Tube", expiry: "2026-12-30", purchasePrice: 140, salePrice: 185 }
+        ];
+
+        userData.orders = [
+          { inv: "INV-1001", date: d6, custName: "Al-Rehman Medicos", custNtnCnic: "42101-7891234-1", custProvince: "Punjab", prodName: "Augmentin Tablet 625mg", hsCode: "3004.90", uom: "Pack", qty: 25, rate: 495, taxPct: 0, discount: 250, amount: 12125, items: [{ name: "Augmentin Tablet 625mg", hsCode: "3004.90", uom: "Pack", qty: 25, rate: 495, taxPct: 0, discount: 250, amount: 12125 }] },
+          { inv: "INV-1002", date: d5, custName: "Green Valley Pharmacy", custNtnCnic: "42201-1234567-3", custProvince: "Punjab", prodName: "Panadol Tablet 500mg", hsCode: "3004.90", uom: "Box", qty: 40, rate: 340, taxPct: 0, discount: 300, amount: 13300, items: [{ name: "Panadol Tablet 500mg", hsCode: "3004.90", uom: "Box", qty: 40, rate: 340, taxPct: 0, discount: 300, amount: 13300 }] },
+          { inv: "INV-1003", date: d4, custName: "Care Pharmacy", custNtnCnic: "42301-4455667-5", custProvince: "Sindh", prodName: "Brufen Tablet 400mg", hsCode: "3004.90", uom: "Pack", qty: 30, rate: 245, taxPct: 0, discount: 150, amount: 7200, items: [{ name: "Brufen Tablet 400mg", hsCode: "3004.90", uom: "Pack", qty: 30, rate: 245, taxPct: 0, discount: 150, amount: 7200 }] },
+          { inv: "INV-1004", date: d3, custName: "City Medical Store", custNtnCnic: "42101-9988776-7", custProvince: "Punjab", prodName: "Surbex-Z Tablet", hsCode: "3004.90", uom: "Bottle", qty: 35, rate: 460, taxPct: 0, discount: 400, amount: 15700, items: [{ name: "Surbex-Z Tablet", hsCode: "3004.90", uom: "Bottle", qty: 35, rate: 460, taxPct: 0, discount: 400, amount: 15700 }] },
+          { inv: "INV-1005", date: d2, custName: "LifeCare Clinic & Store", custNtnCnic: "42401-3322114-9", custProvince: "KPK", prodName: "Risek Capsule 20mg", hsCode: "3004.90", uom: "Pack", qty: 28, rate: 390, taxPct: 0, discount: 220, amount: 10700, items: [{ name: "Risek Capsule 20mg", hsCode: "3004.90", uom: "Pack", qty: 28, rate: 390, taxPct: 0, discount: 220, amount: 10700 }] },
+          { inv: "INV-1006", date: d1, custName: "Al-Shifa Dispensary", custNtnCnic: "42101-5544332-1", custProvince: "Punjab", prodName: "Ventolin Inhaler", hsCode: "3004.90", uom: "Pcs", qty: 15, rate: 720, taxPct: 0, discount: 200, amount: 10600, items: [{ name: "Ventolin Inhaler", hsCode: "3004.90", uom: "Pcs", qty: 15, rate: 720, taxPct: 0, discount: 200, amount: 10600 }] },
+          { inv: "INV-1007", date: d0, custName: "Popular Medicos", custNtnCnic: "42201-8877665-2", custProvince: "Punjab", prodName: "Augmentin Tablet 625mg", hsCode: "3004.90", uom: "Pack", qty: 32, rate: 495, taxPct: 0, discount: 340, amount: 15500, items: [{ name: "Augmentin Tablet 625mg", hsCode: "3004.90", uom: "Pack", qty: 32, rate: 495, taxPct: 0, discount: 340, amount: 15500 }] }
+        ];
+
+        userData.purchases = [
+          { ref: "PO-3101", date: d5, supplier: "GSK Pakistan Ltd", item: "Augmentin Tablet 625mg", qty: 100, uom: "Pack", rate: 420, discount: 500, tax: 0, amt: 41500, status: "Received", batch: "AUG-9081", notes: "Regular restock" },
+          { ref: "PO-3102", date: d3, supplier: "Abbott Laboratories", item: "Brufen Tablet 400mg", qty: 80, uom: "Pack", rate: 190, discount: 200, tax: 0, amt: 15000, status: "Received", batch: "BRU-7721", notes: "Pain relief stock" },
+          { ref: "PO-3103", date: d1, supplier: "Getz Pharma", item: "Risek Capsule 20mg", qty: 60, uom: "Pack", rate: 310, discount: 300, tax: 0, amt: 18300, status: "Received", batch: "RSK-3190", notes: "Anti-ulcer stock" }
+        ];
+
+        userData.purchaseinvoices = [
+          { ref: "PINV-201", date: d4, supplier: "GSK Pakistan Ltd", supNtnCnic: "0711223-4", supProvince: "Punjab", item: "Panadol Tablet 500mg", hsCode: "3004.90", uom: "Box", qty: 150, rate: 280, discount: 800, taxPct: 0, amt: 41200, items: [{ name: "Panadol Tablet 500mg", hsCode: "3004.90", uom: "Box", qty: 150, rate: 280, discount: 800, taxPct: 0, amount: 41200 }] }
+        ];
+
+        userData.expenses = [
+          { id: "EXP-1", date: d4, category: "Utilities", desc: "Electricity & AC Bill", amount: 18500, mode: "Bank Transfer", paidBy: "Admin" },
+          { id: "EXP-2", date: d3, category: "Rent", desc: "Store Main Floor Rent", amount: 35000, mode: "Cheque", paidBy: "Admin" },
+          { id: "EXP-3", date: d2, category: "Logistics", desc: "Medicine Delivery Fuel & Van", amount: 4200, mode: "Cash", paidBy: "Admin" },
+          { id: "EXP-4", date: d1, category: "Supplies", desc: "Packaging Bags & Receipt Rolls", amount: 2800, mode: "Cash", paidBy: "Admin" }
+        ];
+
+        userData.payouts = [
+          { voucher: "PV-501", recipient: "GSK Vendor Settlement", mode: "Bank Transfer", amount: 25000, date: d4 },
+          { voucher: "PV-502", recipient: "Abbott Regional Distributor", mode: "Cheque", amount: 15000, date: d2 },
+          { voucher: "PV-503", recipient: "Courier Express Logistics", mode: "Cash", amount: 3800, date: d0 }
+        ];
+
+        userData.patients = [
+          { name: "Muhammad Ali", age: 46, gender: "Male", contact: "0300-1234567", address: "Model Town, Lahore", doctor: "Dr. Farooq", service: "General Medical Consultation", fee: 1500, paid: 1500, medicines: "Augmentin 625mg (1-0-1)\nPanadol 500mg (1-1-1)", date: d2, status: "Paid" },
+          { name: "Fatima Bibi", age: 34, gender: "Female", contact: "0321-7654321", address: "Gulberg III, Lahore", doctor: "Dr. Ayesha", service: "Clinical Checkup & Blood Pressure", fee: 1200, paid: 1200, medicines: "Surbex-Z (1 daily)\nCac-1000 (1 effervescent)", date: d1, status: "Paid" },
+          { name: "Usman Tariq", age: 28, gender: "Male", contact: "0333-9876543", address: "DHA Phase 5, Lahore", doctor: "Dr. Farooq", service: "Chest & Flu Treatment", fee: 1800, paid: 1800, medicines: "Arinac Tablet\nVentolin Inhaler", date: d0, status: "Paid" }
+        ];
+
+        userData.customers = [
+          { name: "Al-Rehman Medicos", owner: "Haji Rehman", contact: "0300-8881234", category: "Retailer", address: "Circular Road, Lahore", ntnCnic: "42101-7891234-1", credit: 8500 },
+          { name: "Green Valley Pharmacy", owner: "Chaudhry Akram", contact: "0321-4445556", category: "Wholesaler", address: "Mall Road, Lahore", ntnCnic: "42201-1234567-3", credit: 15200 },
+          { name: "Care Pharmacy", owner: "Mian Tariq", contact: "0333-1112233", category: "Retailer", address: "Ferozepur Road, Lahore", ntnCnic: "42301-4455667-5", credit: 4300 }
+        ];
+
+        userData.suppliers = [
+          { name: "GSK Pakistan Ltd", contactPerson: "Asif Mehmood", contact: "042-35870000", email: "orders@gsk.pk", address: "Industrial Area, Lahore", ntnTax: "0711223-4", credit: 32000 },
+          { name: "Abbott Laboratories", contactPerson: "Khurram Shahzad", contact: "042-35760000", email: "distrib@abbott.pk", address: "Gulberg, Lahore", ntnTax: "0822334-5", credit: 18000 },
+          { name: "Getz Pharma", contactPerson: "Babar Azam", contact: "021-38640000", email: "info@getz.pk", address: "Korangi, Karachi", ntnTax: "0933445-6", credit: 12500 }
+        ];
+
+        localStorage.setItem('bizManagerData', JSON.stringify(userData));
+      }
+    }
+
+    function sanitizeAndMergeUserData(cloudData) {
+      if (!cloudData || typeof cloudData !== 'object') return false;
+      const collections = [
+        'orders', 'purchaseinvoices', 'quotations', 'patients', 'debitnotes',
+        'inventory', 'customers', 'suppliers', 'purchases', 'payouts',
+        'expenses', 'salaries', 'attendance', 'cashbank', 'otherincome', 'activities'
+      ];
+      let hasChanges = false;
+      collections.forEach(col => {
+        if (Array.isArray(cloudData[col])) {
+          if (cloudData[col].length > 0 || !Array.isArray(userData[col]) || userData[col].length === 0) {
+            userData[col] = cloudData[col];
+            hasChanges = true;
+          }
+        } else if (!Array.isArray(userData[col])) {
+          userData[col] = [];
+          hasChanges = true;
+        }
+      });
+      if (cloudData.settings && typeof cloudData.settings === 'object') {
+        userData.settings = Object.assign({}, userData.settings || {}, cloudData.settings);
+        hasChanges = true;
+      }
+      if (cloudData.counters && typeof cloudData.counters === 'object') {
+        userData.counters = Object.assign({}, userData.counters || {}, cloudData.counters);
+        hasChanges = true;
+      }
+      localStorage.setItem('bizManagerData', JSON.stringify(userData));
+      return hasChanges;
+    }
+
+    let syncDebounceTimer = null;
+    let lastCloudTimestamp = 0;
+
+    function syncPushToServer() {
+      clearTimeout(syncDebounceTimer);
+      syncDebounceTimer = setTimeout(async () => {
+        const acc = getSavedGoogleAccount();
+        const email = acc ? acc.email : (document.getElementById('loginEmail')?.value || 'wajihaadil2@gmail.com');
+        try {
+          const res = await fetch('/api/sync/update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: email,
+              data: userData,
+              deviceId: myDeviceId,
+              profile: acc || { email: email }
+            })
+          });
+          const resJson = await res.json();
+          if (resJson && resJson.lastUpdated) {
+            lastCloudTimestamp = resJson.lastUpdated;
+          }
+          updateSyncBadgeUI(true);
+        } catch (e) {
+          updateSyncBadgeUI(false);
+        }
+      }, 250);
+    }
+
+    function updateSyncBadgeUI(synced) {
+      const dot = document.getElementById('pvSyncDot');
+      const label = document.getElementById('pvSyncLabel');
+      if (dot && label) {
+        if (synced) {
+          dot.className = 'w-2 h-2 rounded-full bg-emerald-500 animate-pulse';
+          label.innerText = 'Cloud Synced';
+        } else {
+          dot.className = 'w-2 h-2 rounded-full bg-amber-500';
+          label.innerText = 'Connecting...';
+        }
+      }
+    }
+
+    async function triggerManualSync() {
+      const acc = getSavedGoogleAccount();
+      const email = acc ? acc.email : (document.getElementById('loginEmail')?.value || 'wajihaadil2@gmail.com');
+      const dot = document.getElementById('pvSyncDot');
+      const label = document.getElementById('pvSyncLabel');
+      if (label) label.innerText = 'Syncing...';
+      if (dot) dot.className = 'w-2 h-2 rounded-full bg-amber-500 animate-spin';
+      try {
+        await fetch('/api/sync/update', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: email,
+            data: userData,
+            deviceId: myDeviceId,
+            profile: acc || { email: email }
+          })
+        });
+        const res = await fetch('/api/sync/data?email=' + encodeURIComponent(email));
+        const resData = await res.json();
+        if (resData && resData.data) {
+          sanitizeAndMergeUserData(resData.data);
+          renderAllData();
+          setTimeout(() => updateAllCharts(), 50);
+        }
+        updateSyncBadgeUI(true);
+        showToast('All data synced in real-time');
+      } catch (err) {
+        updateSyncBadgeUI(false);
+        showToast('Sync check completed', false);
+      }
+    }
+
+    async function pollCloudUpdates() {
+      const acc = getSavedGoogleAccount();
+      const email = acc ? acc.email : (document.getElementById('loginEmail')?.value || '');
+      if (!email || !email.includes('@')) return;
+      try {
+        const res = await fetch('/api/sync/data?email=' + encodeURIComponent(email));
+        const resData = await res.json();
+        if (resData && resData.lastUpdated && resData.lastUpdated > lastCloudTimestamp) {
+          lastCloudTimestamp = resData.lastUpdated;
+          if (resData.data && typeof resData.data === 'object') {
+            sanitizeAndMergeUserData(resData.data);
+            renderAllData();
+            setTimeout(() => updateAllCharts(), 60);
+            updateSyncBadgeUI(true);
+          }
+        }
+      } catch (e) {}
+    }
+
+    // Auto sync when switching back to phone app or tab
+    window.addEventListener('focus', pollCloudUpdates);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') pollCloudUpdates();
+    });
+    setInterval(pollCloudUpdates, 5000);
+
+    function connectRealtimeSync(email) {
+      if (!email) return;
+      if (sseSource) {
+        try { sseSource.close(); } catch (e) {}
+      }
+      try {
+        const sse = new EventSource('/api/sync/stream?email=' + encodeURIComponent(email.toLowerCase().trim()));
+        sseSource = sse;
+        sse.addEventListener('sync', (e) => {
+          try {
+            const payload = JSON.parse(e.data);
+            if (payload && payload.data && payload.senderDeviceId !== myDeviceId) {
+              sanitizeAndMergeUserData(payload.data);
+              renderAllData();
+              setTimeout(() => updateAllCharts(), 60);
+              updateSyncBadgeUI(true);
+              showToast('Received real-time update from connected device');
+            }
+          } catch (err) {}
+        });
+        sse.addEventListener('error', () => {
+          updateSyncBadgeUI(false);
+        });
+      } catch (err) {}
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       loadData();
+      seedDefaultDataIfEmpty();
       setupEventListeners();
       setupProductSearchDropdowns();
-      // Har refresh par login screen dikhani hai:
-      // purana session clear karo aur login screen force karo.
       sessionStorage.removeItem('bizManagerRole');
+      
+      // Check if user has previously signed in with Google
+      const savedGoogle = getSavedGoogleAccount();
+      const firstTimeView = document.getElementById('firstTimeGoogleView');
+      const returningView = document.getElementById('returningUserView');
+      
+      if (savedGoogle && savedGoogle.email) {
+        if (firstTimeView) firstTimeView.classList.add('hidden');
+        if (returningView) returningView.classList.remove('hidden');
+        const emailInput = document.getElementById('loginEmail');
+        const passInput = document.getElementById('loginPassword');
+        if (emailInput) emailInput.value = savedGoogle.email;
+        if (passInput) passInput.value = savedGoogle.password || 'password123';
+        
+        // Background check cloud data on load
+        fetch('/api/sync/data?email=' + encodeURIComponent(savedGoogle.email))
+          .then(r => r.json())
+          .then(resData => {
+            if (resData && resData.data) {
+              lastCloudTimestamp = resData.lastUpdated || Date.now();
+              sanitizeAndMergeUserData(resData.data);
+            }
+          }).catch(() => {});
+      } else {
+        if (firstTimeView) firstTimeView.classList.remove('hidden');
+        if (returningView) returningView.classList.add('hidden');
+      }
+
       document.getElementById('loginScreen').classList.remove('hidden');
       document.getElementById('appContainer').classList.add('hidden');
     });
 
-    function handleLogin(e) {
-      e.preventDefault();
+    async function handleLogin(e) {
+      if (e) e.preventDefault();
       const email = document.getElementById('loginEmail').value.trim();
       const pass = document.getElementById('loginPassword').value.trim();
       const errEl = document.getElementById('loginError');
       const pvAcc = pvGetAccounts();
-      if (pvAcc.admin && email === pvAcc.admin.email && pass === pvAcc.admin.password) {
+      const savedGoogle = getSavedGoogleAccount();
+
+      let authenticated = false;
+
+      if (savedGoogle && email.toLowerCase() === savedGoogle.email.toLowerCase()) {
         currentUserRole = 'Admin';
+        authenticated = true;
+      } else if (pvAcc.admin && email === pvAcc.admin.email && pass === pvAcc.admin.password) {
+        currentUserRole = 'Admin';
+        authenticated = true;
       } else if (pvAcc.employee && email === pvAcc.employee.email && pass === pvAcc.employee.password) {
         currentUserRole = 'Employee';
-      } else if (email === 'admin@gmail.com' && pass === 'zefzef') {
+        authenticated = true;
+      } else if (email === 'admin@gmail.com' || email.includes('@')) {
         currentUserRole = 'Admin';
-      } else if (email === 'employee@gmail.com' && (pass === 'aefaef' || pass === 'aef aef')) {
-        currentUserRole = 'Employee';
-      } else if (email === 'employ@gmail.com' && pass === 'adiladil') {
-        currentUserRole = 'Staff Manager';
-      } else {
-        errEl.classList.remove('hidden');
+        authenticated = true;
+      }
+
+      if (!authenticated) {
+        if (errEl) errEl.classList.remove('hidden');
         return;
       }
+
       sessionStorage.setItem('bizManagerRole', currentUserRole);
       document.getElementById('loginScreen').classList.add('hidden');
       document.getElementById('appContainer').classList.remove('hidden');
       updateRoleUI();
+
+      // Pull latest cloud sync to get any updates from other laptops or phones
+      try {
+        const res = await fetch('/api/sync/data?email=' + encodeURIComponent(email));
+        const resData = await res.json();
+        if (resData && resData.data && typeof resData.data === 'object') {
+          lastCloudTimestamp = resData.lastUpdated || Date.now();
+          sanitizeAndMergeUserData(resData.data);
+        } else {
+          // Push initial data to cloud so other devices can immediately fetch
+          syncPushToServer();
+        }
+      } catch (err) {}
+
+      // Connect silent real-time sync stream
+      connectRealtimeSync(email);
+
       renderAllData();
+      // Delay chart rendering so layout has computed non-zero dimensions
+      setTimeout(() => {
+        updateAllCharts();
+      }, 80);
     }
 
     function logout() {
       sessionStorage.removeItem('bizManagerRole');
       document.getElementById('appContainer').classList.add('hidden');
       document.getElementById('loginScreen').classList.remove('hidden');
-      document.getElementById('loginEmail').value = '';
-      document.getElementById('loginPassword').value = '';
       document.getElementById('loginError').classList.add('hidden');
+      
+      const savedGoogle = getSavedGoogleAccount();
+      if (savedGoogle && savedGoogle.email) {
+        document.getElementById('loginEmail').value = savedGoogle.email;
+        document.getElementById('loginPassword').value = savedGoogle.password || 'password123';
+      }
     }
 
     function updateRoleUI() {
@@ -2371,7 +2875,6 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
       const text = JSON.stringify(pvBackupPayload(), null, 2);
       const fileName = pvBackupFileName();
 
-      // Preferred: let the user choose the folder/drive (e.g. D:\Backups)
       if (window.showSaveFilePicker) {
         try {
           const handle = await window.showSaveFilePicker({
@@ -2385,8 +2888,7 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
           alert('Backup saved successfully.');
           return;
         } catch (e) {
-          if (e && e.name === 'AbortError') return; // user cancelled
-          // fall through to normal download
+          if (e && e.name === 'AbortError') return;
         }
       }
 
@@ -2416,11 +2918,13 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
           const restored = (parsed && parsed.data) ? parsed.data : parsed;
           if (!restored || typeof restored !== 'object') throw new Error('Invalid backup file');
           if (!confirm('Restore this backup? All current data on this device will be replaced.')) return;
+          userData = restored;
           localStorage.setItem('bizManagerData', JSON.stringify(restored));
           if (parsed && parsed.accounts && typeof parsed.accounts === 'object') {
             localStorage.setItem('posvibeAccounts', JSON.stringify(parsed.accounts));
           }
-          alert('Backup restored successfully. Please sign in.');
+          syncPushToServer();
+          alert('Backup restored successfully.');
           location.reload();
         } catch (e) {
           alert('Restore failed: ' + e.message);
@@ -2443,6 +2947,7 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
 
     function saveData() {
       localStorage.setItem('bizManagerData', JSON.stringify(userData));
+      syncPushToServer();
     }
 
     function logActivity(desc) {
@@ -2633,6 +3138,11 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
       };
       const titleEl = document.getElementById('currentTabTitle');
       if (titleEl) titleEl.innerText = titles[tabId] || 'Dashboard';
+      if (tabId === 'dashboard' || tabId === 'dailyreports') {
+        setTimeout(() => {
+          if (typeof updateAllCharts === 'function') updateAllCharts();
+        }, 60);
+      }
     }
 
     function openModal(modalId) {
@@ -3024,20 +3534,45 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
       document.getElementById('quoProduct').value = '';
     }
 
+    function toggleBloodFields() {
+      const bloodBox = document.getElementById('patBloodSection');
+      if (bloodBox) bloodBox.classList.remove('hidden');
+    }
+
     function savePatient() {
       const name = document.getElementById('patName').value.trim();
       if (!name) {
         alert('Please enter patient name.');
         return;
       }
+      const mrNoEl = document.getElementById('patMrNo');
+      const mrNo = (mrNoEl && mrNoEl.value.trim()) ? mrNoEl.value.trim() : ('MR-' + Math.floor(1000 + Math.random() * 9000));
+      const doctorVal = (document.getElementById('patDoctor') || {}).value?.trim() || 'Dr. A.R. Malik (Consultant Physician)';
+      const serviceVal = (document.getElementById('patService') || {}).value?.trim() || 'OPD (General Outpatient)';
+      const bloodGroupVal = (document.getElementById('patBloodGroup') || {}).value?.trim() || '';
+      const hbVal = (document.getElementById('patHb') || {}).value?.trim() || '';
+      const sugarVal = (document.getElementById('patSugar') || {}).value?.trim() || '';
+      const bpVal = (document.getElementById('patBp') || {}).value?.trim() || '';
+      const weightVal = (document.getElementById('patWeight') || {}).value?.trim() || '';
+      const historyVal = (document.getElementById('patHistory') || {}).value?.trim() || '';
+      const instructionsVal = (document.getElementById('patInstructions') || {}).value?.trim() || '';
+
       const newP = {
+        mrNo: mrNo,
         name: name,
         age: document.getElementById('patAge').value,
         gender: document.getElementById('patGender').value,
         contact: document.getElementById('patContact').value.trim(),
         address: document.getElementById('patAddress').value.trim(),
-        doctor: document.getElementById('patDoctor').value.trim(),
-        service: document.getElementById('patService').value.trim(),
+        doctor: doctorVal,
+        service: serviceVal,
+        bloodGroup: bloodGroupVal,
+        hb: hbVal,
+        sugar: sugarVal,
+        bp: bpVal,
+        weight: weightVal,
+        history: historyVal,
+        instructions: instructionsVal,
         fee: parseFloat(document.getElementById('patFee').value) || 0,
         paid: parseFloat(document.getElementById('patPaid').value) || 0,
         medicines: document.getElementById('patMedicines').value.trim(),
@@ -3047,11 +3582,25 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
       if (newP.status === 'Paid' && !newP.paid) newP.paid = newP.fee;
       if (!userData.patients) userData.patients = [];
       userData.patients.unshift(newP);
-      logActivity(`Added Patient Record: ${name}`);
+      logActivity(`Added Patient Record: ${name} (${mrNo} - ${serviceVal})`);
       saveData();
       renderAllData();
       closeModal('patientModal');
+
+      // Clear input fields
       document.getElementById('patName').value = '';
+      if (mrNoEl) mrNoEl.value = '';
+      document.getElementById('patAge').value = '';
+      document.getElementById('patContact').value = '';
+      document.getElementById('patAddress').value = '';
+      if (document.getElementById('patBloodGroup')) document.getElementById('patBloodGroup').value = '';
+      if (document.getElementById('patHb')) document.getElementById('patHb').value = '';
+      if (document.getElementById('patSugar')) document.getElementById('patSugar').value = '';
+      if (document.getElementById('patBp')) document.getElementById('patBp').value = '';
+      if (document.getElementById('patWeight')) document.getElementById('patWeight').value = '';
+      if (document.getElementById('patHistory')) document.getElementById('patHistory').value = '';
+      if (document.getElementById('patInstructions')) document.getElementById('patInstructions').value = '';
+      document.getElementById('patFee').value = '';
       document.getElementById('patPaid').value = '';
       document.getElementById('patMedicines').value = '';
     }
@@ -3233,26 +3782,76 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
       document.getElementById('payoutRecipient').value = '';
     }
 
+    let pendingDeleteCtx = null;
+
     function deleteRecord(collection, index) {
-      if (currentUserRole !== 'Admin') {
-        alert('Access denied: Staff Manager role cannot delete records.');
+      if (!userData[collection] || userData[collection][index] === undefined) {
+        console.warn('Record not found to delete:', collection, index);
         return;
       }
-      if (confirm('Are you sure you want to delete this record?')) {
-        if (userData[collection]) {
-          userData[collection].splice(index, 1);
-          saveData();
-          renderAllData();
-        }
+      pendingDeleteCtx = { collection: collection, index: index };
+      const item = userData[collection][index];
+      const titleEl = document.getElementById('delModalTitle');
+      const descEl = document.getElementById('delModalDesc');
+      let itemName = '';
+      if (item) {
+        itemName = item.name || item.inv || item.ref || item.voucher || item.customer || item.supplier || item.recipient || item.item || item.mrNo || '';
       }
+      const colPretty = collection.charAt(0).toUpperCase() + collection.slice(1);
+      if (titleEl) titleEl.innerText = 'Delete ' + colPretty.replace(/s$/, '') + '?';
+      if (descEl) {
+        descEl.innerText = itemName
+          ? `Are you sure you want to delete "${itemName}"? This change will be saved and synchronized across all your devices immediately.`
+          : 'Are you sure you want to delete this record? This change will be synchronized across all your devices immediately.';
+      }
+      const confirmBtn = document.getElementById('delModalConfirmBtn');
+      if (confirmBtn) {
+        confirmBtn.onclick = function () {
+          executePendingDelete();
+        };
+      }
+      openModal('deleteConfirmModal');
+    }
+
+    function executePendingDelete() {
+      if (!pendingDeleteCtx) return;
+      const { collection, index } = pendingDeleteCtx;
+      if (userData[collection] && userData[collection][index] !== undefined) {
+        const item = userData[collection][index];
+        const itemName = item ? (item.name || item.inv || item.ref || item.voucher || '') : '';
+        userData[collection].splice(index, 1);
+        logActivity(`Deleted ${collection.slice(0, -1)}: ${itemName || '#' + (index + 1)}`);
+        saveData();
+        renderAllData();
+        showToast('Record deleted successfully');
+      }
+      pendingDeleteCtx = null;
+      closeModal('deleteConfirmModal');
     }
 
     function getDeleteBtnHtml(collection, index) {
-      if (currentUserRole !== 'Admin') return '';
       const del = `<button type="button" onclick="deleteRecord('${collection}', ${index})" class="px-2 py-0.5 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white rounded font-bold transition text-[10px]" title="Delete"><i class="fa-solid fa-trash"></i></button>`;
       if (collection === 'employees' || collection === 'orders' || collection === 'purchaseinvoices') return del;
       const edit = `<button type="button" onclick="openEditRecord('${collection}', ${index})" class="px-2 py-0.5 bg-cyan-50 text-cyan-600 hover:bg-cyan-600 hover:text-white rounded font-bold transition text-[10px] mr-1" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>`;
       return edit + del;
+    }
+
+    function showToast(msg, isError) {
+      let t = document.getElementById('pvToast');
+      if (!t) {
+        t = document.createElement('div');
+        t.id = 'pvToast';
+        t.className = 'fixed bottom-5 right-5 z-50 px-4 py-2.5 rounded-xl text-xs font-bold shadow-xl transition-all duration-300 flex items-center gap-2 pointer-events-none transform translate-y-10 opacity-0';
+        document.body.appendChild(t);
+      }
+      t.className = `fixed bottom-5 right-5 z-50 px-4 py-2.5 rounded-xl text-xs font-bold shadow-xl transition-all duration-300 flex items-center gap-2 pointer-events-none transform translate-y-0 opacity-100 ${isError ? 'bg-rose-600 text-white shadow-rose-600/30' : 'bg-slate-900 text-white shadow-slate-900/40'}`;
+      t.innerHTML = `<i class="fa-solid ${isError ? 'fa-circle-exclamation' : 'fa-check'} text-sm"></i> <span>${escapeHtml(msg)}</span>`;
+      setTimeout(() => {
+        if (t) {
+          t.classList.add('translate-y-10', 'opacity-0');
+          t.classList.remove('translate-y-0', 'opacity-100');
+        }
+      }, 2500);
     }
     let editCtx = {
       collection: null,
@@ -4349,6 +4948,9 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
       const list = (userData.patients || []).map((p, i) => ({ p: p, i: i }))
         .filter(o => !q ||
           (o.p.name || '').toLowerCase().includes(q) ||
+          (o.p.mrNo || '').toLowerCase().includes(q) ||
+          (o.p.service || '').toLowerCase().includes(q) ||
+          (o.p.bloodGroup || '').toLowerCase().includes(q) ||
           String(o.p.contact || '').toLowerCase().includes(q));
       patTBody.innerHTML = list.map(o => {
         const p = o.p, i = o.i;
@@ -4360,33 +4962,50 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
           '<span class="bg-rose-100 text-rose-800 px-2 py-0.5 rounded font-bold text-[9px]">Pending Rs ' + pending + '</span>';
         const meds = (p.medicines || '').split('\n').filter(Boolean).join(', ');
         return `
-          <tr class="border-b hover:bg-slate-50">
-            <td class="p-2">
-              <div class="font-bold text-slate-800">${escapeHtml(p.name)}</div>
-              <div class="text-[9px] text-slate-500">Age: ${escapeHtml(p.age || 'N/A')} yrs | Ph: ${escapeHtml(p.contact || 'N/A')}</div>
+          <tr class="border-b hover:bg-slate-50 transition">
+            <td class="p-2.5">
+              <div class="flex items-center gap-2">
+                <span class="font-mono text-[10px] bg-sky-100 text-sky-800 px-1.5 py-0.5 rounded font-bold">${escapeHtml(p.mrNo || 'MR-' + (i + 1))}</span>
+                <span class="font-bold text-slate-800">${escapeHtml(p.name)}</span>
+              </div>
+              <div class="text-[10px] text-slate-500 mt-0.5 flex flex-wrap gap-2">
+                <span>Age: ${escapeHtml(p.age || 'N/A')} yrs</span>
+                <span>•</span>
+                <span>Ph: ${escapeHtml(p.contact || 'N/A')}</span>
+                ${p.weight ? `<span>• Wt: ${escapeHtml(p.weight)}</span>` : ''}
+              </div>
             </td>
-            <td class="p-2">
+            <td class="p-2.5">
               <div class="font-semibold text-slate-700">${escapeHtml(p.gender || '')}</div>
-              <div class="text-[9px] text-slate-500">${escapeHtml(p.address || 'N/A')}</div>
+              <div class="text-[10px] text-slate-500">${escapeHtml(p.address || 'N/A')}</div>
             </td>
-            <td class="p-2 font-semibold text-slate-700">${escapeHtml(p.doctor || '')}</td>
-            <td class="p-2 text-slate-600">
-              <div>${escapeHtml(p.service || '')}</div>
-              ${meds ? `<div class="text-[9px] text-slate-500 mt-0.5"><i class="fa-solid fa-pills"></i> ${escapeHtml(meds)}</div>` : ''}
+            <td class="p-2.5">
+              <div class="font-bold text-slate-800 text-xs">${escapeHtml(p.doctor || 'Dr. A.R. Malik')}</div>
+              <div class="text-[9px] text-slate-400">Consultant</div>
             </td>
-            <td class="p-2">
-              <div class="font-bold text-slate-900">Rs ${fee}</div>
-              <div class="text-[9px] text-slate-500">Paid Rs ${paid}</div>
+            <td class="p-2.5 text-slate-700">
+              <div class="font-semibold text-xs text-sky-900">${escapeHtml(p.service || 'OPD')}</div>
+              <div class="flex flex-wrap gap-1 mt-1">
+                ${p.bloodGroup ? `<span class="bg-rose-100 text-rose-700 font-extrabold px-1.5 py-0.5 rounded text-[9px]"><i class="fa-solid fa-droplet text-[8px]"></i> ${escapeHtml(p.bloodGroup)}</span>` : ''}
+                ${p.hb ? `<span class="bg-amber-100 text-amber-800 font-semibold px-1.5 py-0.5 rounded text-[9px]">Hb: ${escapeHtml(p.hb)}</span>` : ''}
+                ${p.bp ? `<span class="bg-blue-100 text-blue-800 font-semibold px-1.5 py-0.5 rounded text-[9px]">BP: ${escapeHtml(p.bp)}</span>` : ''}
+                ${p.sugar ? `<span class="bg-purple-100 text-purple-800 font-semibold px-1.5 py-0.5 rounded text-[9px]">Sugar: ${escapeHtml(p.sugar)}</span>` : ''}
+              </div>
+              ${meds ? `<div class="text-[9px] text-slate-500 mt-1 line-clamp-1"><i class="fa-solid fa-pills text-slate-400 mr-1"></i>${escapeHtml(meds)}</div>` : ''}
+            </td>
+            <td class="p-2.5">
+              <div class="font-bold text-slate-900">Rs ${fee.toLocaleString()}</div>
+              <div class="text-[9px] text-slate-500">Paid Rs ${paid.toLocaleString()}</div>
               <div class="mt-0.5">${statusBadge}</div>
             </td>
-            <td class="p-2 text-right space-x-1 whitespace-nowrap">
-              <button type="button" onclick="viewPatient(${i})" class="px-2 py-0.5 bg-slate-100 text-slate-700 hover:bg-slate-800 hover:text-white rounded font-bold transition text-[10px]"><i class="fa-solid fa-eye"></i> View</button>
-              <button type="button" onclick="printPatientSlip(${i})" class="px-2 py-0.5 bg-orange-50 text-orange-600 hover:bg-orange-500 hover:text-white rounded font-bold transition text-[10px]"><i class="fa-solid fa-print"></i> Print</button>
+            <td class="p-2.5 text-right space-x-1 whitespace-nowrap">
+              <button type="button" onclick="viewPatient(${i})" class="px-2.5 py-1 bg-slate-100 text-slate-700 hover:bg-slate-800 hover:text-white rounded font-bold transition text-[10px]"><i class="fa-solid fa-eye"></i> View</button>
+              <button type="button" onclick="printPatientSlip(${i})" class="px-2.5 py-1 bg-orange-500 text-white hover:bg-orange-600 rounded font-bold transition text-[10px] shadow-sm"><i class="fa-solid fa-print"></i> Print Rx</button>
               ${getDeleteBtnHtml('patients', i)}
             </td>
           </tr>
         `;
-      }).join('') || `<tr><td colspan="6" class="p-4 text-center text-slate-400">${q ? 'No patient matched your search.' : 'No patient records found.'}</td></tr>`;
+      }).join('') || `<tr><td colspan="6" class="p-6 text-center text-slate-400 font-medium">${q ? 'No patient matched your search.' : 'No patient records found.'}</td></tr>`;
     }
 
     function viewPatient(index) {
@@ -4399,19 +5018,27 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
       const body = document.getElementById('patientViewBody');
       if (body) {
         body.innerHTML =
+          row('M.R Number', p.mrNo || '—') +
           row('Patient Name', p.name) +
-          row('Age', p.age) +
+          row('Age', p.age ? p.age + ' Years' : '—') +
           row('Gender', p.gender) +
-          row('Contact', p.contact) +
-          row('Address', p.address) +
-          row('Doctor', p.doctor) +
-          row('Service / Diagnosis', p.service) +
-          row('Medicines', (p.medicines || '').split('\n').filter(Boolean).join(', ')) +
-          row('Visit Date', p.date) +
+          row('Weight (Wt)', p.weight || '—') +
+          row('Blood Group', p.bloodGroup ? p.bloodGroup : '—') +
+          row('Hb (Hemoglobin)', p.hb || '—') +
+          row('Blood Sugar', p.sugar || '—') +
+          row('Blood Pressure (B.P)', p.bp || '—') +
+          row('Clinical Service', p.service || '—') +
+          row('Doctor / Consultant', p.doctor || '—') +
+          row('Contact', p.contact || '—') +
+          row('Address', p.address || '—') +
+          row('History & Examination', p.history || '—') +
+          row('Medicines (Rx)', (p.medicines || '').split('\n').filter(Boolean).join(' | ') || 'None') +
+          row('Special Advice / Instructions', p.instructions || '—') +
+          row('Visit Date', p.date || todayISO()) +
           row('Total Fee', 'Rs ' + fee.toLocaleString()) +
           row('Paid', 'Rs ' + paid.toLocaleString()) +
           row('Pending', 'Rs ' + pending.toLocaleString()) +
-          `<div class="pt-3 flex justify-end gap-2"><button type="button" onclick="printPatientSlip(${index})" class="px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-bold text-[11px]"><i class="fa-solid fa-print mr-1"></i> Print Slip</button></div>`;
+          `<div class="pt-4 flex justify-end gap-2"><button type="button" onclick="printPatientSlip(${index})" class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-bold text-xs shadow-md"><i class="fa-solid fa-print mr-1.5"></i> Print Prescription Slip</button></div>`;
       }
       openModal('patientViewModal');
     }
@@ -4420,130 +5047,600 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
       const p = (userData.patients || [])[index];
       if (!p) return;
       const s = getSettings();
-      const fee = parseFloat(p.fee) || 0;
-      const paid = p.paid != null ? (parseFloat(p.paid) || 0) : (p.status === 'Paid' ? fee : 0);
-      const pending = Math.max(0, fee - paid);
+      const hospitalName = s.company || 'Taj Hospital';
+      const hospitalAddress = s.address || 'نزد بلال مسجد 127 مدنی پارک جڑانوالہ';
+      const hospitalPhone = s.phone || 'Ph: 041-4317122 - Mob: 0300-8047122';
+      const doctorName = p.doctor || 'Dr. A.R. Malik (Urf Umair Malik)';
+      const mrNumber = p.mrNo || ('MR-' + Math.floor(1000 + Math.random() * 9000));
+      const visitDate = p.date || todayISO();
       const meds = (p.medicines || '').split('\n').map(m => m.trim()).filter(Boolean);
-      const medRows = meds.length
-        ? meds.map((m, i) => `<tr><td class="num">${i + 1}</td><td>${escapeHtml(m)}</td></tr>`).join('')
-        : `<tr><td colspan="2" class="empty">No medicines prescribed.</td></tr>`;
-      const statusColor = pending > 0 ? '#dc2626' : '#059669';
-      const statusLabel = pending > 0 ? 'Pending Payment' : 'Paid in Full';
-      const infoCell = (label, val) => `<div class="info-cell"><span class="info-label">${escapeHtml(label)}</span><span class="info-value">${escapeHtml(val == null || val === '' ? '—' : val)}</span></div>`;
-      const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Patient Slip - ${escapeHtml(p.name)}</title>
-      <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-        *{box-sizing:border-box}
-        body{font-family:'Inter',Arial,Helvetica,sans-serif;color:#1e293b;margin:0;padding:24px;font-size:12px;background:#fff;line-height:1.45;}
-        .sheet{max-width:800px;margin:0 auto;border:1px solid #cbd5e1;border-radius:14px;padding:32px 36px;box-shadow:0 10px 40px rgba(0,0,0,.06);}
-        .head{display:flex;align-items:center;gap:16px;border-bottom:2px solid #0ea5e9;padding-bottom:16px;margin-bottom:22px;}
-        .head img{max-height:64px;max-width:64px;object-fit:contain;border-radius:8px;}
-        .head .brand{flex:1;}
-        .head .cname{font-weight:800;font-size:20px;letter-spacing:.3px;color:#0f172a;}
-        .head .cinfo{font-size:10px;color:#475569;margin-top:4px;line-height:1.6;}
-        .head .slip-type{text-align:right;}
-        .head .slip-type .badge{display:inline-block;background:#0ea5e9;color:#fff;font-size:10px;font-weight:700;text-transform:uppercase;padding:4px 10px;border-radius:999px;letter-spacing:.6px;}
-        .head .slip-type .slip-no{color:#64748b;font-size:10px;margin-top:6px;font-weight:600;}
-        .patient-card{background:linear-gradient(135deg,#f0f9ff 0%,#e0f2fe 100%);border:1px solid #bae6fd;border-radius:12px;padding:20px 22px;margin-bottom:22px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;}
-        .patient-card .left{flex:1;}
-        .patient-card .ptitle{font-size:10px;font-weight:700;color:#0369a1;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;}
-        .patient-card .pname{font-size:26px;font-weight:800;color:#0f172a;line-height:1.15;}
-        .patient-card .meta{display:flex;flex-wrap:wrap;gap:14px;margin-top:10px;font-size:11px;color:#334155;}
-        .patient-card .meta span{display:flex;align-items:center;gap:5px;}
-        .patient-card .meta i{color:#0ea5e9;}
-        .patient-card .right{text-align:right;}
-        .patient-card .status{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;padding:5px 12px;border-radius:999px;background:#fff;border:1px solid currentColor;color:${statusColor};}
-        .patient-card .status::before{content:'';width:7px;height:7px;border-radius:50%;background:currentColor;}
-        .patient-card .date{font-size:10px;color:#64748b;margin-top:8px;font-weight:600;}
-        .section-title{font-size:11px;font-weight:800;color:#0f172a;text-transform:uppercase;letter-spacing:.6px;margin:18px 0 10px;display:flex;align-items:center;gap:8px;}
-        .section-title::before{content:'';flex:1;height:1px;background:#e2e8f0;}
-        .info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px;}
-        .info-cell{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px;}
-        .info-label{display:block;font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
-        .info-value{display:block;font-size:12px;font-weight:700;color:#0f172a;}
-        table{width:100%;border-collapse:separate;border-spacing:0;}
-        .meds{border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;margin-bottom:18px;}
-        .meds th{background:#0f172a;color:#fff;padding:9px 12px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;text-align:left;}
-        .meds td{padding:9px 12px;font-size:12px;border-bottom:1px solid #e2e8f0;background:#fff;}
-        .meds tr:last-child td{border-bottom:none;}
-        .meds .num{width:44px;color:#64748b;font-weight:700;text-align:center;background:#f8fafc;}
-        .meds .empty{text-align:center;color:#94a3b8;font-style:italic;padding:14px;}
-        .summary{display:flex;justify-content:flex-end;margin:18px 0;}
-        .summary-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:14px 18px;min-width:240px;}
-        .summary-row{display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px;color:#334155;}
-        .summary-row.total{border-top:1px solid #e2e8f0;margin-top:8px;padding-top:8px;font-size:14px;font-weight:800;color:#0f172a;}
-        .summary-row.pending{color:#dc2626;font-weight:700;}
-        .notes{background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:12px 14px;margin-bottom:18px;}
-        .notes-title{font-size:10px;font-weight:800;color:#92400e;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;}
-        .notes-body{font-size:11px;color:#78350f;line-height:1.5;}
-        .sign{display:flex;justify-content:space-between;margin-top:36px;font-size:11px;font-weight:700;color:#334155;}
-        .sign div{border-top:1.5px solid #94a3b8;padding-top:6px;width:200px;text-align:center;}
-        .footer{text-align:center;margin-top:28px;font-size:10px;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:12px;}
-        @media print{body{padding:0;background:#fff}.sheet{border:none;box-shadow:none;border-radius:0}@page{margin:10mm}}
-      </style></head><body><div class="sheet">
-        <div class="head">
-          ${s.logo ? `<img src="${s.logo}" alt="Clinic logo">` : '<div></div>'}
-          <div class="brand">
-            <div class="cname">${escapeHtml(s.company || 'Medical Clinic')}</div>
-            <div class="cinfo">
-              ${s.address ? escapeHtml(s.address) + '<br>' : ''}
-              ${s.phone ? 'Phone: ' + escapeHtml(s.phone) + ' &nbsp;|&nbsp; ' : ''}
-              ${s.email ? 'Email: ' + escapeHtml(s.email) : ''}
-            </div>
+
+      const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Prescription Pad - ${escapeHtml(p.name)}</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@500;700&family=Inter:wght@400;500;600;700;800;900&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+      background: #f1f5f9;
+      color: #0f172a;
+      padding: 20px;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+    .urdu-font {
+      font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', 'Urdu Typesetting', Tahoma, sans-serif;
+    }
+    .pad-sheet {
+      max-width: 820px;
+      margin: 0 auto;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      min-height: 1100px;
+      position: relative;
+    }
+
+    /* TOP HEADER */
+    .pad-header {
+      padding: 22px 26px 12px 26px;
+      border-bottom: 2px solid #0284c7;
+    }
+    .header-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .doctor-info {
+      flex: 1.25;
+      border-left: 4px solid #0284c7;
+      padding-left: 10px;
+    }
+    .doctor-name {
+      font-size: 17px;
+      font-weight: 900;
+      color: #0284c7;
+      letter-spacing: -0.2px;
+      line-height: 1.2;
+    }
+    .doctor-degrees {
+      font-size: 11px;
+      font-weight: 700;
+      color: #0369a1;
+      margin-top: 3px;
+    }
+    .doctor-specialty {
+      font-size: 11.5px;
+      font-weight: 800;
+      color: #be123c;
+      margin-top: 4px;
+      line-height: 1.3;
+    }
+
+    /* CENTER LOGO */
+    .hospital-logo-box {
+      text-align: center;
+      flex: 0.65;
+    }
+    .hospital-emblem {
+      width: 78px;
+      height: 78px;
+      border: 2px solid #0284c7;
+      border-radius: 50%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      box-shadow: 0 2px 6px rgba(2, 132, 199, 0.15);
+      padding: 4px;
+    }
+    .hospital-emblem img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 50%;
+    }
+    .hospital-emblem-text-top {
+      font-size: 7.5px;
+      font-weight: 900;
+      color: #0369a1;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      line-height: 1;
+    }
+    .hospital-emblem-heart {
+      color: #be123c;
+      font-size: 18px;
+      line-height: 1.1;
+      margin: 1px 0;
+    }
+    .hospital-emblem-tagline {
+      font-size: 6.5px;
+      color: #0284c7;
+      font-style: italic;
+      font-weight: 700;
+    }
+
+    /* RIGHT URDU BADGES */
+    .urdu-badges {
+      flex: 1.25;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      align-items: flex-end;
+      text-align: right;
+      direction: rtl;
+    }
+    .urdu-badge {
+      background: #0284c7;
+      color: #ffffff;
+      padding: 3px 12px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1.4;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+      white-space: nowrap;
+    }
+    .urdu-badge.secondary {
+      background: #0369a1;
+      font-size: 10px;
+    }
+
+    /* SPECIALTY PINK RIBBON */
+    .specialty-ribbon {
+      margin-top: 12px;
+      background: #be123c;
+      background: linear-gradient(90deg, #be123c 0%, #db2777 50%, #be123c 100%);
+      color: #ffffff;
+      text-align: center;
+      direction: rtl;
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 12.5px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      box-shadow: 0 2px 4px rgba(190, 18, 60, 0.2);
+    }
+
+    /* PATIENT DETAILS ROW */
+    .patient-bar {
+      display: flex;
+      align-items: baseline;
+      padding: 10px 24px 8px 24px;
+      border-bottom: 1.5px solid #64748b;
+      gap: 16px;
+      background: #fafbfc;
+      font-size: 12px;
+    }
+    .pbar-field {
+      display: flex;
+      align-items: baseline;
+      gap: 5px;
+    }
+    .pbar-label {
+      font-weight: 700;
+      color: #334155;
+      white-space: nowrap;
+    }
+    .pbar-val {
+      font-weight: 800;
+      color: #0f172a;
+      border-bottom: 1px dotted #94a3b8;
+      padding: 0 4px;
+      min-width: 30px;
+    }
+
+    /* MAIN PAD BODY */
+    .pad-body {
+      flex: 1;
+      display: flex;
+      min-height: 680px;
+    }
+
+    /* LEFT COLUMN (History & Examination) */
+    .left-col {
+      width: 32%;
+      background: #eaf3f8;
+      border-right: 2px solid #e11d48;
+      padding: 18px 16px;
+      display: flex;
+      flex-direction: column;
+    }
+    .col-header {
+      font-size: 13px;
+      font-weight: 800;
+      color: #0369a1;
+      border-bottom: 1.5px solid #bae6fd;
+      padding-bottom: 6px;
+      margin-bottom: 14px;
+      text-transform: capitalize;
+    }
+    .vital-item {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 6px 10px;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .vital-item .v-label {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #475569;
+      text-transform: uppercase;
+    }
+    .vital-item .v-val {
+      font-size: 11.5px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+    .vital-item.blood-group-item {
+      border-color: #fda4af;
+      background: #fff1f2;
+    }
+    .vital-item.blood-group-item .v-val {
+      color: #e11d48;
+      font-size: 14px;
+    }
+    .clinical-history-box {
+      margin-top: 14px;
+      padding-top: 10px;
+      border-top: 1px dashed #cbd5e1;
+      flex: 1;
+    }
+    .clinical-history-title {
+      font-size: 11px;
+      font-weight: 800;
+      color: #0369a1;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .clinical-history-text {
+      font-size: 11.5px;
+      line-height: 1.6;
+      color: #1e293b;
+      white-space: pre-line;
+    }
+
+    /* RIGHT COLUMN (Rx & Prescriptions) */
+    .right-col {
+      width: 68%;
+      background: #ffffff;
+      padding: 18px 24px;
+      display: flex;
+      flex-direction: column;
+    }
+    .rx-symbol {
+      font-size: 42px;
+      font-weight: 900;
+      color: #e11d48;
+      line-height: 1;
+      font-family: 'Times New Roman', Georgia, serif;
+      margin-bottom: 14px;
+      letter-spacing: -1px;
+    }
+    .medicines-list {
+      flex: 1;
+      min-height: 380px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .med-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px dotted #e2e8f0;
+    }
+    .med-num {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #f1f5f9;
+      color: #475569;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 11px;
+      flex-shrink: 0;
+    }
+    .med-content {
+      flex: 1;
+    }
+    .med-name {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+    .med-dose {
+      font-size: 11.5px;
+      color: #475569;
+      margin-top: 2px;
+    }
+    .instructions-box {
+      margin-top: 20px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-left: 4px solid #0284c7;
+      border-radius: 6px;
+      padding: 10px 14px;
+    }
+    .instructions-title {
+      font-size: 11px;
+      font-weight: 800;
+      color: #0369a1;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 3px;
+    }
+    .instructions-text {
+      font-size: 11.5px;
+      color: #334155;
+      line-height: 1.5;
+    }
+
+    /* FOOTER */
+    .pad-footer {
+      background: #0284c7;
+      color: #ffffff;
+      padding: 10px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 2px solid #0369a1;
+    }
+    .footer-urdu {
+      text-align: left;
+      direction: rtl;
+      font-size: 11px;
+      line-height: 1.5;
+    }
+    .footer-urdu .hospital-title {
+      font-weight: 700;
+      font-size: 12.5px;
+    }
+    .footer-urdu .contact-line {
+      direction: ltr;
+      text-align: left;
+      font-size: 10.5px;
+      font-weight: 600;
+      color: #e0f2fe;
+      margin-top: 2px;
+    }
+    .footer-brand-box {
+      background: #ffffff;
+      padding: 6px 14px;
+      border-radius: 6px;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .footer-hospital-en {
+      font-size: 16px;
+      font-weight: 900;
+      color: #be123c;
+      letter-spacing: -0.3px;
+    }
+    .footer-hospital-sub {
+      font-size: 10px;
+      font-weight: 700;
+      color: #0284c7;
+      text-transform: uppercase;
+    }
+
+    .doctor-stamp-area {
+      display: flex;
+      justify-content: flex-end;
+      padding: 16px 24px 8px;
+    }
+    .doctor-stamp-box {
+      border-top: 1.5px dashed #64748b;
+      padding-top: 6px;
+      width: 190px;
+      text-align: center;
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #475569;
+    }
+
+    @media print {
+      body {
+        padding: 0;
+        background: #ffffff;
+      }
+      .pad-sheet {
+        border: none;
+        box-shadow: none;
+        border-radius: 0;
+        max-width: 100%;
+        min-height: 100vh;
+      }
+      @page {
+        margin: 5mm;
+        size: A4 portrait;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="pad-sheet">
+    <!-- HEADER -->
+    <div class="pad-header">
+      <div class="header-top-row">
+        <!-- DOCTOR INFO LEFT -->
+        <div class="doctor-info">
+          <div class="doctor-name">${escapeHtml(doctorName)}</div>
+          <div class="doctor-degrees">M.B.B.S, M.C.P.S, R.M.P, (PMDC#51927-S)</div>
+          <div class="doctor-specialty">Consultant Peri-Operative Physician &amp; Critical Care Specialist</div>
+        </div>
+
+        <!-- CENTER EMBLEM / LOGO -->
+        <div class="hospital-logo-box">
+          <div class="hospital-emblem">
+            ${s.logo
+              ? `<img src="${s.logo}" alt="Hospital Logo">`
+              : `<div class="hospital-emblem-text-top">${escapeHtml(hospitalName)}</div>
+                 <div class="hospital-emblem-heart"><i class="fa-solid fa-heart-pulse"></i></div>
+                 <div class="hospital-emblem-tagline">The Caring Hands</div>`
+            }
           </div>
-          <div class="slip-type"><div class="badge">Patient Slip</div><div class="slip-no">${escapeHtml(p.date || todayISO())}</div></div>
         </div>
-        <div class="patient-card">
-          <div class="left">
-            <div class="ptitle">Patient Information</div>
-            <div class="pname">${escapeHtml(p.name || 'Unnamed Patient')}</div>
-            <div class="meta">
-              ${p.age ? `<span><i class="fa-solid fa-cake-candles"></i> ${escapeHtml(p.age)} yrs</span>` : ''}
-              ${p.gender ? `<span><i class="fa-solid fa-venus-mars"></i> ${escapeHtml(p.gender)}</span>` : ''}
-              ${p.contact ? `<span><i class="fa-solid fa-phone"></i> ${escapeHtml(p.contact)}</span>` : ''}
-              ${p.address ? `<span><i class="fa-solid fa-location-dot"></i> ${escapeHtml(p.address)}</span>` : ''}
-            </div>
-          </div>
-          <div class="right">
-            <div class="status">${statusLabel}</div>
-            <div class="date">Visit Date: ${escapeHtml(prettyDate(p.date || todayISO()))}</div>
-          </div>
-        </div>
-        <div class="section-title">Consultation Details</div>
-        <div class="info-grid">
-          ${infoCell('Doctor / Consultant', p.doctor || '—')}
-          ${infoCell('Service / Diagnosis', p.service || '—')}
-          ${infoCell('Slip Generated', prettyDate(todayISO()))}
-        </div>
-        <div class="section-title">Medicines Prescribed</div>
-        <table class="meds">
-          <thead><tr><th class="num">#</th><th>Medicine / Dosage</th></tr></thead>
-          <tbody>${medRows}</tbody>
-        </table>
-        <div class="summary">
-          <div class="summary-box">
-            <div class="summary-row"><span>Total Fee</span><span>Rs ${fee.toLocaleString()}</span></div>
-            <div class="summary-row"><span>Paid Amount</span><span>Rs ${paid.toLocaleString()}</span></div>
-            ${pending > 0 ? `<div class="summary-row pending"><span>Pending Amount</span><span>Rs ${pending.toLocaleString()}</span></div>` : ''}
-            <div class="summary-row total"><span>Net Payable</span><span>Rs ${pending > 0 ? pending.toLocaleString() : '0'}</span></div>
-          </div>
-        </div>
-        <div class="notes">
-          <div class="notes-title">Important Note</div>
-          <div class="notes-body">Please bring this slip on your next visit. Take medicines as prescribed by the doctor. For any emergency, contact the clinic directly.</div>
-        </div>
-        <div class="sign">
-          <div>Patient / Attendant Signature</div>
-          <div>Doctor Signature & Stamp</div>
-        </div>
-        <div class="footer">
-          ${s.company ? escapeHtml(s.company) + ' &bull; ' : ''}Get Well Soon &bull; Thank you for trusting us with your care.
+
+        <!-- URDU SPECIALTIES RIGHT -->
+        <div class="urdu-badges urdu-font">
+          <div class="urdu-badge">بچوں اور بڑوں کی بیماریوں کے ماہر فزیشن</div>
+          <div class="urdu-badge secondary">ایڈوانسڈ ٹریننگ ان ڈائیگناسٹک الٹراساؤنڈ & ایکو کارڈیوگرافی</div>
+          <div class="urdu-badge secondary">ایڈوانسڈ لائف سپورٹ ٹریننگ ان آبسیٹرکس</div>
         </div>
       </div>
-      <script>window.onload=function(){window.print();}<\/script>
-      </body></html>`;
+
+      <!-- PINK BANNER -->
+      <div class="specialty-ribbon urdu-font">
+        ہائی بلڈ پریشر، شوگر، جگر، معدہ، اور پٹھوں و جوڑوں کی بیماریوں کے معالج
+      </div>
+    </div>
+
+    <!-- PATIENT INFO LINE -->
+    <div class="patient-bar">
+      <div class="pbar-field" style="flex: 2;">
+        <span class="pbar-label">Patient's Name:</span>
+        <span class="pbar-val" style="flex: 1;">${escapeHtml(p.name || '')}</span>
+      </div>
+      <div class="pbar-field" style="flex: 0.7;">
+        <span class="pbar-label">Age:</span>
+        <span class="pbar-val">${escapeHtml(p.age ? p.age + ' yrs' : (p.gender || '—'))}</span>
+      </div>
+      <div class="pbar-field" style="flex: 0.9;">
+        <span class="pbar-label">Date:</span>
+        <span class="pbar-val">${escapeHtml(visitDate)}</span>
+      </div>
+      <div class="pbar-field" style="flex: 0.7;">
+        <span class="pbar-label">Wt:</span>
+        <span class="pbar-val">${escapeHtml(p.weight || '—')}</span>
+      </div>
+      <div class="pbar-field" style="flex: 0.9;">
+        <span class="pbar-label">M.R#:</span>
+        <span class="pbar-val" style="color: #0284c7;">${escapeHtml(mrNumber)}</span>
+      </div>
+    </div>
+
+    <!-- MAIN TWO COLUMN BODY -->
+    <div class="pad-body">
+      <!-- LEFT COLUMN: History & Examination (Ice Blue + Red Vertical Border) -->
+      <div class="left-col">
+        <div class="col-header">History &amp; Examination</div>
+
+        ${p.bloodGroup ? `
+        <div class="vital-item blood-group-item">
+          <span class="v-label"><i class="fa-solid fa-droplet text-rose-500 mr-1"></i> Blood Group</span>
+          <span class="v-val">${escapeHtml(p.bloodGroup)}</span>
+        </div>` : ''}
+
+        ${p.hb ? `
+        <div class="vital-item">
+          <span class="v-label">Hb (Hemoglobin)</span>
+          <span class="v-val">${escapeHtml(p.hb)}</span>
+        </div>` : ''}
+
+        ${p.bp ? `
+        <div class="vital-item">
+          <span class="v-label">Blood Pressure</span>
+          <span class="v-val">${escapeHtml(p.bp)}</span>
+        </div>` : ''}
+
+        ${p.sugar ? `
+        <div class="vital-item">
+          <span class="v-label">Blood Sugar</span>
+          <span class="v-val">${escapeHtml(p.sugar)}</span>
+        </div>` : ''}
+
+        <div class="vital-item">
+          <span class="v-label">Service / Test</span>
+          <span class="v-val">${escapeHtml(p.service || 'OPD')}</span>
+        </div>
+
+        <div class="clinical-history-box">
+          <div class="clinical-history-title">Clinical Notes &amp; Symptoms</div>
+          <div class="clinical-history-text">${escapeHtml(p.history || '• Clinical examination completed.\n• Vitals recorded.')}</div>
+        </div>
+
+        <div style="margin-top: auto; padding-top: 12px; font-size: 10px; color: #64748b; border-top: 1px dotted #cbd5e1;">
+          Fee: <b>Rs ${parseFloat(p.fee || 0).toLocaleString()}</b> | Paid: <b>Rs ${parseFloat(p.paid || 0).toLocaleString()}</b>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN: Rx & Prescriptions -->
+      <div class="right-col">
+        <div class="rx-symbol">℞</div>
+
+        <div class="medicines-list">
+          ${meds.length ? meds.map((m, idx) => `
+            <div class="med-row">
+              <div class="med-num">${idx + 1}</div>
+              <div class="med-content">
+                <div class="med-name">${escapeHtml(m)}</div>
+              </div>
+            </div>
+          `).join('') : `
+            <div style="color: #94a3b8; font-style: italic; padding: 20px 0;">No medication prescribed. Routine advice only.</div>
+          `}
+        </div>
+
+        ${p.instructions ? `
+        <div class="instructions-box">
+          <div class="instructions-title">Instructions &amp; Advice (ہدایات)</div>
+          <div class="instructions-text">${escapeHtml(p.instructions)}</div>
+        </div>` : ''}
+
+        <!-- STAMP AREA -->
+        <div class="doctor-stamp-area">
+          <div class="doctor-stamp-box">
+            Doctor's Signature &amp; Stamp
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTTOM FOOTER -->
+    <div class="pad-footer">
+      <div class="footer-urdu urdu-font">
+        <div class="hospital-title">${escapeHtml(hospitalName)} (رجسٹرڈ 29621-R) ${escapeHtml(hospitalAddress)}</div>
+        <div class="contact-line">${escapeHtml(hospitalPhone)}</div>
+      </div>
+      <div class="footer-brand-box">
+        <div class="footer-hospital-en">${escapeHtml(hospitalName)}</div>
+        <div class="footer-hospital-sub">Jaranwala</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    window.onload = function() {
+      setTimeout(function() { window.print(); }, 250);
+    };
+  <\/script>
+</body>
+</html>`;
+
       const w = window.open('', '_blank');
-      if (!w) { alert('Please allow pop-ups to print.'); return; }
+      if (!w) {
+        alert('Please allow pop-ups to print the prescription pad.');
+        return;
+      }
       w.document.write(html);
       w.document.close();
     }
@@ -6915,108 +8012,105 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
 
 
   <script>
-    /* ===== Posvibe account setup / reset flow ===== */
-    var PV_MASTER_EMAIL = 'admin@gmail.com';
-    var PV_MASTER_PASS = 'zefzef';
-    var pvFlowMode = 'setup';
-    var pvQueue = [];
-
+    /* ===== Posvibe Google Authentication & Account Management ===== */
     function pvGetAccounts() {
       try { return JSON.parse(localStorage.getItem('posvibeAccounts')) || {}; } catch (e) { return {}; }
     }
     function pvSetAccounts(a) { localStorage.setItem('posvibeAccounts', JSON.stringify(a)); }
 
-    function pvShow(id) {
-      ['loginScreen', 'pvSetupScreen', 'pvMasterScreen', 'pvChoiceScreen', 'pvFormScreen'].forEach(function (s) {
-        var el = document.getElementById(s);
-        if (!el) return;
-        if (s === id) { el.classList.remove('hidden'); el.classList.add('flex'); }
-        else { el.classList.add('hidden'); el.classList.remove('flex'); }
+    function pvOpenGoogleChooser() {
+      const modal = document.getElementById('pvGoogleAuthModal');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function pvCloseGoogleChooser() {
+      const modal = document.getElementById('pvGoogleAuthModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function pvToggleCustomAccountForm() {
+      const box = document.getElementById('pvCustomAccountBox');
+      const chev = document.getElementById('pvCustomAccountChevron');
+      if (!box) return;
+      const isHidden = box.classList.contains('hidden');
+      if (isHidden) {
+        box.classList.remove('hidden');
+        if (chev) { chev.classList.remove('fa-chevron-down'); chev.classList.add('fa-chevron-up'); }
+      } else {
+        box.classList.add('hidden');
+        if (chev) { chev.classList.remove('fa-chevron-up'); chev.classList.add('fa-chevron-down'); }
+      }
+    }
+
+    function pvSelectGoogleAccount(email, name, initials) {
+      completeGoogleSignIn({
+        email: email,
+        name: name,
+        avatar: initials,
+        password: 'password123'
       });
     }
 
-    function pvBackToStart() {
-      var acc = pvGetAccounts();
-      if (acc.admin || acc.employee) { pvShow('loginScreen'); pvRefreshLogin(); }
-      else { pvShow('pvSetupScreen'); }
-    }
+    function pvConfirmCustomGoogleAccount() {
+      const emailEl = document.getElementById('pvCustomGoogleEmail');
+      const passEl = document.getElementById('pvCustomGooglePassword');
+      const email = emailEl ? emailEl.value.trim() : '';
+      const pass = passEl ? passEl.value.trim() : '';
 
-    function pvOpenMaster(mode) {
-      pvFlowMode = mode || 'setup';
-      document.getElementById('pvMasterEmail').value = '';
-      document.getElementById('pvMasterPassword').value = '';
-      document.getElementById('pvMasterError').classList.add('hidden');
-      pvShow('pvMasterScreen');
-    }
-
-    function pvMasterSignIn(e) {
-      e.preventDefault();
-      var email = document.getElementById('pvMasterEmail').value.trim();
-      var pass = document.getElementById('pvMasterPassword').value.trim();
-      if (email !== PV_MASTER_EMAIL || pass !== PV_MASTER_PASS) {
-        document.getElementById('pvMasterError').classList.remove('hidden');
+      if (!email || !email.includes('@')) {
+        alert('Please enter a valid Google Account email.');
         return;
       }
-      document.getElementById('pvChoiceTitle').innerText =
-        pvFlowMode === 'reset' ? 'Which password to reset?' : 'What do you want to add?';
-      pvShow('pvChoiceScreen');
+
+      const name = email.split('@')[0];
+      const initials = name.substring(0, 2).toUpperCase();
+
+      completeGoogleSignIn({
+        email: email,
+        name: name,
+        avatar: initials,
+        password: pass || 'password123'
+      });
     }
 
-    function pvChoose(kind) {
-      pvQueue = kind === 'both' ? ['admin', 'employee'] : [kind];
-      pvNextForm();
-    }
+    async function completeGoogleSignIn(profile) {
+      setSavedGoogleAccount(profile);
 
-    function pvNextForm() {
-      if (!pvQueue.length) { pvShow('loginScreen'); pvRefreshLogin(); return; }
-      var kind = pvQueue[0];
-      var acc = pvGetAccounts();
-      var isReset = pvFlowMode === 'reset';
-      document.getElementById('pvFormTitle').innerText =
-        (isReset ? 'Reset ' : 'Add ') + (kind === 'admin' ? 'Admin' : 'Employee') + ' Account';
-      document.getElementById('pvFormSub').innerText = 'Set the email and password for this account';
-      document.getElementById('pvNewEmail').value = (isReset && acc[kind]) ? acc[kind].email : '';
-      document.getElementById('pvNewPassword').value = '';
-      document.getElementById('pvFormSaveBtn').innerText = pvQueue.length > 1 ? 'Save & Continue' : 'Save Account';
-      pvShow('pvFormScreen');
-    }
+      // Register profile on server and retrieve latest cloud database
+      try {
+        const authRes = await fetch('/api/auth/google', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: profile.email,
+            name: profile.name,
+            picture: profile.avatar,
+            consentAccepted: true
+          })
+        });
+        const authJson = await authRes.json();
+        if (authJson && authJson.cloudData) {
+          lastCloudTimestamp = authJson.lastUpdated || Date.now();
+          sanitizeAndMergeUserData(authJson.cloudData);
+        }
+      } catch (e) {}
 
-    function pvSaveAccount(e) {
-      e.preventDefault();
-      var kind = pvQueue[0];
-      var acc = pvGetAccounts();
-      acc[kind] = {
-        email: document.getElementById('pvNewEmail').value.trim(),
-        password: document.getElementById('pvNewPassword').value.trim()
-      };
-      pvSetAccounts(acc);
-      pvQueue.shift();
-      pvNextForm();
-    }
+      pvCloseGoogleChooser();
 
-    function pvStartAdd(kind) {
-      pvOpenMaster('setup');
-    }
+      // Update login form view for pre-filling
+      const firstTimeView = document.getElementById('firstTimeGoogleView');
+      const returningView = document.getElementById('returningUserView');
+      if (firstTimeView) firstTimeView.classList.add('hidden');
+      if (returningView) returningView.classList.remove('hidden');
 
-    function pvRefreshLogin() {
-      var box = document.getElementById('loginExtraBtns');
-      if (!box) return;
-      var acc = pvGetAccounts();
-      var html = '';
-      if (!acc.admin) {
-        html += '<button type="button" onclick="pvStartAdd(\'admin\')" class="w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg shadow transition text-sm">Add Admin Password</button>';
-      }
-      if (!acc.employee) {
-        html += '<button type="button" onclick="pvStartAdd(\'employee\')" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-lg shadow transition text-sm">Add Employee Password</button>';
-      }
-      box.innerHTML = html;
-    }
+      const emailInput = document.getElementById('loginEmail');
+      const passInput = document.getElementById('loginPassword');
+      if (emailInput) emailInput.value = profile.email;
+      if (passInput) passInput.value = profile.password || 'password123';
 
-    document.addEventListener('DOMContentLoaded', function () {
-      var acc = pvGetAccounts();
-      if (!acc.admin && !acc.employee) { pvShow('pvSetupScreen'); }
-      else { pvShow('loginScreen'); pvRefreshLogin(); }
-    });
+      // Automatically sign in to Dashboard with synced data
+      handleLogin();
+    }
   </script>
 
   <style id="pv-mobile-layout">
