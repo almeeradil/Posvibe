@@ -71,7 +71,7 @@
           </div>
           <div>
             <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Password</label>
-            <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium">
+            <input type="password" id="loginPassword" required placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium">
           </div>
           <div id="loginError" class="hidden text-xs text-rose-600 font-semibold text-center bg-rose-50 p-2 rounded">
             Invalid email or password. Please try again.
@@ -175,7 +175,7 @@
           </div>
           <div>
             <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Account Password / PIN</label>
-            <input type="password" id="pvCustomGooglePassword" placeholder="••••••••" class="w-full px-3 py-2 border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-orange-500">
+            <input type="password" id="pvCustomGooglePassword" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" class="w-full px-3 py-2 border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-orange-500">
           </div>
           <button type="button" onclick="pvConfirmCustomGoogleAccount()" class="w-full py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-bold text-xs shadow transition">
             Continue with this Account
@@ -4970,9 +4970,9 @@ Surbex-Z - 1 daily (15 days)" class="w-full px-3 py-2 border rounded-lg focus:ri
               </div>
               <div class="text-[10px] text-slate-500 mt-0.5 flex flex-wrap gap-2">
                 <span>Age: ${escapeHtml(p.age || 'N/A')} yrs</span>
-                <span>•</span>
+                <span>â€¢</span>
                 <span>Ph: ${escapeHtml(p.contact || 'N/A')}</span>
-                ${p.weight ? `<span>• Wt: ${escapeHtml(p.weight)}</span>` : ''}
+                ${p.weight ? `<span>â€¢ Wt: ${escapeHtml(p.weight)}</span>` : ''}
               </div>
             </td>
             <td class="p-2.5">
@@ -5018,22 +5018,22 @@ Surbex-Z - 1 daily (15 days)" class="w-full px-3 py-2 border rounded-lg focus:ri
       const body = document.getElementById('patientViewBody');
       if (body) {
         body.innerHTML =
-          row('M.R Number', p.mrNo || '—') +
+          row('M.R Number', p.mrNo || 'â€”') +
           row('Patient Name', p.name) +
-          row('Age', p.age ? p.age + ' Years' : '—') +
+          row('Age', p.age ? p.age + ' Years' : 'â€”') +
           row('Gender', p.gender) +
-          row('Weight (Wt)', p.weight || '—') +
-          row('Blood Group', p.bloodGroup ? p.bloodGroup : '—') +
-          row('Hb (Hemoglobin)', p.hb || '—') +
-          row('Blood Sugar', p.sugar || '—') +
-          row('Blood Pressure (B.P)', p.bp || '—') +
-          row('Clinical Service', p.service || '—') +
-          row('Doctor / Consultant', p.doctor || '—') +
-          row('Contact', p.contact || '—') +
-          row('Address', p.address || '—') +
-          row('History & Examination', p.history || '—') +
+          row('Weight (Wt)', p.weight || 'â€”') +
+          row('Blood Group', p.bloodGroup ? p.bloodGroup : 'â€”') +
+          row('Hb (Hemoglobin)', p.hb || 'â€”') +
+          row('Blood Sugar', p.sugar || 'â€”') +
+          row('Blood Pressure (B.P)', p.bp || 'â€”') +
+          row('Clinical Service', p.service || 'â€”') +
+          row('Doctor / Consultant', p.doctor || 'â€”') +
+          row('Contact', p.contact || 'â€”') +
+          row('Address', p.address || 'â€”') +
+          row('History & Examination', p.history || 'â€”') +
           row('Medicines (Rx)', (p.medicines || '').split('\n').filter(Boolean).join(' | ') || 'None') +
-          row('Special Advice / Instructions', p.instructions || '—') +
+          row('Special Advice / Instructions', p.instructions || 'â€”') +
           row('Visit Date', p.date || todayISO()) +
           row('Total Fee', 'Rs ' + fee.toLocaleString()) +
           row('Paid', 'Rs ' + paid.toLocaleString()) +
@@ -5522,7 +5522,7 @@ Surbex-Z - 1 daily (15 days)" class="w-full px-3 py-2 border rounded-lg focus:ri
       </div>
       <div class="pbar-field" style="flex: 0.7;">
         <span class="pbar-label">Age:</span>
-        <span class="pbar-val">${escapeHtml(p.age ? p.age + ' yrs' : (p.gender || '—'))}</span>
+        <span class="pbar-val">${escapeHtml(p.age ? p.age + ' yrs' : (p.gender || 'â€”'))}</span>
       </div>
       <div class="pbar-field" style="flex: 0.9;">
         <span class="pbar-label">Date:</span>
@@ -5530,7 +5530,7 @@ Surbex-Z - 1 daily (15 days)" class="w-full px-3 py-2 border rounded-lg focus:ri
       </div>
       <div class="pbar-field" style="flex: 0.7;">
         <span class="pbar-label">Wt:</span>
-        <span class="pbar-val">${escapeHtml(p.weight || '—')}</span>
+        <span class="pbar-val">${escapeHtml(p.weight || 'â€”')}</span>
       </div>
       <div class="pbar-field" style="flex: 0.9;">
         <span class="pbar-label">M.R#:</span>
@@ -5575,7 +5575,7 @@ Surbex-Z - 1 daily (15 days)" class="w-full px-3 py-2 border rounded-lg focus:ri
 
         <div class="clinical-history-box">
           <div class="clinical-history-title">Clinical Notes &amp; Symptoms</div>
-          <div class="clinical-history-text">${escapeHtml(p.history || '• Clinical examination completed.\n• Vitals recorded.')}</div>
+          <div class="clinical-history-text">${escapeHtml(p.history || 'â€¢ Clinical examination completed.\nâ€¢ Vitals recorded.')}</div>
         </div>
 
         <div style="margin-top: auto; padding-top: 12px; font-size: 10px; color: #64748b; border-top: 1px dotted #cbd5e1;">
@@ -7406,7 +7406,7 @@ Surbex-Z - 1 daily (15 days)" class="w-full px-3 py-2 border rounded-lg focus:ri
       const t = document.getElementById('reportTitle');
       const st = document.getElementById('reportSubtitle');
       if (t) t.innerText = meta.label;
-      if (st) st.innerText = meta.group + (data.note ? ' — ' + data.note : ' — ' + rows.length + ' record(s)');
+      if (st) st.innerText = meta.group + (data.note ? ' â€” ' + data.note : ' â€” ' + rows.length + ' record(s)');
       const head = document.getElementById('reportHead');
       if (head) head.innerHTML = data.cols.map(c => `<th class="p-3 text-left font-bold">${escapeHtml(String(c))}</th>`).join('');
       const body = document.getElementById('reportBody');
@@ -7905,7 +7905,7 @@ Surbex-Z - 1 daily (15 days)" class="w-full px-3 py-2 border rounded-lg focus:ri
     window.pvResetRecForm = function () {
       if (!selected) return;
       var bal = selected.total - recovered(selected.inv);
-      document.getElementById('pvRecSelectedInfo').textContent = 'Invoice ' + selected.inv + ' — ' + (selected.party || '-') + ' — Total ' + fmt(selected.total);
+      document.getElementById('pvRecSelectedInfo').textContent = 'Invoice ' + selected.inv + ' â€” ' + (selected.party || '-') + ' â€” Total ' + fmt(selected.total);
       document.getElementById('pvRecBalanceInfo').textContent = 'Already recovered: ' + fmt(recovered(selected.inv)) + ' | Remaining balance: ' + fmt(bal);
       document.getElementById('pvRecDate').value = today();
       document.getElementById('pvRecAmount').value = bal > 0 ? bal.toFixed(2) : '';
