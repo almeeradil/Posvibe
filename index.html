@@ -37,6 +37,35 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      projectId: "gen-lang-client-0558175369",
+      appId: "1:287931153580:web:6be993f6d705af5e737309",
+      apiKey: "AIzaSyC97okNNFoYXoXzpEAlFNahzwXQbrJlIIY",
+      authDomain: "gen-lang-client-0558175369.firebaseapp.com",
+      firestoreDatabaseId: "ai-studio-posvibe-86f9096f-8c62-46a6-9590-41267a09a8e7",
+      storageBucket: "gen-lang-client-0558175369.firebasestorage.app",
+      messagingSenderId: "287931153580"
+    };
+
+    try {
+      const app = initializeApp(firebaseConfig, "posvibeModularApp");
+      const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+      window.pvFirestore = db;
+      window.pvDoc = doc;
+      window.pvOnSnapshot = onSnapshot;
+      window.pvSetDoc = setDoc;
+    } catch (e) {
+      console.warn("Modular Firestore setup notice:", e);
+    }
+  </script>
 </head>
 
 <body class="bg-slate-100 font-sans antialiased text-slate-800">
@@ -51,7 +80,7 @@
 
       <!-- First-time View: Continue with Google -->
       <div id="firstTimeGoogleView" class="space-y-4">
-        <button type="button" onclick="pvOpenGoogleChooser()" class="w-full py-3 px-4 bg-white hover:bg-slate-50 text-slate-800 font-bold rounded-lg border border-slate-300 shadow-sm transition flex items-center justify-center gap-3 text-sm">
+        <button type="button" onclick="pvTriggerRealGoogleSignIn()" class="w-full py-3 px-4 bg-white hover:bg-slate-50 text-slate-800 font-bold rounded-lg border border-slate-300 shadow-sm transition flex items-center justify-center gap-3 text-sm">
           <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
@@ -81,8 +110,8 @@
           </button>
         </form>
         <div class="pt-2 text-center">
-          <button type="button" onclick="pvOpenGoogleChooser()" class="text-xs font-bold text-orange-600 hover:underline">
-            Switch Google Account
+          <button type="button" onclick="pvTriggerRealGoogleSignIn()" class="text-xs font-bold text-orange-600 hover:underline">
+            Switch / Choose Google Account
           </button>
         </div>
       </div>
@@ -134,26 +163,15 @@
           <li>Name and profile picture</li>
           <li>Primary Google Account email address</li>
           <li>Cloud database linked to your account</li>
-          <li>Real-time data synchronization across all your laptops</li>
+          <li>Real-time data synchronization across all your laptops and phones</li>
         </ul>
       </div>
 
       <!-- Account Selection Options -->
-      <div class="space-y-2 mb-4">
-        <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">Choose an account to continue</label>
-        
-        <!-- Detected Account -->
-        <button type="button" onclick="pvSelectGoogleAccount('wajihaadil2@gmail.com', 'Wajiha Adil', 'WA')" class="w-full text-left p-3 border border-slate-200 hover:border-orange-500 hover:bg-orange-50/40 rounded-xl transition flex items-center justify-between group">
-          <div class="flex items-center space-x-3">
-            <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-orange-500 to-amber-500 text-white font-bold text-xs flex items-center justify-center shadow">
-              WA
-            </div>
-            <div>
-              <div class="font-bold text-xs text-slate-900 group-hover:text-orange-600">Wajiha Adil</div>
-              <div class="text-[11px] text-slate-500">wajihaadil2@gmail.com</div>
-            </div>
-          </div>
-          <i class="fa-solid fa-chevron-right text-xs text-slate-400 group-hover:text-orange-500"></i>
+      <div class="space-y-3 mb-4">
+        <button type="button" onclick="pvTriggerRealGoogleSignIn()" class="w-full py-3 px-4 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow transition flex items-center justify-center gap-2.5 text-xs">
+          <i class="fa-brands fa-google text-sm"></i>
+          <span>Sign In with Google Account</span>
         </button>
 
         <!-- Use another Google account toggle -->
@@ -162,7 +180,7 @@
             <div class="w-9 h-9 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center font-bold text-sm">
               <i class="fa-solid fa-user-plus text-xs"></i>
             </div>
-            <span>Use another Google account</span>
+            <span>Use manual Google email entry</span>
           </div>
           <i id="pvCustomAccountChevron" class="fa-solid fa-chevron-down text-xs text-slate-400"></i>
         </button>
@@ -1658,7 +1676,7 @@ Surbex-Z - 1 daily (15 days)" class="w-full px-3 py-2 border rounded-lg focus:ri
         <!-- Special Instructions & Follow-up -->
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block font-bold uppercase text-slate-600 mb-1">Advice / Instructions (??????)</label>
+            <label class="block font-bold uppercase text-slate-600 mb-1">Advice / Instructions (ہدایات)</label>
             <input type="text" id="patInstructions" placeholder="Drink plenty of water, avoid spicy food..." class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500">
           </div>
           <div>
@@ -2487,6 +2505,12 @@ Surbex-Z - 1 daily (15 days)" class="w-full px-3 py-2 border rounded-lg focus:ri
       if (acc) {
         localStorage.setItem('posvibeGoogleAccount', JSON.stringify(acc));
         const pvAcc = pvGetAccounts();
+        const emailKey = acc.email.toLowerCase();
+        pvAcc[emailKey] = {
+          email: acc.email,
+          password: acc.password || 'password123',
+          role: 'Admin'
+        };
         pvAcc.admin = { email: acc.email, password: acc.password || 'password123' };
         localStorage.setItem('posvibeAccounts', JSON.stringify(pvAcc));
       } else {
@@ -2757,8 +2781,8 @@ Surbex-Z - 1 daily (15 days)" class="w-full px-3 py-2 border rounded-lg focus:ri
         if (returningView) returningView.classList.remove('hidden');
         const emailInput = document.getElementById('loginEmail');
         const passInput = document.getElementById('loginPassword');
-        if (emailInput) emailInput.value = savedGoogle.email;
-        if (passInput) passInput.value = savedGoogle.password || 'password123';
+        if (emailInput) emailInput.value = '';
+        if (passInput) passInput.value = '';
         
         // Background check cloud data on load
         fetch('/api/sync/data?email=' + encodeURIComponent(savedGoogle.email))
@@ -2780,37 +2804,89 @@ Surbex-Z - 1 daily (15 days)" class="w-full px-3 py-2 border rounded-lg focus:ri
 
     async function handleLogin(e) {
       if (e) e.preventDefault();
-      const email = document.getElementById('loginEmail').value.trim();
-      const pass = document.getElementById('loginPassword').value.trim();
+      const emailInput = document.getElementById('loginEmail');
+      const passInput = document.getElementById('loginPassword');
+      const email = emailInput ? emailInput.value.trim().toLowerCase() : '';
+      const pass = passInput ? passInput.value.trim() : '';
       const errEl = document.getElementById('loginError');
+
+      if (errEl) {
+        errEl.classList.add('hidden');
+        errEl.innerText = 'Invalid email address or password. Please check your credentials.';
+      }
+
+      if (!email || !email.includes('@') || !pass) {
+        if (errEl) {
+          errEl.innerText = 'Please enter a valid email address and password.';
+          errEl.classList.remove('hidden');
+        }
+        return;
+      }
+
       const pvAcc = pvGetAccounts();
       const savedGoogle = getSavedGoogleAccount();
 
       let authenticated = false;
+      let userRole = 'Admin';
 
-      if (savedGoogle && email.toLowerCase() === savedGoogle.email.toLowerCase()) {
-        currentUserRole = 'Admin';
+      const storedAcc = pvAcc[email] || (pvAcc.admin && pvAcc.admin.email && pvAcc.admin.email.toLowerCase() === email ? pvAcc.admin : null);
+      const isGoogleAcc = savedGoogle && savedGoogle.email && savedGoogle.email.toLowerCase() === email;
+
+      if (storedAcc || isGoogleAcc) {
+        const storedPass = (storedAcc && storedAcc.password) || (isGoogleAcc && savedGoogle.password);
+        
+        // Check exact match
+        if (storedPass && pass === storedPass) {
+          authenticated = true;
+          userRole = (storedAcc && storedAcc.role) || 'Admin';
+        } else if (isGoogleAcc && (storedPass === 'password123' || !storedPass) && pass) {
+          // If account was created via Google Sign In (default 'password123'), update to user's typed password
+          savedGoogle.password = pass;
+          setSavedGoogleAccount(savedGoogle);
+          pvAcc[email] = { email: email, password: pass, role: 'Admin' };
+          pvSetAccounts(pvAcc);
+          authenticated = true;
+          userRole = 'Admin';
+        } else {
+          // Incorrect password entered
+          authenticated = false;
+        }
+      } else {
+        // First manual login for this email address - register account with entered password
+        pvAcc[email] = { email: email, password: pass, role: 'Admin' };
+        pvAcc.admin = { email: email, password: pass };
+        pvSetAccounts(pvAcc);
+
+        const name = email.split('@')[0];
+        const initials = name.substring(0, 2).toUpperCase();
+        setSavedGoogleAccount({
+          email: email,
+          name: name,
+          avatar: initials,
+          password: pass
+        });
+
         authenticated = true;
-      } else if (pvAcc.admin && email === pvAcc.admin.email && pass === pvAcc.admin.password) {
-        currentUserRole = 'Admin';
-        authenticated = true;
-      } else if (pvAcc.employee && email === pvAcc.employee.email && pass === pvAcc.employee.password) {
-        currentUserRole = 'Employee';
-        authenticated = true;
-      } else if (email === 'admin@gmail.com' || email.includes('@')) {
-        currentUserRole = 'Admin';
-        authenticated = true;
+        userRole = 'Admin';
       }
 
       if (!authenticated) {
-        if (errEl) errEl.classList.remove('hidden');
+        if (errEl) {
+          errEl.innerText = 'Incorrect password for ' + email + '. Access denied.';
+          errEl.classList.remove('hidden');
+        }
         return;
       }
 
+      currentUserRole = userRole;
       sessionStorage.setItem('bizManagerRole', currentUserRole);
       document.getElementById('loginScreen').classList.add('hidden');
       document.getElementById('appContainer').classList.remove('hidden');
       updateRoleUI();
+
+      // Clear input fields so user types fresh on next login
+      if (emailInput) emailInput.value = '';
+      if (passInput) passInput.value = '';
 
       // Pull latest cloud sync to get any updates from other laptops or phones
       try {
@@ -2825,8 +2901,11 @@ Surbex-Z - 1 daily (15 days)" class="w-full px-3 py-2 border rounded-lg focus:ri
         }
       } catch (err) {}
 
-      // Connect silent real-time sync stream
+      // Connect silent real-time sync streams (SSE & Firestore)
       connectRealtimeSync(email);
+      if (typeof setupFirestoreSyncListener === 'function') {
+        setupFirestoreSyncListener({ email: email });
+      }
 
       renderAllData();
       // Delay chart rendering so layout has computed non-zero dimensions
@@ -2841,11 +2920,10 @@ Surbex-Z - 1 daily (15 days)" class="w-full px-3 py-2 border rounded-lg focus:ri
       document.getElementById('loginScreen').classList.remove('hidden');
       document.getElementById('loginError').classList.add('hidden');
       
-      const savedGoogle = getSavedGoogleAccount();
-      if (savedGoogle && savedGoogle.email) {
-        document.getElementById('loginEmail').value = savedGoogle.email;
-        document.getElementById('loginPassword').value = savedGoogle.password || 'password123';
-      }
+      const emailInput = document.getElementById('loginEmail');
+      const passInput = document.getElementById('loginPassword');
+      if (emailInput) emailInput.value = '';
+      if (passInput) passInput.value = '';
     }
 
     function updateRoleUI() {
@@ -2948,6 +3026,7 @@ Surbex-Z - 1 daily (15 days)" class="w-full px-3 py-2 border rounded-lg focus:ri
     function saveData() {
       localStorage.setItem('bizManagerData', JSON.stringify(userData));
       syncPushToServer();
+      if (typeof syncPushToFirestore === 'function') syncPushToFirestore();
     }
 
     function logActivity(desc) {
@@ -5048,7 +5127,7 @@ Surbex-Z - 1 daily (15 days)" class="w-full px-3 py-2 border rounded-lg focus:ri
       if (!p) return;
       const s = getSettings();
       const hospitalName = s.company || 'Taj Hospital';
-      const hospitalAddress = s.address || '??? ???? ???? 127 ???? ???? ????????';
+      const hospitalAddress = s.address || 'نزد بلال مسجد 127 مدنی پارک جڑانوالہ';
       const hospitalPhone = s.phone || 'Ph: 041-4317122 - Mob: 0300-8047122';
       const doctorName = p.doctor || 'Dr. A.R. Malik (Urf Umair Malik)';
       const mrNumber = p.mrNo || ('MR-' + Math.floor(1000 + Math.random() * 9000));
@@ -5502,15 +5581,15 @@ Surbex-Z - 1 daily (15 days)" class="w-full px-3 py-2 border rounded-lg focus:ri
 
         <!-- URDU SPECIALTIES RIGHT -->
         <div class="urdu-badges urdu-font">
-          <div class="urdu-badge">???? ??? ???? ?? ???????? ?? ???? ?????</div>
-          <div class="urdu-badge secondary">???????? ?????? ?? ?????????? ?????????? & ???? ???????????</div>
-          <div class="urdu-badge secondary">???????? ???? ????? ?????? ?? ????????</div>
+          <div class="urdu-badge">بچوں اور بڑوں کی بیماریوں کے ماہر فزیشن</div>
+          <div class="urdu-badge secondary">ایڈوانسڈ ٹریننگ ان ڈائیگناسٹک الٹراساؤنڈ & ایکو کارڈیوگرافی</div>
+          <div class="urdu-badge secondary">ایڈوانسڈ لائف سپورٹ ٹریننگ ان آبسیٹرکس</div>
         </div>
       </div>
 
       <!-- PINK BANNER -->
       <div class="specialty-ribbon urdu-font">
-        ???? ??? ?????? ????? ???? ????? ??? ????? ? ????? ?? ???????? ?? ?????
+        ہائی بلڈ پریشر، شوگر، جگر، معدہ، اور پٹھوں و جوڑوں کی بیماریوں کے معالج
       </div>
     </div>
 
@@ -5585,7 +5664,7 @@ Surbex-Z - 1 daily (15 days)" class="w-full px-3 py-2 border rounded-lg focus:ri
 
       <!-- RIGHT COLUMN: Rx & Prescriptions -->
       <div class="right-col">
-        <div class="rx-symbol">?</div>
+        <div class="rx-symbol">℞</div>
 
         <div class="medicines-list">
           ${meds.length ? meds.map((m, idx) => `
@@ -5602,7 +5681,7 @@ Surbex-Z - 1 daily (15 days)" class="w-full px-3 py-2 border rounded-lg focus:ri
 
         ${p.instructions ? `
         <div class="instructions-box">
-          <div class="instructions-title">Instructions &amp; Advice (??????)</div>
+          <div class="instructions-title">Instructions &amp; Advice (ہدایات)</div>
           <div class="instructions-text">${escapeHtml(p.instructions)}</div>
         </div>` : ''}
 
@@ -5618,7 +5697,7 @@ Surbex-Z - 1 daily (15 days)" class="w-full px-3 py-2 border rounded-lg focus:ri
     <!-- BOTTOM FOOTER -->
     <div class="pad-footer">
       <div class="footer-urdu urdu-font">
-        <div class="hospital-title">${escapeHtml(hospitalName)} (?????? 29621-R) ${escapeHtml(hospitalAddress)}</div>
+        <div class="hospital-title">${escapeHtml(hospitalName)} (رجسٹرڈ 29621-R) ${escapeHtml(hospitalAddress)}</div>
         <div class="contact-line">${escapeHtml(hospitalPhone)}</div>
       </div>
       <div class="footer-brand-box">
@@ -8012,7 +8091,107 @@ Surbex-Z - 1 daily (15 days)" class="w-full px-3 py-2 border rounded-lg focus:ri
 
 
   <script>
-    /* ===== Posvibe Google Authentication & Account Management ===== */
+    /* ===== Posvibe Firebase & Google Authentication & Cloud Sync ===== */
+    const firebaseConfig = {
+      projectId: "gen-lang-client-0558175369",
+      appId: "1:287931153580:web:6be993f6d705af5e737309",
+      apiKey: "AIzaSyC97okNNFoYXoXzpEAlFNahzwXQbrJlIIY",
+      authDomain: "gen-lang-client-0558175369.firebaseapp.com",
+      firestoreDatabaseId: "ai-studio-posvibe-86f9096f-8c62-46a6-9590-41267a09a8e7",
+      storageBucket: "gen-lang-client-0558175369.firebasestorage.app",
+      messagingSenderId: "287931153580"
+    };
+
+    if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+      try {
+        firebase.initializeApp(firebaseConfig);
+      } catch (e) {
+        console.error('Firebase init error:', e);
+      }
+    }
+
+    let firestoreUnsubscribe = null;
+
+    function setupFirestoreSyncListener(acc) {
+      if (!acc || !acc.email) return;
+      const docKey = acc.uid || acc.email.toLowerCase().replace(/[^a-z0-9]/g, '_');
+      if (firestoreUnsubscribe) {
+        try { firestoreUnsubscribe(); } catch (e) {}
+      }
+      if (window.pvFirestore && window.pvDoc && window.pvOnSnapshot) {
+        try {
+          const docRef = window.pvDoc(window.pvFirestore, 'posvibe_users', docKey);
+          firestoreUnsubscribe = window.pvOnSnapshot(docRef, (docSnap) => {
+            if (docSnap && typeof docSnap.exists === 'function' && docSnap.exists()) {
+              const cloudDoc = docSnap.data();
+              if (cloudDoc && cloudDoc.data && cloudDoc.deviceId !== myDeviceId) {
+                const changed = sanitizeAndMergeUserData(cloudDoc.data);
+                if (changed) {
+                  localStorage.setItem('bizManagerData', JSON.stringify(userData));
+                  renderAllData();
+                  setTimeout(() => updateAllCharts(), 60);
+                  updateSyncBadgeUI(true);
+                  showToast('Real-time sync: Data updated from connected device');
+                }
+              }
+            }
+          }, err => {
+            console.warn('Firestore onSnapshot listener notice:', err);
+          });
+        } catch (err) {
+          console.warn('Firestore setup notice:', err);
+        }
+      }
+    }
+
+    function syncPushToFirestore() {
+      const acc = getSavedGoogleAccount();
+      if (!acc || !acc.email) return;
+      const docKey = acc.uid || acc.email.toLowerCase().replace(/[^a-z0-9]/g, '_');
+      if (window.pvFirestore && window.pvDoc && window.pvSetDoc) {
+        try {
+          const docRef = window.pvDoc(window.pvFirestore, 'posvibe_users', docKey);
+          window.pvSetDoc(docRef, {
+            data: userData,
+            lastUpdated: Date.now(),
+            profile: acc,
+            deviceId: myDeviceId
+          }, { merge: true }).catch(err => console.warn('Firestore sync push notice:', err));
+        } catch (e) {}
+      }
+    }
+
+    async function pvTriggerRealGoogleSignIn() {
+      if (typeof firebase === 'undefined' || !firebase.auth) {
+        pvOpenGoogleChooser();
+        return;
+      }
+      try {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        provider.addScope('email');
+        provider.addScope('profile');
+        provider.setCustomParameters({ prompt: 'select_account' });
+
+        const result = await firebase.auth().signInWithPopup(provider);
+        const user = result.user;
+        if (user) {
+          completeGoogleSignIn({
+            uid: user.uid,
+            email: user.email,
+            name: user.displayName || user.email.split('@')[0],
+            avatar: user.photoURL || user.email.substring(0, 2).toUpperCase(),
+            password: 'password123'
+          });
+        }
+      } catch (err) {
+        console.error('Google Sign-In Error:', err);
+        if (err && err.code !== 'auth/popup-closed-by-user') {
+          showToast('Google Sign-In: ' + (err.message || 'Opening account chooser...'), false);
+          pvOpenGoogleChooser();
+        }
+      }
+    }
+
     function pvGetAccounts() {
       try { return JSON.parse(localStorage.getItem('posvibeAccounts')) || {}; } catch (e) { return {}; }
     }
@@ -8075,6 +8254,7 @@ Surbex-Z - 1 daily (15 days)" class="w-full px-3 py-2 border rounded-lg focus:ri
 
     async function completeGoogleSignIn(profile) {
       setSavedGoogleAccount(profile);
+      setupFirestoreSyncListener(profile);
 
       // Register profile on server and retrieve latest cloud database
       try {
@@ -8095,9 +8275,7 @@ Surbex-Z - 1 daily (15 days)" class="w-full px-3 py-2 border rounded-lg focus:ri
         }
       } catch (e) {}
 
-      pvCloseGoogleChooser();
-
-      // Update login form view for pre-filling
+      // Update login form view
       const firstTimeView = document.getElementById('firstTimeGoogleView');
       const returningView = document.getElementById('returningUserView');
       if (firstTimeView) firstTimeView.classList.add('hidden');
@@ -8105,11 +8283,18 @@ Surbex-Z - 1 daily (15 days)" class="w-full px-3 py-2 border rounded-lg focus:ri
 
       const emailInput = document.getElementById('loginEmail');
       const passInput = document.getElementById('loginPassword');
-      if (emailInput) emailInput.value = profile.email;
-      if (passInput) passInput.value = profile.password || 'password123';
+      if (emailInput) emailInput.value = '';
+      if (passInput) passInput.value = '';
 
-      // Automatically sign in to Dashboard with synced data
-      handleLogin();
+      currentUserRole = 'Admin';
+      sessionStorage.setItem('bizManagerRole', currentUserRole);
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('appContainer').classList.remove('hidden');
+      updateRoleUI();
+
+      connectRealtimeSync(profile.email);
+      renderAllData();
+      setTimeout(() => updateAllCharts(), 80);
     }
   </script>
 
