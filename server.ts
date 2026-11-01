@@ -104,6 +104,26 @@ app.get('/api/health', (_req: Request, res: Response) => {
   });
 });
 
+// Dynamic Firebase Config endpoint to prevent hardcoding API keys in frontend html source
+app.get('/api/firebase-config', (_req: Request, res: Response) => {
+  try {
+    const configPath = path.resolve(process.cwd(), 'firebase-applet-config.json');
+    if (fs.existsSync(configPath)) {
+      const configData = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+      res.json(configData);
+      return;
+    }
+  } catch (err) {
+    console.error('Error serving firebase config:', err);
+  }
+  res.json({
+    projectId: 'gen-lang-client-0558175369',
+    appId: '1:287931153580:web:6be993f6d705af5e737309',
+    authDomain: 'gen-lang-client-0558175369.firebaseapp.com',
+    firestoreDatabaseId: 'ai-studio-posvibe-86f9096f-8c62-46a6-9590-41267a09a8e7',
+  });
+});
+
 // Real-time Server-Sent Events stream
 app.get('/api/sync/stream', (req: Request, res: Response) => {
   const emailParam = req.query.email as string;
