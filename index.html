@@ -45,26 +45,39 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const firebaseConfig = {
-      projectId: "gen-lang-client-0558175369",
-      appId: "1:287931153580:web:6be993f6d705af5e737309",
-      apiKey: "AIzaSyC97okNNFoYXoXzpEAlFNahzwXQbrJlIIY",
-      authDomain: "gen-lang-client-0558175369.firebaseapp.com",
-      firestoreDatabaseId: "ai-studio-posvibe-86f9096f-8c62-46a6-9590-41267a09a8e7",
-      storageBucket: "gen-lang-client-0558175369.firebasestorage.app",
-      messagingSenderId: "287931153580"
-    };
+    async function initFirebaseClient() {
+      try {
+        let firebaseConfig = {
+          projectId: "gen-lang-client-0558175369",
+          appId: "1:287931153580:web:6be993f6d705af5e737309",
+          authDomain: "gen-lang-client-0558175369.firebaseapp.com",
+          firestoreDatabaseId: "ai-studio-posvibe-86f9096f-8c62-46a6-9590-41267a09a8e7",
+          storageBucket: "gen-lang-client-0558175369.firebasestorage.app",
+          messagingSenderId: "287931153580"
+        };
+        try {
+          const cfgRes = await fetch('/api/firebase-config');
+          if (cfgRes.ok) {
+            const remoteConfig = await cfgRes.json();
+            if (remoteConfig && remoteConfig.apiKey) {
+              firebaseConfig = remoteConfig;
+            }
+          }
+        } catch (fetchErr) {
+          console.warn("Could not fetch remote firebase config, fallback used:", fetchErr);
+        }
 
-    try {
-      const app = initializeApp(firebaseConfig, "posvibeModularApp");
-      const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
-      window.pvFirestore = db;
-      window.pvDoc = doc;
-      window.pvOnSnapshot = onSnapshot;
-      window.pvSetDoc = setDoc;
-    } catch (e) {
-      console.warn("Modular Firestore setup notice:", e);
+        const app = initializeApp(firebaseConfig, "posvibeModularApp");
+        const db = getFirestore(app, firebaseConfig.firestoreDatabaseId || "ai-studio-posvibe-86f9096f-8c62-46a6-9590-41267a09a8e7");
+        window.pvFirestore = db;
+        window.pvDoc = doc;
+        window.pvOnSnapshot = onSnapshot;
+        window.pvSetDoc = setDoc;
+      } catch (e) {
+        console.warn("Modular Firestore setup notice:", e);
+      }
     }
+    initFirebaseClient();
   </script>
 </head>
 
