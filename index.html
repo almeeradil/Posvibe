@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -7013,10 +7014,144 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
       box.innerHTML = html;
     }
 
+    function toggleSideMenu(key) {
+      var m = document.getElementById('menu-' + key);
+      var c = document.getElementById('caret-' + key);
+      if (!m) return;
+      m.classList.toggle('hidden');
+      if (c) {
+        c.classList.toggle('fa-chevron-right');
+        c.classList.toggle('fa-chevron-down');
+      }
+    }
+
+    // REAL-TIME SUB-SECOND SYNC & SSE STREAMING
+    async function syncFetchData() {
+      try {
+        const res = await fetch('/api/data');
+        if (res.ok) {
+          const serverData = await res.json();
+          if (serverData && typeof serverData === 'object') {
+            userData = serverData;
+            localStorage.setItem('bizManagerData', JSON.stringify(userData));
+            if (typeof renderAllData === 'function') renderAllData();
+          }
+        }
+      } catch (err) {
+        console.error('Fetch data error:', err);
+      }
+    }
+
+    let sseSource = null;
+    function setupSseStream() {
+      if (sseSource) return;
+      try {
+        sseSource = new EventSource('/api/stream');
+        sseSource.onmessage = function (event) {
+          try {
+            const msg = JSON.parse(event.data);
+            if (msg.type === 'sync' && msg.data) {
+              userData = msg.data;
+              localStorage.setItem('bizManagerData', JSON.stringify(userData));
+              if (typeof renderAllData === 'function') renderAllData();
+            }
+          } catch (e) {
+            console.error('SSE parse error:', e);
+          }
+        };
+      } catch (e) {
+        console.error('SSE error:', e);
+      }
+    }
+
+    const _origSaveData = window.saveData;
+    window.saveData = function() {
+      localStorage.setItem('bizManagerData', JSON.stringify(userData));
+      fetch('/api/data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData)
+      }).catch(err => console.error('Data sync post error:', err));
+    };
+
+    // 5 SPECIFIC ALLOWED ACCOUNTS LOGIN LOGIC
+    async function handleLogin(e) {
+      if (e) e.preventDefault();
+      const emailEl = document.getElementById('loginEmail');
+      const passEl = document.getElementById('loginPassword');
+      const errEl = document.getElementById('loginError');
+
+      const email = (emailEl ? emailEl.value : '').trim().toLowerCase();
+      const pass = (passEl ? passEl.value : '').trim();
+
+      if (errEl) errEl.classList.add('hidden');
+
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password: pass })
+        });
+        const result = await res.json();
+        if (result.success) {
+          currentUserRole = result.user.role;
+          sessionStorage.setItem('bizManagerRole', currentUserRole);
+          document.getElementById('loginScreen').classList.add('hidden');
+          document.getElementById('loginScreen').classList.remove('flex');
+          document.getElementById('appContainer').classList.remove('hidden');
+          if (typeof updateRoleUI === 'function') updateRoleUI();
+          await syncFetchData();
+          setupSseStream();
+          return;
+        }
+      } catch (err) {
+        console.log('Login fetch error:', err);
+      }
+
+      // Fallback allowed accounts check
+      const ALLOWED_ACCOUNTS = [
+        { emails: ['admin@gmail.com'], pass: 'aefdef', role: 'Admin' },
+        { emails: ['employee@gmail.com'], pass: 'zefzef', role: 'Employee' },
+        { emails: ['admin@gmail.com', 'employee@gmail.com'], pass: 'asdfasdf', role: 'Employee/Admin' },
+        { emails: ['admin@gmail.com', 'employee@gmail.com'], pass: 'adiladil', role: 'Admin/Employee' },
+        { emails: ['admin@gmail.com', 'employee@gmail.com'], pass: '123123', role: 'Admin/Employee' }
+      ];
+
+      const matched = ALLOWED_ACCOUNTS.find(
+        (acc) => acc.emails.includes(email) && acc.pass === pass
+      );
+
+      if (matched) {
+        currentUserRole = matched.role;
+        sessionStorage.setItem('bizManagerRole', currentUserRole);
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('loginScreen').classList.remove('flex');
+        document.getElementById('appContainer').classList.remove('hidden');
+        if (typeof updateRoleUI === 'function') updateRoleUI();
+        syncFetchData();
+        setupSseStream();
+      } else {
+        if (errEl) {
+          errEl.innerText = 'Invalid email or password. Please try again.';
+          errEl.classList.remove('hidden');
+        }
+      }
+    }
+
+    function logout() {
+      sessionStorage.removeItem('bizManagerRole');
+      document.getElementById('appContainer').classList.add('hidden');
+      document.getElementById('loginScreen').classList.remove('hidden');
+      document.getElementById('loginScreen').classList.add('flex');
+      if (document.getElementById('loginEmail')) document.getElementById('loginEmail').value = '';
+      if (document.getElementById('loginPassword')) document.getElementById('loginPassword').value = '';
+      if (document.getElementById('loginError')) document.getElementById('loginError').classList.add('hidden');
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
-      var acc = pvGetAccounts();
-      if (!acc.admin && !acc.employee) { pvShow('pvSetupScreen'); }
-      else { pvShow('loginScreen'); pvRefreshLogin(); }
+      pvShow('loginScreen');
+      syncFetchData();
+      setupSseStream();
     });
   </script>
 
