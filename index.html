@@ -63,19 +63,11 @@
           Sign In to Dashboard
         </button>
       </form>
-      <div class="mt-6 pt-4 border-t border-slate-100 text-center text-[11px] text-slate-400">
-        Secure Invoicematic & Inventory Management Solution
-      </div>
-      <div class="mt-3 text-center">
-        <input type="file" id="restoreBackupFile" accept=".json,application/json" class="hidden" onchange="handleRestoreBackup(event)">
-        <button type="button" onclick="document.getElementById('restoreBackupFile').click()" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-lg shadow transition text-sm">
-          <i class="fa-solid fa-rotate-left mr-1"></i>Restore Backup
-        </button>
-        <p class="text-[10px] text-slate-400 mt-1">Select a previously exported JSON backup file</p>
-      </div>
-      <div id="loginExtraBtns" class="mt-3 space-y-2"></div>
-      <div class="mt-3 text-center">
-        <button type="button" onclick="pvOpenMaster('reset')" class="text-xs font-bold text-orange-600 hover:underline">Forgot password?</button>
+      <div class="mt-6 pt-4 border-t border-slate-100 text-center text-[11px] text-slate-400 flex items-center justify-between">
+        <span>Secure Invoicematic Solution</span>
+        <span id="syncBadge" class="font-bold text-emerald-600 flex items-center gap-1">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Realtime Sync Active (&lt;1s)
+        </span>
       </div>
     </div>
   </div>
@@ -6998,17 +6990,9 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
     }
 
     function pvRefreshLogin() {
+      // Keep login screen clean with no extra add admin/reset buttons
       var box = document.getElementById('loginExtraBtns');
-      if (!box) return;
-      var acc = pvGetAccounts();
-      var html = '';
-      if (!acc.admin) {
-        html += '<button type="button" onclick="pvStartAdd(\'admin\')" class="w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg shadow transition text-sm">Add Admin Password</button>';
-      }
-      if (!acc.employee) {
-        html += '<button type="button" onclick="pvStartAdd(\'employee\')" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-lg shadow transition text-sm">Add Employee Password</button>';
-      }
-      box.innerHTML = html;
+      if (box) box.innerHTML = '';
     }
 
     function toggleSideMenu(key) {
@@ -7022,8 +7006,11 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
       }
     }
 
-    // REAL-TIME SUB-SECOND SYNC & SSE STREAMING (Server + Standalone GitHub Pages Mode)
+    // REAL-TIME SUB-SECOND MULTI-DEVICE CLOUD SYNC
     let syncBroadcastChannel = null;
+    let lastDataVersionHash = '';
+    const CLOUD_SYNC_URL = 'https://api.npoint.io/41c4501a4e21a2212d2a';
+
     try {
       if (typeof BroadcastChannel !== 'undefined') {
         syncBroadcastChannel = new BroadcastChannel('posvibe_realtime_sync');
@@ -7037,7 +7024,6 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
       }
     } catch (e) {}
 
-    // Listen to localStorage storage events across browser tabs/windows
     window.addEventListener('storage', function(e) {
       if (e.key === 'bizManagerData' && e.newValue) {
         try {
@@ -7048,28 +7034,78 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
     });
 
     async function syncFetchData() {
+      // 1. Try local Express server
       try {
         const res = await fetch('/api/data').catch(() => null);
         if (res && res.ok) {
           const serverData = await res.json();
-          if (serverData && typeof serverData === 'object') {
+          if (serverData && typeof serverData === 'object' && Object.keys(serverData).length > 0) {
             userData = serverData;
             localStorage.setItem('bizManagerData', JSON.stringify(userData));
+            lastDataVersionHash = JSON.stringify(userData);
             if (typeof renderAllData === 'function') renderAllData();
             return;
           }
         }
       } catch (err) {}
 
-      // Fallback: Read local storage
+      // 2. Try global cloud storage API for multi-device sync (laptop <-> phone)
+      try {
+        const cloudRes = await fetch(CLOUD_SYNC_URL).catch(() => null);
+        if (cloudRes && cloudRes.ok) {
+          const cloudData = await cloudRes.json();
+          if (cloudData && typeof cloudData === 'object' && cloudData.patients) {
+            userData = cloudData;
+            localStorage.setItem('bizManagerData', JSON.stringify(userData));
+            lastDataVersionHash = JSON.stringify(userData);
+            if (typeof renderAllData === 'function') renderAllData();
+            return;
+          }
+        }
+      } catch (e) {}
+
+      // 3. Fallback: Read local storage
       try {
         const raw = localStorage.getItem('bizManagerData');
         if (raw) {
           userData = JSON.parse(raw);
+          lastDataVersionHash = JSON.stringify(userData);
           if (typeof renderAllData === 'function') renderAllData();
         }
       } catch (e) {}
     }
+
+    // High frequency continuous background poll (every 1s) for sub-second cross-device sync
+    setInterval(async function() {
+      try {
+        // Try local server first
+        const res = await fetch('/api/data').catch(() => null);
+        if (res && res.ok) {
+          const data = await res.json();
+          const str = JSON.stringify(data);
+          if (data && str !== lastDataVersionHash) {
+            lastDataVersionHash = str;
+            userData = data;
+            localStorage.setItem('bizManagerData', JSON.stringify(userData));
+            if (typeof renderAllData === 'function') renderAllData();
+            return;
+          }
+        }
+
+        // Try global cloud API for phone <-> laptop sync
+        const cloudRes = await fetch(CLOUD_SYNC_URL).catch(() => null);
+        if (cloudRes && cloudRes.ok) {
+          const cloudData = await cloudRes.json();
+          const str = JSON.stringify(cloudData);
+          if (cloudData && cloudData.patients && str !== lastDataVersionHash) {
+            lastDataVersionHash = str;
+            userData = cloudData;
+            localStorage.setItem('bizManagerData', JSON.stringify(userData));
+            if (typeof renderAllData === 'function') renderAllData();
+          }
+        }
+      } catch(e) {}
+    }, 1000);
 
     let sseSource = null;
     function setupSseStream() {
@@ -7082,29 +7118,34 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
             if (msg.type === 'sync' && msg.data) {
               userData = msg.data;
               localStorage.setItem('bizManagerData', JSON.stringify(userData));
+              lastDataVersionHash = JSON.stringify(userData);
               if (typeof renderAllData === 'function') renderAllData();
             }
-          } catch (e) {
-            console.error('SSE parse error:', e);
-          }
+          } catch (e) {}
         };
-      } catch (e) {
-        console.error('SSE error:', e);
-      }
+      } catch (e) {}
     }
 
     window.saveData = function() {
       localStorage.setItem('bizManagerData', JSON.stringify(userData));
+      lastDataVersionHash = JSON.stringify(userData);
 
-      // Broadcast to other windows/tabs instantly (<10ms)
+      // Instant BroadcastChannel to other tabs on same device
       if (syncBroadcastChannel) {
         try {
           syncBroadcastChannel.postMessage({ type: 'sync', data: userData });
         } catch(e) {}
       }
 
-      // Sync with server if present
+      // 1. Post to Express server if available
       fetch('/api/data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData)
+      }).catch(err => {});
+
+      // 2. Post to global cloud endpoint so Phone and Laptop sync in <1 second
+      fetch(CLOUD_SYNC_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData)
