@@ -1,6 +1,3 @@
-
-
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -7025,21 +7022,53 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
       }
     }
 
-    // REAL-TIME SUB-SECOND SYNC & SSE STREAMING
+    // REAL-TIME SUB-SECOND SYNC & SSE STREAMING (Server + Standalone GitHub Pages Mode)
+    let syncBroadcastChannel = null;
+    try {
+      if (typeof BroadcastChannel !== 'undefined') {
+        syncBroadcastChannel = new BroadcastChannel('posvibe_realtime_sync');
+        syncBroadcastChannel.onmessage = function (event) {
+          if (event.data && event.data.type === 'sync' && event.data.data) {
+            userData = event.data.data;
+            localStorage.setItem('bizManagerData', JSON.stringify(userData));
+            if (typeof renderAllData === 'function') renderAllData();
+          }
+        };
+      }
+    } catch (e) {}
+
+    // Listen to localStorage storage events across browser tabs/windows
+    window.addEventListener('storage', function(e) {
+      if (e.key === 'bizManagerData' && e.newValue) {
+        try {
+          userData = JSON.parse(e.newValue);
+          if (typeof renderAllData === 'function') renderAllData();
+        } catch(err) {}
+      }
+    });
+
     async function syncFetchData() {
       try {
-        const res = await fetch('/api/data');
-        if (res.ok) {
+        const res = await fetch('/api/data').catch(() => null);
+        if (res && res.ok) {
           const serverData = await res.json();
           if (serverData && typeof serverData === 'object') {
             userData = serverData;
             localStorage.setItem('bizManagerData', JSON.stringify(userData));
             if (typeof renderAllData === 'function') renderAllData();
+            return;
           }
         }
-      } catch (err) {
-        console.error('Fetch data error:', err);
-      }
+      } catch (err) {}
+
+      // Fallback: Read local storage
+      try {
+        const raw = localStorage.getItem('bizManagerData');
+        if (raw) {
+          userData = JSON.parse(raw);
+          if (typeof renderAllData === 'function') renderAllData();
+        }
+      } catch (e) {}
     }
 
     let sseSource = null;
@@ -7064,14 +7093,22 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
       }
     }
 
-    const _origSaveData = window.saveData;
     window.saveData = function() {
       localStorage.setItem('bizManagerData', JSON.stringify(userData));
+
+      // Broadcast to other windows/tabs instantly (<10ms)
+      if (syncBroadcastChannel) {
+        try {
+          syncBroadcastChannel.postMessage({ type: 'sync', data: userData });
+        } catch(e) {}
+      }
+
+      // Sync with server if present
       fetch('/api/data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData)
-      }).catch(err => console.error('Data sync post error:', err));
+      }).catch(err => {});
     };
 
     // 5 SPECIFIC ALLOWED ACCOUNTS LOGIN LOGIC
