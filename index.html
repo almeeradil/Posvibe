@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -63,11 +65,19 @@
           Sign In to Dashboard
         </button>
       </form>
-      <div class="mt-6 pt-4 border-t border-slate-100 text-center text-[11px] text-slate-400 flex items-center justify-between">
-        <span>Secure Invoicematic Solution</span>
-        <span id="syncBadge" class="font-bold text-emerald-600 flex items-center gap-1">
-          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Realtime Sync Active (&lt;1s)
-        </span>
+      <div class="mt-6 pt-4 border-t border-slate-100 text-center text-[11px] text-slate-400">
+        Secure Invoicematic & Inventory Management Solution
+      </div>
+      <div class="mt-3 text-center">
+        <input type="file" id="restoreBackupFile" accept=".json,application/json" class="hidden" onchange="handleRestoreBackup(event)">
+        <button type="button" onclick="document.getElementById('restoreBackupFile').click()" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-lg shadow transition text-sm">
+          <i class="fa-solid fa-rotate-left mr-1"></i>Restore Backup
+        </button>
+        <p class="text-[10px] text-slate-400 mt-1">Select a previously exported JSON backup file</p>
+      </div>
+      <div id="loginExtraBtns" class="mt-3 space-y-2"></div>
+      <div class="mt-3 text-center">
+        <button type="button" onclick="pvOpenMaster('reset')" class="text-xs font-bold text-orange-600 hover:underline">Forgot password?</button>
       </div>
     </div>
   </div>
@@ -6990,246 +7000,23 @@ Amoxil 250mg - 1x2 for 3 days" class="w-full px-3 py-2 border rounded-lg focus:r
     }
 
     function pvRefreshLogin() {
-      // Keep login screen clean with no extra add admin/reset buttons
       var box = document.getElementById('loginExtraBtns');
-      if (box) box.innerHTML = '';
-    }
-
-    function toggleSideMenu(key) {
-      var m = document.getElementById('menu-' + key);
-      var c = document.getElementById('caret-' + key);
-      if (!m) return;
-      m.classList.toggle('hidden');
-      if (c) {
-        c.classList.toggle('fa-chevron-right');
-        c.classList.toggle('fa-chevron-down');
+      if (!box) return;
+      var acc = pvGetAccounts();
+      var html = '';
+      if (!acc.admin) {
+        html += '<button type="button" onclick="pvStartAdd(\'admin\')" class="w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg shadow transition text-sm">Add Admin Password</button>';
       }
-    }
-
-    // REAL-TIME SUB-SECOND MULTI-DEVICE CLOUD SYNC
-    let syncBroadcastChannel = null;
-    let lastDataVersionHash = '';
-    const CLOUD_SYNC_URL = 'https://api.npoint.io/41c4501a4e21a2212d2a';
-
-    try {
-      if (typeof BroadcastChannel !== 'undefined') {
-        syncBroadcastChannel = new BroadcastChannel('posvibe_realtime_sync');
-        syncBroadcastChannel.onmessage = function (event) {
-          if (event.data && event.data.type === 'sync' && event.data.data) {
-            userData = event.data.data;
-            localStorage.setItem('bizManagerData', JSON.stringify(userData));
-            if (typeof renderAllData === 'function') renderAllData();
-          }
-        };
+      if (!acc.employee) {
+        html += '<button type="button" onclick="pvStartAdd(\'employee\')" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-lg shadow transition text-sm">Add Employee Password</button>';
       }
-    } catch (e) {}
-
-    window.addEventListener('storage', function(e) {
-      if (e.key === 'bizManagerData' && e.newValue) {
-        try {
-          userData = JSON.parse(e.newValue);
-          if (typeof renderAllData === 'function') renderAllData();
-        } catch(err) {}
-      }
-    });
-
-    async function syncFetchData() {
-      // 1. Try local Express server
-      try {
-        const res = await fetch('/api/data').catch(() => null);
-        if (res && res.ok) {
-          const serverData = await res.json();
-          if (serverData && typeof serverData === 'object' && Object.keys(serverData).length > 0) {
-            userData = serverData;
-            localStorage.setItem('bizManagerData', JSON.stringify(userData));
-            lastDataVersionHash = JSON.stringify(userData);
-            if (typeof renderAllData === 'function') renderAllData();
-            return;
-          }
-        }
-      } catch (err) {}
-
-      // 2. Try global cloud storage API for multi-device sync (laptop <-> phone)
-      try {
-        const cloudRes = await fetch(CLOUD_SYNC_URL).catch(() => null);
-        if (cloudRes && cloudRes.ok) {
-          const cloudData = await cloudRes.json();
-          if (cloudData && typeof cloudData === 'object' && cloudData.patients) {
-            userData = cloudData;
-            localStorage.setItem('bizManagerData', JSON.stringify(userData));
-            lastDataVersionHash = JSON.stringify(userData);
-            if (typeof renderAllData === 'function') renderAllData();
-            return;
-          }
-        }
-      } catch (e) {}
-
-      // 3. Fallback: Read local storage
-      try {
-        const raw = localStorage.getItem('bizManagerData');
-        if (raw) {
-          userData = JSON.parse(raw);
-          lastDataVersionHash = JSON.stringify(userData);
-          if (typeof renderAllData === 'function') renderAllData();
-        }
-      } catch (e) {}
-    }
-
-    // High frequency continuous background poll (every 1s) for sub-second cross-device sync
-    setInterval(async function() {
-      try {
-        // Try local server first
-        const res = await fetch('/api/data').catch(() => null);
-        if (res && res.ok) {
-          const data = await res.json();
-          const str = JSON.stringify(data);
-          if (data && str !== lastDataVersionHash) {
-            lastDataVersionHash = str;
-            userData = data;
-            localStorage.setItem('bizManagerData', JSON.stringify(userData));
-            if (typeof renderAllData === 'function') renderAllData();
-            return;
-          }
-        }
-
-        // Try global cloud API for phone <-> laptop sync
-        const cloudRes = await fetch(CLOUD_SYNC_URL).catch(() => null);
-        if (cloudRes && cloudRes.ok) {
-          const cloudData = await cloudRes.json();
-          const str = JSON.stringify(cloudData);
-          if (cloudData && cloudData.patients && str !== lastDataVersionHash) {
-            lastDataVersionHash = str;
-            userData = cloudData;
-            localStorage.setItem('bizManagerData', JSON.stringify(userData));
-            if (typeof renderAllData === 'function') renderAllData();
-          }
-        }
-      } catch(e) {}
-    }, 1000);
-
-    let sseSource = null;
-    function setupSseStream() {
-      if (sseSource) return;
-      try {
-        sseSource = new EventSource('/api/stream');
-        sseSource.onmessage = function (event) {
-          try {
-            const msg = JSON.parse(event.data);
-            if (msg.type === 'sync' && msg.data) {
-              userData = msg.data;
-              localStorage.setItem('bizManagerData', JSON.stringify(userData));
-              lastDataVersionHash = JSON.stringify(userData);
-              if (typeof renderAllData === 'function') renderAllData();
-            }
-          } catch (e) {}
-        };
-      } catch (e) {}
-    }
-
-    window.saveData = function() {
-      localStorage.setItem('bizManagerData', JSON.stringify(userData));
-      lastDataVersionHash = JSON.stringify(userData);
-
-      // Instant BroadcastChannel to other tabs on same device
-      if (syncBroadcastChannel) {
-        try {
-          syncBroadcastChannel.postMessage({ type: 'sync', data: userData });
-        } catch(e) {}
-      }
-
-      // 1. Post to Express server if available
-      fetch('/api/data', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userData)
-      }).catch(err => {});
-
-      // 2. Post to global cloud endpoint so Phone and Laptop sync in <1 second
-      fetch(CLOUD_SYNC_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userData)
-      }).catch(err => {});
-    };
-
-    // 5 SPECIFIC ALLOWED ACCOUNTS LOGIN LOGIC
-    async function handleLogin(e) {
-      if (e) e.preventDefault();
-      const emailEl = document.getElementById('loginEmail');
-      const passEl = document.getElementById('loginPassword');
-      const errEl = document.getElementById('loginError');
-
-      const email = (emailEl ? emailEl.value : '').trim().toLowerCase();
-      const pass = (passEl ? passEl.value : '').trim();
-
-      if (errEl) errEl.classList.add('hidden');
-
-      try {
-        const res = await fetch('/api/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password: pass })
-        });
-        const result = await res.json();
-        if (result.success) {
-          currentUserRole = result.user.role;
-          sessionStorage.setItem('bizManagerRole', currentUserRole);
-          document.getElementById('loginScreen').classList.add('hidden');
-          document.getElementById('loginScreen').classList.remove('flex');
-          document.getElementById('appContainer').classList.remove('hidden');
-          if (typeof updateRoleUI === 'function') updateRoleUI();
-          await syncFetchData();
-          setupSseStream();
-          return;
-        }
-      } catch (err) {
-        console.log('Login fetch error:', err);
-      }
-
-      // Fallback allowed accounts check
-      const ALLOWED_ACCOUNTS = [
-        { emails: ['admin@gmail.com'], pass: 'aefdef', role: 'Admin' },
-        { emails: ['employee@gmail.com'], pass: 'zefzef', role: 'Employee' },
-        { emails: ['admin@gmail.com', 'employee@gmail.com'], pass: 'asdfasdf', role: 'Employee/Admin' },
-        { emails: ['admin@gmail.com', 'employee@gmail.com'], pass: 'adiladil', role: 'Admin/Employee' },
-        { emails: ['admin@gmail.com', 'employee@gmail.com'], pass: '123123', role: 'Admin/Employee' }
-      ];
-
-      const matched = ALLOWED_ACCOUNTS.find(
-        (acc) => acc.emails.includes(email) && acc.pass === pass
-      );
-
-      if (matched) {
-        currentUserRole = matched.role;
-        sessionStorage.setItem('bizManagerRole', currentUserRole);
-        document.getElementById('loginScreen').classList.add('hidden');
-        document.getElementById('loginScreen').classList.remove('flex');
-        document.getElementById('appContainer').classList.remove('hidden');
-        if (typeof updateRoleUI === 'function') updateRoleUI();
-        syncFetchData();
-        setupSseStream();
-      } else {
-        if (errEl) {
-          errEl.innerText = 'Invalid email or password. Please try again.';
-          errEl.classList.remove('hidden');
-        }
-      }
-    }
-
-    function logout() {
-      sessionStorage.removeItem('bizManagerRole');
-      document.getElementById('appContainer').classList.add('hidden');
-      document.getElementById('loginScreen').classList.remove('hidden');
-      document.getElementById('loginScreen').classList.add('flex');
-      if (document.getElementById('loginEmail')) document.getElementById('loginEmail').value = '';
-      if (document.getElementById('loginPassword')) document.getElementById('loginPassword').value = '';
-      if (document.getElementById('loginError')) document.getElementById('loginError').classList.add('hidden');
+      box.innerHTML = html;
     }
 
     document.addEventListener('DOMContentLoaded', function () {
-      pvShow('loginScreen');
-      syncFetchData();
-      setupSseStream();
+      var acc = pvGetAccounts();
+      if (!acc.admin && !acc.employee) { pvShow('pvSetupScreen'); }
+      else { pvShow('loginScreen'); pvRefreshLogin(); }
     });
   </script>
 
